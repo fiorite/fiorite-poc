@@ -1,5 +1,6 @@
 {
   "name": "@fiorite/fiorite",
+  "version": "0.0.0",
   "description": "Development framework for building server applications using TypeScript/JavaScript",
   "author": "fiorite",
   "license": "MIT"
