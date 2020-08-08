@@ -1,0 +1,6 @@
+{
+  "name": "@fiorite/core",
+  "description": "Core interfaces that are useful across the framework",
+  "author": "fiorite",
+  "license": "MIT"
+}
