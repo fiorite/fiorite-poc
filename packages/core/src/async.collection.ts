@@ -1,5 +1,5 @@
 import { forEachAsync, toArrayAsync } from './operators';
-import { AsyncConsumer } from './consumer';
+import { IndexedAsyncConsumer } from './consumer';
 
 export abstract class AsyncCollection<E> implements AsyncIterable<E> {
   /**
@@ -7,7 +7,7 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    *
    * @param consumer
    */
-  forEach(consumer: AsyncConsumer<E>): Promise<void> {
+  forEach(consumer: IndexedAsyncConsumer<E>): Promise<void> {
     return forEachAsync(this, consumer);
   }
 

@@ -1,6 +1,6 @@
 # Database
 
-Package provides core interfaces to interact with database through adapter that behave as async collection.   
+Package provides interfaces to interact with database through adapter that behave as async collection.   
 
 In case `DbCollection<E>` extends `AsyncCollection<E>`, it's possible to iterate a whole table/collection using `for await...of` statement and filter sequence as well. 
 

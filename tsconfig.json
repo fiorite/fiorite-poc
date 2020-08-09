@@ -14,7 +14,8 @@
     "paths": {
       "@fiorite/core": ["core/src"],
       "@fiorite/core/operators": ["core/src/operators"],
-      "@fiorite/db": ["db/src"]
+      "@fiorite/db": ["db/src"],
+      "@fiorite/http": ["http/src"]
     }
   },
   "include": [

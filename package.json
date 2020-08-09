@@ -3,5 +3,15 @@
   "version": "0.0.0",
   "description": "Development framework for building server applications using TypeScript/JavaScript",
   "author": "fiorite",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "ts": "node -r ts-node/register -r tsconfig-paths/register",
+    "example:http": "npm run ts -- example/http/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.27",
+    "ts-node": "^8.10.2",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^3.9.7"
+  }
 }

@@ -1,5 +1,5 @@
 import { forEach, toArray } from './operators';
-import { Consumer } from './consumer';
+import { IndexedConsumer } from './consumer';
 
 export abstract class Collection<E> implements Iterable<E> {
   /**
@@ -7,7 +7,7 @@ export abstract class Collection<E> implements Iterable<E> {
    *
    * @param consumer
    */
-  forEach(consumer: Consumer<E>): void {
+  forEach(consumer: IndexedConsumer<E>): void {
     return forEach(this, consumer);
   }
 

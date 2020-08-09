@@ -1,0 +1,10 @@
+{
+  "name": "@fiorite/http",
+  "version": "0.0.0",
+  "description": "HTTP client and server interfaces",
+  "author": "fiorite",
+  "license": "MIT",
+  "peerDependencies": {
+    "@fiorite/core": "0.0.0"
+  }
+}
