@@ -1,14 +1,14 @@
 import { HashMap } from '@fiorite/core';
 
-export class HttpHeaders extends HashMap<string, string[]> {
-  constructor(entries: [string, string[]][] = []) {
+export class HttpHeaders<K extends string = string> extends HashMap<K, string[]> {
+  constructor(entries: [K, string[]][] = []) {
     /**
      * Case insensitive {@link String} comparer.
      *
      * @param x
      * @param y
      */
-    const comparer = (x: string, y: string) => x.toLowerCase() === y.toLowerCase();
+    const comparer = (x: K, y: K) => x.toLowerCase() === y.toLowerCase();
 
     super(entries, comparer);
   }
@@ -19,7 +19,7 @@ export class HttpHeaders extends HashMap<string, string[]> {
    * @param key
    * @param value
    */
-  add(key: string, value: string | string[]): this {
+  add(key: K, value: string | string[]): this {
     if (typeof value === 'string') {
       value = [value];
     }
@@ -35,7 +35,7 @@ export class HttpHeaders extends HashMap<string, string[]> {
    *
    * @param key
    */
-  get(key: string): string[] {
+  get(key: K): string[] {
     return this.tryGet(key, []);
   }
 
@@ -45,7 +45,7 @@ export class HttpHeaders extends HashMap<string, string[]> {
    * @param key
    * @param value
    */
-  set(key: string, value: string | string[]): this {
+  set(key: K, value: string | string[]): this {
     if (typeof value === 'string') {
       value = [value];
     }

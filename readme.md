@@ -6,3 +6,4 @@ Fiorite is a development framework for building server applications using TypeSc
 
 - [Core](./packages/core)
 - [Database](./packages/db)
+- [Http](./packages/http)
