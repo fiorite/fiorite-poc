@@ -35,10 +35,10 @@ Path: `@fiorite/core`
 | `IndexedPredicate<E>` | `(E, number) => boolean` | Action that performs on indexed element `E` and returns `boolean` result. |
 | `AsyncPredicate<E>` | `(E) => PromiseOr<boolean>` | Action that performs on element `E` and returns `boolean` result. |
 | `IndexedAsyncPredicate<E>` | `(E, number) => PromiseOr<boolean>` | Action that performs on indexed element `E` and returns `boolean` result. |
-| `Selector<E, R>` | `(E) => R` | Action that performs on element `E` and returns `R` result. |
-| `IndexedSelector<E, R>` | `(E, number) => R` | Action that performs on indexed element `E` and returns `R` result. |
-| `AsyncSelector<E, R>` | `(E) => PromiseOr<R>` | Action that performs on indexed element `E` and returns `R` result. |
-| `IndexedAsyncSelector<E, R>` | `(E, number) => PromiseOr<R>` | Action that performs on indexed element `E` and returns `R` result. |
+| `Selector<E, R = E>` | `(E) => R` | Action that performs on element `E` and returns `R` result. |
+| `IndexedSelector<E, R = E>` | `(E, number) => R` | Action that performs on indexed element `E` and returns `R` result. |
+| `AsyncSelector<E, R = E>` | `(E) => PromiseOr<R>` | Action that performs on indexed element `E` and returns `R` result. |
+| `IndexedAsyncSelector<E, R = E>` | `(E, number) => PromiseOr<R>` | Action that performs on indexed element `E` and returns `R` result. |
 
 ### Iterable operators
 

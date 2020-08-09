@@ -18,21 +18,25 @@ export class DefaultHttpAdapter implements HttpAdapter {
     return new Promise<Response>((resolve, reject) => {
       const options: RequestOptions = {
         method: request.method.toUpperCase(),
-        protocol: request.uri.protocol,
-        host: request.uri.host,
-        path: request.uri.pathname + '?' + request.uri.search, // TODO: Concat query right.
+        protocol: request.url.protocol,
+        host: request.url.host,
+        path: request.url.pathname + '?' + request.url.search, // TODO: Concat query right.
       };
 
       const mod: Promise<{ request: (opts: RequestOptions, cback: (res: IncomingMessage) => void) => ClientRequest }> =
-        request.uri.protocol === HTTPS ? import('https') : import('http');
+        request.url.protocol === HTTPS ? import('https') : import('http');
 
       mod.then(x => {
         const outgoing = x.request(options, (incoming: IncomingMessage) => {
           const body = new PassThrough();
 
-          const response = new Response(incoming.statusCode || 0, incoming.headers, body);
-          resolve(response);
+          const response = Response.build(builder => {
+            return builder.statusCode(incoming.statusCode || 0)
+              .headers(incoming.headers)
+              .body(body);
+          });
 
+          resolve(response);
           incoming.pipe(body);
         });
 
@@ -51,7 +55,7 @@ export class DefaultHttpAdapter implements HttpAdapter {
       }
 
       const request = Request.build(x => {
-        return x.method(incoming.method?.toLowerCase() || '').uri(url);
+        return x.method(incoming.method?.toLowerCase() || '').url(url);
       });
 
       PromiseOr.then(handler(request), response => {

@@ -10,7 +10,7 @@ import { HttpHeaders } from './http.headers';
 import { Readable } from 'stream';
 
 export function request(request: Request): Promise<Response>;
-export function request(method: RequestMethod, uri: URL | string): Promise<Response>;
+export function request(method: RequestMethod, url: URL | string): Promise<Response>;
 export function request(...args: [Request] | [RequestMethod, URL | string]): Promise<Response> {
   let request: Request;
 
@@ -19,16 +19,16 @@ export function request(...args: [Request] | [RequestMethod, URL | string]): Pro
       request = args[0];
     }
   } else {
-    const [method, uri] = args as [RequestMethod, URL | string];
-    request = Request.build(x => x.method(method).uri(uri));
+    const [method, url] = args as [RequestMethod, URL | string];
+    request = Request.build(x => x.method(method).url(url));
   }
 
   return HttpClient.DEFAULT.request(request!);
 }
 
 export namespace request {
-  export function get(uri: URL | string): Promise<Response> {
-    return request('get', uri);
+  export function get(url: URL | string): Promise<Response> {
+    return request('get', url);
   }
 }
 
@@ -36,15 +36,15 @@ export function serve(handler: RequestHandler, port: number | string) {
   return HttpServer.DEFAULT.serve(handler, port);
 }
 
-export function proxy(uri: URL | string, request: Request): Promise<Response> {
-  if (typeof uri === 'string') {
-    uri = new URL(uri);
+export function proxy(url: URL | string, request: Request): Promise<Response> {
+  if (typeof url === 'string') {
+    url = new URL(url);
   }
 
-  uri.pathname = request.uri.pathname;
+  url.pathname = request.url.pathname;
 
   return HttpClient.DEFAULT.request(
-    request.with({ uri })
+    request.with({ url: url })
   );
 }
 

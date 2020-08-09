@@ -1,15 +1,23 @@
 import { Stream } from 'stream';
 
-import { HttpHeaders } from './http.headers';
+import { Selector } from '@fiorite/core';
+
+import { ResponseBuilder } from './response.builder';
+import { ResponseHeaders } from './response.headers';
 
 export class Response {
   get [Symbol.toStringTag]() {
     return 'Response';
   }
 
+  static build(selector: Selector<ResponseBuilder>): Response {
+    const builder = new ResponseBuilder();
+    return selector(builder).build();
+  }
+
   constructor(
     public statusCode: number,
-    public headers: HttpHeaders,
+    public headers: ResponseHeaders,
     public body: Stream,
   ) { }
 
