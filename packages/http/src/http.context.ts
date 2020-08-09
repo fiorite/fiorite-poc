@@ -1,16 +1,15 @@
 import { Request } from './request';
-import { Response } from './response';
+import { Injector, InjectorContext } from '@fiorite/core';
 
-/**
- * @deprecated Useless at the moment.
- */
-export class HttpContext {
+export class HttpContext extends InjectorContext {
   get [Symbol.toStringTag]() {
     return 'HttpContext';
   }
 
   constructor(
-    public request: Request,
-    public response: Response,
-  ) { }
+    injector: Injector,
+    readonly request: Request,
+  ) {
+    super(injector);
+  }
 }

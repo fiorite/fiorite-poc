@@ -1,5 +1,6 @@
 import { Collection } from './collection';
 import { EqualityComparer } from './equality-comparer';
+import { Selector } from './selector';
 
 export class HashMap<K, V> extends Collection<[K, V]> {
   /**
@@ -28,11 +29,18 @@ export class HashMap<K, V> extends Collection<[K, V]> {
   // TODO: readonly #values: IterableIterator<V>
 
   /**
-   * Instantiates map and sets {@param source} as a {@link _buffer}.
+   * Instantiates {@link HashMap} from {@link Iterable}.
    *
-   * @param source
+   * @param items
+   * @param key
+   * @param value
+   * @param comparer
    */
-  static proxy<K, V>(source: [K, V][]): HashMap<K, V>;
+  static from<E, K, V>(items: Iterable<E>, key: Selector<E, K>, value: Selector<E, V>, comparer = EqualityComparer.DEFAULT): HashMap<K, V> {
+    const buffer: [K, V][] = Array.from(items).map(e => [key(e), value(e)]);
+
+    return new HashMap<K, V>(buffer, comparer);
+  }
 
   /**
    * Instantiates map, applies {@param comparer} and sets {@param source} as a {@link _buffer}.
@@ -40,42 +48,32 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    * @param source
    * @param comparer
    */
-  static proxy<K, V>(source: [K, V][], comparer: EqualityComparer<K>): HashMap<K, V>;
-
-  /**
-   * @inheritDoc
-   */
   static proxy<K, V>(source: [K, V][], comparer = EqualityComparer.DEFAULT): HashMap<K, V> {
     const instance = new HashMap<K, V>([], comparer);
+
     instance._buffer = source;
+
     return instance;
   }
 
   /**
-   * Instantiates empty map.
-   */
-  constructor();
-
-  /**
-   * Instantiates map and performs {@link addAll} on {@param entries}.
+   * Instantiates map, applies {@param comparer} and performs {@link addAll} on {@param iterable}.
    *
-   * @param entries
+   * @param iterable
    */
-  constructor(entries: [K, V][]);
-
-  /**
-   * Instantiates map, applies {@param comparer} and performs {@link addAll} on {@param entries}.
-   *
-   * @param entries
-   */
-  constructor(entries: [K, V][], comparer: EqualityComparer<K>);
-
-  /**
-   * @inheritDoc
-   */
-  constructor(entries: [K, V][] = [], readonly comparer = EqualityComparer.DEFAULT) {
+  constructor(iterable: Iterable<[K, V]> = [], readonly comparer = EqualityComparer.DEFAULT) {
     super();
-    this.addAll(entries);
+    this.addAll(iterable);
+  }
+
+  /**
+   * @todo Mind how to improve such method.
+   * @inheritDoc
+   * @param iterable
+   * @protected
+   */
+  protected with(iterable: Iterable<[K, V]>): Collection<[K, V]> {
+    return new HashMap(iterable);
   }
 
   /**

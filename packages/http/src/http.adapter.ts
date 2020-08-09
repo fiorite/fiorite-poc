@@ -1,12 +1,13 @@
 import type { ClientRequest, IncomingMessage, RequestOptions } from 'http';
 import { PassThrough } from 'stream';
 
-import { PromiseOr } from '@fiorite/core';
+import { Injector, PromiseOr } from '@fiorite/core';
 
 import { Request } from './request';
 import { Response } from './response';
 import { HTTPS } from './constants';
 import { RequestHandler } from './request.handler';
+import { HttpContext } from './http.context';
 
 export interface HttpAdapter {
   request(request: Request): Promise<Response>;
@@ -58,7 +59,10 @@ export class DefaultHttpAdapter implements HttpAdapter {
         return x.method(incoming.method?.toLowerCase() || '').url(url);
       });
 
-      PromiseOr.then(handler(request), response => {
+      const injector = new Injector();
+      const context = new HttpContext(injector, request);
+
+      PromiseOr.then(handler(context), response => {
         outgoing.writeHead(response.statusCode, response.headers.toRecord());
         response.body.pipe(outgoing);
       });

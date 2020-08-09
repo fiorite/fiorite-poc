@@ -1,6 +1,6 @@
 import { PromiseOr } from '@fiorite/core';
 
-import { Request } from './request';
 import { Response } from './response';
+import { HttpContext } from './http.context';
 
-export type RequestHandler = (request: Request) => PromiseOr<Response>;
+export type RequestHandler = (context: HttpContext) => PromiseOr<Response>;
