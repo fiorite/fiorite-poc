@@ -1,3 +1,3 @@
 import { HttpHeaders } from './http.headers';
 
-export interface RequestHeaders extends HttpHeaders { }
+export class RequestHeaders extends HttpHeaders { }

@@ -33,4 +33,39 @@ export class Response {
   bodyToJson<T>(): Promise<T> {
     return this.bodyToString().then(JSON.parse);
   }
+
+  /** region {@link headers} facade */
+
+  addHeader(key: string, value: string | string[]): this {
+    this.headers.add(key, value);
+    return this;
+  }
+
+  setHeader(key: string, value: string | string[]): this {
+    this.headers.set(key, value);
+
+    return this;
+  }
+
+  getHeader(key: string): string[] {
+    return this.headers.get(key);
+  }
+
+  hasHeader(key: string): boolean {
+    return this.headers.has(key);
+  }
+
+  deleteHeader(key: string): this {
+    this.headers.delete(key);
+
+    return this;
+  }
+
+  clearHeaders(): this {
+    this.headers.clear();
+
+    return this;
+  }
+
+  /** endregion {@link headers} facade */
 }

@@ -32,7 +32,7 @@ export class DefaultHttpAdapter implements HttpAdapter {
 
           const response = Response.build(builder => {
             return builder.statusCode(incoming.statusCode || 0)
-              .headers(incoming.headers)
+              .headers(Object.entries(incoming.headers) as [string, string[]][])
               .body(body);
           });
 
@@ -59,7 +59,7 @@ export class DefaultHttpAdapter implements HttpAdapter {
       });
 
       PromiseOr.then(handler(request), response => {
-        outgoing.writeHead(response.statusCode, response.headers as any);
+        outgoing.writeHead(response.statusCode, response.headers.toRecord());
         response.body.pipe(outgoing);
       });
     }).listen(port));

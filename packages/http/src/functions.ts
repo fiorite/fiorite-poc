@@ -6,8 +6,8 @@ import { Request } from './request';
 import { Response } from './response';
 import { RequestHandler } from './request.handler';
 import { HttpServer } from './http.server';
-import { HttpHeaders } from './http.headers';
-import { Readable } from 'stream';
+import { Readable, Stream } from 'stream';
+import { ResponseHeaders } from './response.headers';
 
 export function request(request: Request): Promise<Response>;
 export function request(method: RequestMethod, url: URL | string): Promise<Response>;
@@ -48,6 +48,10 @@ export function proxy(url: URL | string, request: Request): Promise<Response> {
   );
 }
 
-export function ok(body: unknown = '', headers: HttpHeaders = {}): Response {
-  return new Response(200, headers, Readable.from([JSON.stringify(body)]));
+export function ok(body: unknown = '', headers = new ResponseHeaders()): Response {
+  body = Readable.from([JSON.stringify(body)]);
+
+  return Response.build(x => {
+    return x.statusCode(200).headers(headers).body(body as Stream);
+  });
 }

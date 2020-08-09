@@ -1,7 +1,6 @@
 import { Readable, Stream } from 'stream';
 
 import { Response } from './response';
-import { HttpHeaders } from './http.headers';
 import { ResponseHeaders } from './response.headers';
 
 export class ResponseBuilder {
@@ -10,10 +9,10 @@ export class ResponseBuilder {
   }
 
   private _statusCode: number = 200;
-  private _headers: ResponseHeaders = { };
+  private _headers: ResponseHeaders = new ResponseHeaders();
   private _body: Stream = Readable.from([]);
 
-  private with(partial: Partial<{ _statusCode: number, _headers: HttpHeaders, _body: Stream }> = {}) {
+  private with(partial: Partial<{ _statusCode: number, _headers: ResponseHeaders, _body: Stream }> = {}) {
     return Object.assign(Object.create(this), { ...this, ...partial });
   }
 
@@ -21,7 +20,11 @@ export class ResponseBuilder {
     return this.with({ _statusCode: value });
   }
 
-  headers(value: HttpHeaders): ResponseBuilder {
+  headers(value: [string, string[]][] | ResponseHeaders): ResponseBuilder {
+    if (Array.isArray(value)) {
+      value = new ResponseHeaders(value);
+    }
+
     return this.with({ _headers: value });
   }
 

@@ -4,6 +4,7 @@ import { RequestMethod } from './request.method';
 import { Request } from './request';
 import { Readable, Stream } from 'stream';
 import { RequestHeaders } from './request.headers';
+import { ResponseHeaders } from './response.headers';
 
 export class RequestBuilder {
   get [Symbol.toStringTag]() {
@@ -12,7 +13,7 @@ export class RequestBuilder {
 
   private _method: RequestMethod | string = 'get';
   private _url: URL = new URL('http://localhost');
-  private _headers: RequestHeaders = { };
+  private _headers = new RequestHeaders();
   private _body: Stream = Readable.from([]);
 
   private with(partial: Partial<{
@@ -32,7 +33,11 @@ export class RequestBuilder {
     return this.with({ _url: typeof value === 'string' ? new URL(value) : value });
   }
 
-  headers(value: RequestHeaders): RequestBuilder {
+  headers(value: [string, string[]][] | RequestHeaders): RequestBuilder {
+    if (Array.isArray(value)) {
+      value = new RequestHeaders(value);
+    }
+
     return this.with({ _headers: value });
   }
 
