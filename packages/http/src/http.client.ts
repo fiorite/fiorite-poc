@@ -3,13 +3,11 @@ import { Response } from './response';
 import { HttpAdapter } from './http.adapter';
 
 export class HttpClient {
-  static readonly DEFAULT = new HttpClient(HttpAdapter.DEFAULT);
-
   get [Symbol.toStringTag]() {
     return 'HttpClient';
   }
 
-  constructor(readonly adapter = HttpAdapter.DEFAULT) { }
+  constructor(readonly adapter: HttpAdapter) { }
 
   request(request: Request): Promise<Response> {
     return this.adapter.request(request);

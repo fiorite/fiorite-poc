@@ -13,14 +13,15 @@ export { EqualityComparer } from './equality-comparer';
 export { Collection } from './collection';
 export { AsyncCollection } from './async.collection';
 
-export { Injector } from './injector';
-export { Injectable } from './injectable';
+export { Injector, InjectorError, InjectorKey, Injectable, InstanceInjection, DefaultInjector, ReflectInjection, FactoryInjection, InjectionError, Injection, ReferenceInjection, Inject } from './injector';
 export { InjectorBuilder } from './injector.builder';
 export { InjectorContext } from './injector.context';
 
 export { HashSet } from './hash.set';
-export { HashMap } from './hash.map';
+export { HashMap, HashMapError } from './hash.map';
 
 export { hashSet } from './functions';
+
+export { Stack, StackError } from './stack';
 
 export { Serializer, JsonEncoder, serialize, Normalizer, Encoder, Normalizable } from './serializer';

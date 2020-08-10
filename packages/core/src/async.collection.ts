@@ -1,9 +1,24 @@
-import { filterAsync, forEachAsync, mapAsync, toArrayAsync } from './operators';
+import { someAsync, filterAsync, flatAsync, forEachAsync, mapAsync, singleAsync, toArrayAsync } from './operators';
 import { AsyncConsumer } from './consumer';
 import { AsyncPredicate } from './predicate';
 import { AsyncSelector } from './selector';
+import { IterableCollection } from './collection';
 
 export abstract class AsyncCollection<E> implements AsyncIterable<E> {
+  /**
+   * Casts element type of a sequence.
+   */
+  cast<R>(): AsyncCollection<R> {
+    return this as unknown as AsyncCollection<R>;
+  }
+
+  /**
+   * TODO: Describe
+   */
+  flat(): AsyncCollection<E extends AsyncIterable<infer I> ? I : E> {
+    return new IterableAsyncCollection(flatAsync(this));
+  }
+
   /**
    * Filters sequence using predicate.
    *
@@ -29,6 +44,44 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    */
   forEach(consumer: AsyncConsumer<E, [number]>): Promise<void> {
     return forEachAsync(this, consumer);
+  }
+
+  /**
+   * TODO: Add doc.
+   */
+  single(): Promise<E>;
+
+  /**
+   * TODO: Add doc.
+   *
+   * @param predicate
+   */
+  single(predicate: AsyncPredicate<E, [number]>): Promise<E>;
+
+  /**
+   * @inheritDoc
+   */
+  single(...args: [] | [AsyncPredicate<E, [number]>]): Promise<E> {
+    return singleAsync(this, ...args);
+  }
+
+  /**
+   * TODO: Describe.
+   */
+  some(): Promise<boolean>;
+
+  /**
+   * TODO: Describe.
+   *
+   * @param predicate
+   */
+  some(predicate: AsyncPredicate<E, [number]>): Promise<boolean>;
+
+  /**
+   * @inheritDoc
+   */
+  some(...args: [] | [AsyncPredicate<E, [number]>]): Promise<boolean> {
+    return someAsync(this, ...args);
   }
 
   /**

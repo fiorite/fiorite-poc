@@ -1,26 +1,35 @@
 /**
- * Interface for constructable classes.
+ * Identifies constructable classes.
  */
-export interface Type<T> {
+export interface Type<T = unknown> extends Function {
   new (...args: any[]): T;
 }
 
+/**
+ * Identifies abstract class.
+ */
+export interface AbstractType<T> extends Function {
+  prototype: T;
+}
+
 export namespace Type {
-  export type values = 'undefined' | 'null' | 'function' | 'class' | 'object';
+  export type values = 'undefined' | 'null' | 'function' | 'class'| 'array' | 'iterable' | 'object';
 
   const map: Record<values, (value: unknown) => boolean> = {
     undefined: x => undefined === x,
     null: x => null === x,
-    function: x => 'function' === typeof x &&
+    function: x => typeof x === 'function' &&
       undefined === x.prototype,
-    class: x => 'function' === typeof x &&
+    class: x => typeof x === 'function' &&
       x === x.prototype.constructor,
+    array: x => Array.isArray(x),
+    iterable: x => null !== x && typeof (x as Iterable<unknown>)[Symbol.iterator] === 'function',
     object: x => 'object' === typeof x,
   }
 
   export const is = (type: values, value: unknown) => map[type](value);
 
-  export const of = (value: unknown): values => {
-    return Object.entries(map).find(([_, check]) => check(value))![0] as values;
-  }
+  // export const of = (value: unknown): values => {
+  //   return Object.entries(map).find(([_, check]) => check(value))![0] as values;
+  // }
 }

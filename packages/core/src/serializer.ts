@@ -78,40 +78,34 @@ export class Serializer {
     let normalize: Selector<T, R>;
     let normalizable: Normalizable<R>;
 
-    const type = Type.of(normalizer);
+    // const type = Type.of(normalizer);
 
-    switch (type) {
-      case 'undefined':
-        normalizable = value as unknown as Normalizable<R>;
+    if (Type.is('undefined', normalizer)) {
+      normalizable = value as unknown as Normalizable<R>;
 
-        if (typeof normalizable[Symbol.normalize] === 'function') {
-          normalize = () => normalizable[Symbol.normalize]();
-          break;
-        }
-
+      if (typeof normalizable[Symbol.normalize] === 'function') {
+        normalize = () => normalizable[Symbol.normalize]();
+      } else {
         if (typeof normalizable.constructor === 'function') {
           // TODO: Find type in registry
         }
 
         normalize = (() => value) as unknown as Selector<T, R>;
-        break;
-      case 'function':
-        normalize = normalizer as Selector<T, R>;
-        break;
-      case 'class':
-        const prototype = (normalizer as Type<T>).prototype;
+      }
+    } else if (Type.is('function', normalizer)) {
+      normalize = normalizer as Selector<T, R>;
+    } else if (Type.is('class', normalizer)) {
+      const prototype = (normalizer as Type<T>).prototype;
 
-        normalize = (
-          typeof prototype[Symbol.normalize] === 'function' ?
-            () => prototype[Symbol.normalize].call(value) :
-            () => value // TODO: Find in registry.
-        ) as Selector<T, R>;
-        break;
-      case 'object':
-        normalize = (normalizer as Normalizer<T, R>).normalize.bind(normalizer);
-        break;
-      default:
-        throw new RangeError('Unsupported normalizer type: ' + type);
+      normalize = (
+        typeof prototype[Symbol.normalize] === 'function' ?
+          () => prototype[Symbol.normalize].call(value) :
+          () => value // TODO: Find in registry.
+      ) as Selector<T, R>;
+    } else if (Type.is('object', normalizer)) {
+      normalize = (normalizer as Normalizer<T, R>).normalize.bind(normalizer);
+    } else {
+      throw new RangeError('Unsupported normalizer type');
     }
 
     const normalized = normalize(value);

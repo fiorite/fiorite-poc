@@ -2,9 +2,15 @@ import { Collection } from './collection';
 import { EqualityComparer } from './equality-comparer';
 import { Selector } from './selector';
 
+export class HashMapError<K> extends TypeError {
+  constructor(message: string, readonly key: K) {
+    super(message);
+  }
+}
+
 export class HashMap<K, V> extends Collection<[K, V]> {
   /**
-   * Provides string tag of map.
+   * Provides string tag.
    */
   get [Symbol.toStringTag]() {
     return 'HashMap';
@@ -18,26 +24,57 @@ export class HashMap<K, V> extends Collection<[K, V]> {
   private _buffer: [K, V][] = [];
 
   /**
+   * @inheritDoc
+   */
+  get empty() {
+    return this._buffer.length > 0;
+  }
+
+  /**
    * Returns map size.
    */
   get size(): number {
     return this._buffer.length;
   }
 
-  // TODO: readonly #entries: IterableIterator<[K, V]>
-  // TODO: readonly #keys: IterableIterator<K>
-  // TODO: readonly #values: IterableIterator<V>
+  /**
+   * Returns keys collection.
+   */
+  get keys(): Collection<K> {
+    return this.map(x => x[0]);
+  }
+
+  /**
+   * Returns values collection.
+   */
+  get values(): Collection<V> {
+    return this.map(x => x[1]);
+  }
 
   /**
    * Instantiates {@link HashMap} from {@link Iterable}.
    *
-   * @param items
+   * @param iterable
+   * @param key
+   */
+  static from<E, K>(iterable: Iterable<E>, key: Selector<E, K>): HashMap<K, E>;
+
+  /**
+   * Instantiates {@link HashMap} from {@link Iterable}.
+   *
+   * @param iterable
    * @param key
    * @param value
-   * @param comparer
    */
-  static from<E, K, V>(items: Iterable<E>, key: Selector<E, K>, value: Selector<E, V>, comparer = EqualityComparer.DEFAULT): HashMap<K, V> {
-    const buffer: [K, V][] = Array.from(items).map(e => [key(e), value(e)]);
+  static from<E, K, V>(iterable: Iterable<E>, key: Selector<E, K>, value: Selector<E, V>): HashMap<K, E>;
+
+  static from<E, K, V>(iterable: Iterable<E>, key: Selector<E, K>, value: Selector<E, V>, comparer: EqualityComparer): HashMap<K, V>;
+
+  /**
+   * @inheritDoc
+   */
+  static from<E, K, V>(iterable: Iterable<E>, key: Selector<E, K>, value: Selector<E, V> = x => x as unknown as V, comparer = EqualityComparer.DEFAULT): HashMap<K, V> {
+    const buffer: [K, V][] = Array.from(iterable).map(e => [key(e), value(e)]);
 
     return new HashMap<K, V>(buffer, comparer);
   }
@@ -67,26 +104,16 @@ export class HashMap<K, V> extends Collection<[K, V]> {
   }
 
   /**
-   * @todo Mind how to improve such method.
-   * @inheritDoc
-   * @param iterable
-   * @protected
-   */
-  protected with(iterable: Iterable<[K, V]>): Collection<[K, V]> {
-    return new HashMap(iterable);
-  }
-
-  /**
-   * Sets entry of throws {@link TypeError} whether there is another entry with the same {@param key}.
+   * Sets entry of throws {@link HashMapError} whether there is another entry with the same {@param key}.
    *
    * @param key
    * @param value
    *
-   * @throws TypeError An entry with the same {@param key} already exists.
+   * @throws HashMapError An entry with the same {@param key} already exists.
    */
   add(key: K, value: V): this {
     if (this.has(key)) {
-      throw new TypeError('An entry with the same key already exists.');
+      throw new HashMapError('An entry with the same key already exists.', key);
     }
 
     this.set(key, value);
@@ -95,11 +122,11 @@ export class HashMap<K, V> extends Collection<[K, V]> {
   }
 
   /**
-   * Sets every entry of {@param entries} of throws {@link TypeError} whether one of keys exists.
+   * Sets every entry of {@param entries} of throws {@link HashMapError} whether one of keys exists.
    *
    * @param entries
    *
-   * @throws TypeError An entry with the same key already exists.
+   * @throws HashMapError An entry with the same key already exists.
    */
   addAll(entries: Iterable<[K, V]>): this {
     const iterator = entries[Symbol.iterator]();
@@ -206,7 +233,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
     const index = this._buffer.findIndex(([x]) => this.comparer(key, x));
 
     if (index < 0) {
-      throw new TypeError('An entry with such key is not exist.');
+      throw new HashMapError('An entry with such key is not exist.', key);
     }
 
     return this._buffer[index][1];

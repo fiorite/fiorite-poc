@@ -8,6 +8,9 @@ import { RequestHandler } from './request.handler';
 import { HttpServer } from './http.server';
 import { Readable, Stream } from 'stream';
 import { ResponseHeaders } from './response.headers';
+import { DefaultHttpAdapter } from './default-http.adapter';
+
+const defaultHttpClient = new HttpClient(DefaultHttpAdapter.default);
 
 export function request(request: Request): Promise<Response>;
 export function request(method: RequestMethod, url: URL | string): Promise<Response>;
@@ -23,7 +26,7 @@ export function request(...args: [Request] | [RequestMethod, URL | string]): Pro
     request = Request.build(x => x.method(method).url(url));
   }
 
-  return HttpClient.DEFAULT.request(request!);
+  return defaultHttpClient.request(request!);
 }
 
 export namespace request {
@@ -32,8 +35,10 @@ export namespace request {
   }
 }
 
+const defaultHttpService = new HttpServer(DefaultHttpAdapter.default);
+
 export function serve(handler: RequestHandler, port: number | string) {
-  return HttpServer.DEFAULT.serve(handler, port);
+  return defaultHttpService.serve(handler, port);
 }
 
 export function proxy(url: URL | string, request: Request): Promise<Response> {
@@ -43,7 +48,7 @@ export function proxy(url: URL | string, request: Request): Promise<Response> {
 
   url.pathname = request.url.pathname;
 
-  return HttpClient.DEFAULT.request(
+  return defaultHttpClient.request(
     request.with({ url: url })
   );
 }

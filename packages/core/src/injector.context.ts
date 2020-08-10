@@ -1,11 +1,11 @@
-import { Injector, InjectorToken } from './injector';
+import { InjectorKey, Injector } from './injector';
 import { Disposable } from './disposable';
 
 export abstract class InjectorContext implements Disposable {
   protected constructor(readonly injector: Injector) { }
 
-  get<T>(token: InjectorToken): T {
-    return this.injector.get(token);
+  get<T>(key: InjectorKey<T>): T {
+    return this.injector.get(key);
   }
 
   [Symbol.dispose]() {

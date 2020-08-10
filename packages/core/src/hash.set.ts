@@ -17,6 +17,13 @@ export class HashSet<E> extends Collection<E> {
   private _buffer: E[] = [];
 
   /**
+   * @inheritDoc
+   */
+  get empty() {
+    return this._buffer.length > 0;
+  }
+
+  /**
    * Returns the number of items.
    */
   get size(): number {
