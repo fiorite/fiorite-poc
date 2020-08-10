@@ -1,4 +1,4 @@
-import { IndexedAsyncConsumer, IndexedConsumer } from '../consumer';
+import { AsyncConsumer, Consumer } from '../consumer';
 
 /**
  * Performs the {@param consumer} for each element in an {@param iterable}.
@@ -6,7 +6,7 @@ import { IndexedAsyncConsumer, IndexedConsumer } from '../consumer';
  * @param iterable
  * @param consumer
  */
-export function forEach<E>(iterable: Iterable<E>, consumer: IndexedConsumer<E>): void {
+export function forEach<E>(iterable: Iterable<E>, consumer: Consumer<E, [number]>): void {
   if (Array.isArray(iterable)) {
     return iterable.forEach(consumer);
   }
@@ -29,7 +29,7 @@ export function forEach<E>(iterable: Iterable<E>, consumer: IndexedConsumer<E>):
  * @param iterable
  * @param consumer
  */
-export async function forEachAsync<E>(iterable: AsyncIterable<E>, consumer: IndexedAsyncConsumer<E>): Promise<void> {
+export async function forEachAsync<E>(iterable: AsyncIterable<E>, consumer: AsyncConsumer<E, [number]>): Promise<void> {
   const iterator = iterable[Symbol.asyncIterator]();
 
   let result = await iterator.next();

@@ -1,7 +1,7 @@
 import { filterAsync, forEachAsync, mapAsync, toArrayAsync } from './operators';
-import { IndexedAsyncConsumer } from './consumer';
-import { IndexedAsyncPredicate } from './predicate';
-import { IndexedAsyncSelector } from './selector';
+import { AsyncConsumer } from './consumer';
+import { AsyncPredicate } from './predicate';
+import { AsyncSelector } from './selector';
 
 export abstract class AsyncCollection<E> implements AsyncIterable<E> {
   /**
@@ -9,7 +9,7 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    *
    * @param predicate
    */
-  filter(predicate: IndexedAsyncPredicate<E>): AsyncCollection<E> {
+  filter(predicate: AsyncPredicate<E, [number]>): AsyncCollection<E> {
     return new IterableAsyncCollection(filterAsync(this, predicate));
   }
 
@@ -18,7 +18,7 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    *
    * @param selector
    */
-  map(selector: IndexedAsyncSelector<E>): AsyncCollection<E> {
+  map<R>(selector: AsyncSelector<E, R, [number]>): AsyncCollection<R> {
     return new IterableAsyncCollection(mapAsync(this, selector));
   }
 
@@ -27,7 +27,7 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    *
    * @param consumer
    */
-  forEach(consumer: IndexedAsyncConsumer<E>): Promise<void> {
+  forEach(consumer: AsyncConsumer<E, [number]>): Promise<void> {
     return forEachAsync(this, consumer);
   }
 
@@ -42,6 +42,13 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    * @inheritDoc
    */
   abstract [Symbol.asyncIterator](): AsyncIterator<E>;
+
+  /**
+   * Normalizes a sequence as an array.
+   */
+  [Symbol.normalize](): Promise<E[]> {
+    return this.toArray();
+  }
 }
 
 export class IterableAsyncCollection<E> extends AsyncCollection<E> {

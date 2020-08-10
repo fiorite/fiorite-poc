@@ -4,8 +4,8 @@ import { Disposable } from './disposable';
 export abstract class InjectorContext implements Disposable {
   protected constructor(readonly injector: Injector) { }
 
-  inject<T>(token: InjectorToken): T {
-    return this.injector.inject(token);
+  get<T>(token: InjectorToken): T {
+    return this.injector.get(token);
   }
 
   [Symbol.dispose]() {

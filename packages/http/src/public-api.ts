@@ -1,5 +1,3 @@
-import './extensions';
-
 export { HttpAdapter } from './http.adapter';
 export { RequestBuilder } from './request.builder';
 export { Request } from './request';

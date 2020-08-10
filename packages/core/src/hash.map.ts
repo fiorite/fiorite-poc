@@ -61,7 +61,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    *
    * @param iterable
    */
-  constructor(iterable: Iterable<[K, V]> = [], readonly comparer = EqualityComparer.DEFAULT) {
+  constructor(iterable: Iterable<[K, V]> = [], readonly comparer: EqualityComparer<K> = EqualityComparer.DEFAULT) {
     super();
     this.addAll(iterable);
   }

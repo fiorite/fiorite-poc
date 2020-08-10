@@ -1,7 +1,7 @@
 import { filter, forEach, map, toArray } from './operators';
-import { IndexedConsumer } from './consumer';
-import { IndexedPredicate } from './predicate';
-import { IndexedSelector } from './selector';
+import { Consumer } from './consumer';
+import { Predicate } from './predicate';
+import { Selector } from './selector';
 
 export abstract class Collection<E> implements Iterable<E> {
   /**
@@ -9,7 +9,7 @@ export abstract class Collection<E> implements Iterable<E> {
    *
    * @param predicate
    */
-  filter(predicate: IndexedPredicate<E>): Collection<E> {
+  filter(predicate: Predicate<E, [number]>): Collection<E> {
     return new IterableCollection(filter(this, predicate));
   }
 
@@ -18,7 +18,7 @@ export abstract class Collection<E> implements Iterable<E> {
    *
    * @param consumer
    */
-  forEach(consumer: IndexedConsumer<E>): void {
+  forEach(consumer: Consumer<E, [number]>): void {
     return forEach(this, consumer);
   }
 
@@ -27,7 +27,7 @@ export abstract class Collection<E> implements Iterable<E> {
    *
    * @param selector
    */
-  map(selector: IndexedSelector<E>): Collection<E> {
+  map<R>(selector: Selector<E, R, [number]>): Collection<R> {
     return new IterableCollection(map(this, selector));
   }
 
@@ -42,6 +42,13 @@ export abstract class Collection<E> implements Iterable<E> {
    * @inheritDoc
    */
   abstract [Symbol.iterator](): Iterator<E>;
+
+  /**
+   * Normalizes a sequence as an array.
+   */
+  [Symbol.normalize](): E[] {
+    return this.toArray();
+  }
 }
 
 export class IterableCollection<E> extends Collection<E> {

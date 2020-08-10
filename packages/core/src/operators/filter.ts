@@ -1,5 +1,4 @@
-import { IndexedAsyncConsumer } from '../consumer';
-import { IndexedAsyncPredicate, IndexedPredicate } from '../predicate';
+import { AsyncPredicate, Predicate } from '../predicate';
 
 /**
  * Filters sequence using predicate.
@@ -7,7 +6,7 @@ import { IndexedAsyncPredicate, IndexedPredicate } from '../predicate';
  * @param iterable
  * @param predicate
  */
-export function filter<E>(iterable: Iterable<E>, predicate: IndexedPredicate<E>): Iterable<E> {
+export function filter<E>(iterable: Iterable<E>, predicate: Predicate<E, [number]>): Iterable<E> {
   if (Array.isArray(iterable)) {
     return iterable.filter(predicate);
   }
@@ -35,7 +34,7 @@ export function filter<E>(iterable: Iterable<E>, predicate: IndexedPredicate<E>)
  * @param iterable
  * @param predicate
  */
-export async function *filterAsync<E>(iterable: AsyncIterable<E>, predicate: IndexedAsyncPredicate<E>): AsyncIterable<E> {
+export async function *filterAsync<E>(iterable: AsyncIterable<E>, predicate: AsyncPredicate<E, [number]>): AsyncIterable<E> {
   const iterator = iterable[Symbol.asyncIterator]();
 
   let result = await iterator.next();

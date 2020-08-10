@@ -1,4 +1,5 @@
 import './operators';
+import './globals';
 
 export { PromiseOr } from './promise-or';
 export { Consumer, AsyncConsumer } from './consumer';
@@ -13,6 +14,7 @@ export { Collection } from './collection';
 export { AsyncCollection } from './async.collection';
 
 export { Injector } from './injector';
+export { Injectable } from './injectable';
 export { InjectorBuilder } from './injector.builder';
 export { InjectorContext } from './injector.context';
 
@@ -20,3 +22,5 @@ export { HashSet } from './hash.set';
 export { HashMap } from './hash.map';
 
 export { hashSet } from './functions';
+
+export { Serializer, JsonEncoder, serialize, Normalizer, Encoder, Normalizable } from './serializer';

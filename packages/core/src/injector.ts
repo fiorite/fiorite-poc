@@ -9,13 +9,12 @@ export type InjectorToken = unknown;
 export class Injector extends Collection<unknown> implements Disposable {
   static build(selector: Selector<InjectorBuilder>): Injector {
     const builder = new InjectorBuilder();
-
     return selector(builder).build();
   }
 
   readonly providers = new HashMap<InjectorToken, unknown>();
 
-  inject<T>(token: InjectorToken): T {
+  get<T>(token: InjectorToken): T {
     return this.providers.get(token) as T;
   }
 

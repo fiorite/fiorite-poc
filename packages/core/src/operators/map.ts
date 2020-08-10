@@ -1,4 +1,4 @@
-import { IndexedAsyncSelector, IndexedSelector } from '../selector';
+import { AsyncSelector, Selector } from '../selector';
 
 /**
  * Projects each element of a sequence into a new form.
@@ -6,7 +6,7 @@ import { IndexedAsyncSelector, IndexedSelector } from '../selector';
  * @param iterable
  * @param selector
  */
-export function map<E>(iterable: Iterable<E>, selector: IndexedSelector<E>): Iterable<E> {
+export function map<E, R>(iterable: Iterable<E>, selector: Selector<E, R, [number]>): Iterable<R> {
   if (Array.isArray(iterable)) {
     return iterable.map(selector);
   }
@@ -31,7 +31,7 @@ export function map<E>(iterable: Iterable<E>, selector: IndexedSelector<E>): Ite
  * @param iterable
  * @param selector
  */
-export async function *mapAsync<E>(iterable: AsyncIterable<E>, selector: IndexedAsyncSelector<E>): AsyncIterable<E> {
+export async function *mapAsync<E, R>(iterable: AsyncIterable<E>, selector: AsyncSelector<E, R, [number]>): AsyncIterable<R> {
   const iterator = iterable[Symbol.asyncIterator]();
 
   let result = await iterator.next();
