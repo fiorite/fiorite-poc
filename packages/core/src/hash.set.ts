@@ -20,7 +20,7 @@ export class HashSet<E> extends Collection<E> {
    * @inheritDoc
    */
   get empty() {
-    return this._buffer.length > 0;
+    return this._buffer.length < 1;
   }
 
   /**
@@ -48,19 +48,9 @@ export class HashSet<E> extends Collection<E> {
    * @param iterable
    * @param comparer
    */
-  constructor(iterable: Iterable<E> = [], readonly comparer: EqualityComparer<E> = EqualityComparer.DEFAULT) {
+  constructor(iterable: Iterable<E> = [], public comparer: EqualityComparer<E> = EqualityComparer.DEFAULT) {
     super();
     this.addAll(iterable);
-  }
-
-  /**
-   * @todo Mind how to improve such method.
-   * @inheritDoc
-   * @param iterable
-   * @protected
-   */
-  protected with(iterable: Iterable<E>): Collection<E> {
-    return new HashSet(iterable);
   }
 
   /**
@@ -126,6 +116,18 @@ export class HashSet<E> extends Collection<E> {
     this._buffer.splice(0, this._buffer.length);
 
     return this;
+  }
+
+  /**
+   * Clones instance and internal buffer.
+   */
+  [Symbol.clone](): HashSet<E> {
+    const clone = Object.create(this) as this;
+
+    clone._buffer = this._buffer.slice();
+    clone.comparer = this.comparer;
+
+    return clone;
   }
 
   /**

@@ -27,7 +27,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    * @inheritDoc
    */
   get empty() {
-    return this._buffer.length > 0;
+    return this._buffer.length < 1;
   }
 
   /**
@@ -98,7 +98,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    *
    * @param iterable
    */
-  constructor(iterable: Iterable<[K, V]> = [], readonly comparer: EqualityComparer<K> = EqualityComparer.DEFAULT) {
+  constructor(iterable: Iterable<[K, V]> = [], public comparer: EqualityComparer<K> = EqualityComparer.DEFAULT) {
     super();
     this.addAll(iterable);
   }
@@ -122,6 +122,22 @@ export class HashMap<K, V> extends Collection<[K, V]> {
   }
 
   /**
+   * Sets entry whether there is no entry with {@param key}.
+   *
+   * @param key
+   * @param value
+   */
+  tryAdd(key: K, value: V): boolean {
+    if (!this.has(key)) {
+      this.set(key, value);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
    * Sets every entry of {@param entries} of throws {@link HashMapError} whether one of keys exists.
    *
    * @param entries
@@ -138,20 +154,6 @@ export class HashMap<K, V> extends Collection<[K, V]> {
       this.add(key, value);
 
       result = iterator.next();
-    }
-
-    return this;
-  }
-
-  /**
-   * Sets entry whether there is no entry with {@param key}.
-   *
-   * @param key
-   * @param value
-   */
-  tryAdd(key: K, value: V): this {
-    if (!this.has(key)) {
-      this.set(key, value);
     }
 
     return this;
@@ -240,16 +242,28 @@ export class HashMap<K, V> extends Collection<[K, V]> {
   }
 
   /**
-   * Gets entry value by {@param key} or returns {@param or} if there is no entry with such key.
+   * Gets entry value by {@param key} or returns null if there is no entry with such key.
    *
    * @param key
-   * @param or
    */
-  tryGet(key: K, or: V): V {
+  tryGet(key: K): V | null;
+
+  /**
+   * Gets entry value by {@param key} or returns null if there is no entry with such key.
+   *
+   * @param key
+   * @param _default
+   */
+  tryGet(key: K, _default: V): V;
+
+  /**
+   * @inheritDoc
+   */
+  tryGet(key: K, _default: V | null = null): V | null {
     const index = this._buffer.findIndex(([x]) => this.comparer(key, x));
 
     if (index < 0) {
-      return or;
+      return _default;
     }
 
     return this._buffer[index][1];
@@ -277,6 +291,18 @@ export class HashMap<K, V> extends Collection<[K, V]> {
     this._buffer.splice(0, this._buffer.length);
 
     return this;
+  }
+
+  /**
+   * Clones instance and internal buffer.
+   */
+  [Symbol.clone](): HashMap<K, V> {
+    const clone = Object.create(this) as this;
+
+    clone._buffer = this._buffer.slice();
+    clone.comparer = this.comparer;
+
+    return clone;
   }
 
   /**

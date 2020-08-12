@@ -1,7 +1,7 @@
 import type { ClientRequest, IncomingMessage, RequestOptions } from 'http';
 import { PassThrough } from 'stream';
 
-import { DefaultInjector, InstanceInjection, PromiseOr, ReferenceInjection } from '@fiorite/core';
+import { PromiseOr, Injector } from '@fiorite/core';
 
 import { Request } from './request';
 import { Response } from './response';
@@ -13,12 +13,24 @@ import { HttpAdapter } from './http.adapter';
 import { HttpClient } from './http.client';
 import { HttpServer } from './http.server';
 import { HttpHeaders } from './http.headers';
+import { ProviderCollection } from '../../core/src/injection';
 
 export class DefaultHttpAdapter extends HttpAdapter {
   static readonly default = new DefaultHttpAdapter();
 
+  private services: ProviderCollection;
+
   private constructor() {
     super();
+
+    this.services = new ProviderCollection()
+      .addSingleton(DefaultHttpAdapter, this)
+      .addSingleton(HttpAdapter, (x: Injector) => x.get(DefaultHttpAdapter))
+      .addSingleton(HttpClient, new HttpClient(this))
+      //
+      .addScoped(RequestHeaders, (x: Injector) => x.get(Request).headers)
+      .addScoped(HttpHeaders, (x: Injector) => x.get(RequestHeaders))
+    ;
   }
 
   request(request: Request): Promise<Response> {
@@ -65,16 +77,11 @@ export class DefaultHttpAdapter extends HttpAdapter {
         return x.method(incoming.method?.toLowerCase() || '').url(url);
       });
 
-      const injector = new DefaultInjector([
-        new InstanceInjection(DefaultHttpAdapter, this),
-        new ReferenceInjection(HttpAdapter, DefaultHttpAdapter),
-        new InstanceInjection(HttpClient, new HttpClient(this)),
-        new InstanceInjection(Request, request),
-        new InstanceInjection(RequestHeaders, request.headers),
-        new ReferenceInjection(HttpHeaders, RequestHeaders),
-      ]);
-
-      const context = new HttpContext(injector, request);
+      const context = new HttpContext(
+        this.services[Symbol.clone]()
+          .addScoped(Request, () => request),
+        request,
+      );
 
       PromiseOr.then(handler(context), response => {
         outgoing.writeHead(response.statusCode, response.headers.toRecord());

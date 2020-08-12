@@ -9,14 +9,3 @@ export namespace Equatable {
       && typeof (instance as Equatable)[Symbol.equals] === 'function';
   }
 }
-
-/**
- * Declares custom symbol.
- */
-declare global {
-  interface SymbolConstructor {
-    readonly equals: symbol;
-  }
-}
-
-(Symbol as { equals: symbol }).equals = Symbol('equals');

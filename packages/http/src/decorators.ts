@@ -7,6 +7,10 @@ interface MethodRoute {
   handler: <T>(controller: T, context: HttpContext) => unknown;
 }
 
+export function Controller(): ClassDecorator {
+  return () => void 0;
+}
+
 /**
  * Returns {@link string[]},
  *
@@ -14,7 +18,7 @@ interface MethodRoute {
  * @constructor
  */
 export function HttpHeader(key: string) {
-  return Inject(HttpHeaders, x => x.get(key));
+  return Inject(HttpHeaders, headers => headers.get(key));
 }
 
 // export function HttpHeader(key: string): ParameterDecorator {
@@ -56,14 +60,14 @@ export function HttpGet(): MethodDecorator {
     }
 
     // [ 'design:returntype', 'design:paramtypes', 'design:type' ]
-    console.log(
-      'HttpGet',
-      Reflect.getMetadata('design:returntype', target, propertyKey),
-      Reflect.getMetadata('design:paramtypes', target, propertyKey),
-      Reflect.getMetadata('design:type', target, propertyKey),
-    );
+    // console.log(
+    //   'HttpGet',
+    //   Reflect.getMetadata('design:returntype', target, propertyKey),
+    //   Reflect.getMetadata('design:paramtypes', target, propertyKey),
+    //   Reflect.getMetadata('design:type', target, propertyKey),
+    // );
 
-    console.log(target.constructor, method, handler);
+    // console.log(target.constructor, method, handler);
   };
 }
 

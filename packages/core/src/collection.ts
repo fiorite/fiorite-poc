@@ -74,6 +74,28 @@ export abstract class Collection<E> implements Iterable<E> {
   /**
    * TODO: Describe.
    */
+  trySingle(): E | null;
+
+  /**
+   * TODO: Describe.
+   *
+   * @param predicate
+   */
+  trySingle(predicate: Predicate<E, [number]>): E | null;
+
+  /**
+   * @inheritDoc
+   */
+  trySingle(...args: [] | [Predicate<E, [number]>]): E | null {
+    /**
+     * TODO: Implement.
+     */
+    throw new Error('Not implemented');
+  }
+
+  /**
+   * TODO: Describe.
+   */
   some(): boolean;
 
   /**

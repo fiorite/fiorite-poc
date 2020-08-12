@@ -1,0 +1,43 @@
+# Structure
+
+- Getting started
+- Features
+    - Collections
+        - `Collection<E>`
+        - `List<E>`
+        - `HashSet<E>`
+        - `HashMap<E>`
+        - `Stack<E>`
+        - `Queue<E>`
+        - `AsyncCollection<E>`
+        - `AsyncList<E>`
+        - `AsyncHashSet<E>`
+        - `AsyncHashMap<E>`
+        - `AsyncStack<E>`
+        - `AsyncQueue<E>`
+    - Dependency injection
+        - `Injector`
+        - `InjectorBuilder`
+        - `@Injectable()`
+        - `@Singleton()`
+        - `@Scoped()`
+        - `@Transient()`
+    - Functional types
+        - `PromiseOr<T>`
+        - `Consumer<E>`
+        - `Predicate<E>`
+        - `Selector<E, R>`
+        - `EqualityComparer<T>`
+    - Object behavior 
+        - `Equatable`
+        - `#[Symbol.equals](other): boolean`
+        - `Callable<R>`
+        - `#[Symbol.invoke](): T`
+        - `Cloneable<T>`
+        - `#[Symbol.clone](): R`
+        - `Disposable`
+        - `#[Symbol.dispose](): void`
+    - Serialization
+        - ...
+    - `TryCatch<R>` instead of `try ... catch`
+        

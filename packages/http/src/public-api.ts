@@ -7,4 +7,4 @@ export { HttpHeaders } from './http.headers';
 export { RequestMethod } from './request.method';
 export { HttpClient } from './http.client';
 export { request, serve, proxy, ok } from './globals';
-export { HttpGet, HttpHeader } from './decorators';
+export { HttpGet, HttpHeader, Controller } from './decorators';
