@@ -1,6 +1,10 @@
-# Fiorite (In development)
+# Fiorite
 
 Fiorite is a development framework for building web applications using TypeScript/JavaScript.
+
+- ⚠️ **In development**
+- 🗓️ **November 2020**
+- 🖐️ **Stay tuned!**
 
 ## Packages
 
