@@ -6,12 +6,19 @@
   "license": "MIT",
   "scripts": {
     "ts": "node -r ts-node/register -r tsconfig-paths/register",
-    "example:http": "npm run ts -- example/http/index.ts"
+    "test": "mocha -r ts-node/register packages/**/*.spec.ts",
+    "example:http": "npm run ts -- example/http/index.ts",
+    "typedoc": "typedoc packages --json docs/output.json"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.12",
+    "@types/mocha": "^8.0.2",
     "@types/node": "^14.0.27",
+    "chai": "^4.2.0",
+    "mocha": "^8.1.1",
     "ts-node": "^8.10.2",
     "tsconfig-paths": "^3.9.0",
+    "typedoc": "^0.18.0",
     "typescript": "^3.9.7"
   },
   "dependencies": {
