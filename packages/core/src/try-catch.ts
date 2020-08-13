@@ -56,7 +56,7 @@ export class TryCatch<R> implements Callable<R> {
 
             break;
           } catch (other) {
-            error = false;
+            error = other;
             caught = true;
           }
         }

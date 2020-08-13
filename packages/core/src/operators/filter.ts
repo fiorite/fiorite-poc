@@ -25,7 +25,7 @@ export function filter<E>(iterable: Iterable<E>, predicate: Predicate<E, [number
       result = iterator.next();
       index++;
     }
-  }()
+  }();
 }
 
 /**
