@@ -1,4 +1,4 @@
-import { AsyncPredicate, Predicate } from '@fiorite/core';
+import { AsyncPredicate, Predicate } from '../common';
 
 /**
  * TODO: Describe.
@@ -6,7 +6,7 @@ import { AsyncPredicate, Predicate } from '@fiorite/core';
  * @param iterable
  * @param predicate
  */
-export function some<T>(iterable: Iterable<T>, predicate: Predicate<T, [number]> = () => true): boolean {
+export function some<E>(iterable: Iterable<E>, predicate: Predicate<E, [number]> = () => true): boolean {
   const iterator = iterable[Symbol.iterator]();
 
   let result = iterator.next();

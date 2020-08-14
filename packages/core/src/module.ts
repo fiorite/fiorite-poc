@@ -1,7 +1,7 @@
 import { AppBuilder } from './app.builder';
-import { Injector, ProviderCollection } from './injection';
-import { Type } from './type';
-import { HashMap } from './hash.map';
+import { ProviderCollection } from './di';
+import { Type } from './common';
+import { HashMap } from './collections';
 import { forEach } from '@fiorite/core/operators';
 
 export interface Module {

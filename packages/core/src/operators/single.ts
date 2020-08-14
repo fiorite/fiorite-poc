@@ -1,12 +1,15 @@
-import { AsyncPredicate, Predicate } from '@fiorite/core';
+import { OperationError } from '../errors';
+import { AsyncPredicate, Predicate } from '../common';
 
 /**
  * TODO: Describe.
  *
  * @param iterable
  * @param predicate
+ *
+ * @throws OperationError
  */
-export function single<T>(iterable: Iterable<T>, predicate?: Predicate<T, [number]>): T {
+export function single<E>(iterable: Iterable<E>, predicate?: Predicate<E, [number]>): E {
   const iterator = iterable[Symbol.iterator]();
 
   let predicated = arguments.length > 1;
@@ -14,7 +17,7 @@ export function single<T>(iterable: Iterable<T>, predicate?: Predicate<T, [numbe
 
   let result = iterator.next();
   let index = 0;
-  let element: T;
+  let element: E;
   let found = false;
 
   while (!result.done) {
@@ -24,7 +27,7 @@ export function single<T>(iterable: Iterable<T>, predicate?: Predicate<T, [numbe
           iterator.return();
         }
 
-        throw new TypeError('There is more than one element.');
+        throw new OperationError('There is more than one element.');
       }
 
       element = result.value;
@@ -37,8 +40,8 @@ export function single<T>(iterable: Iterable<T>, predicate?: Predicate<T, [numbe
 
   if (!found) {
     throw predicated ?
-      new TypeError('There is no element that satisfies condition in a sequence.') :
-      new TypeError('There is no element in a sequence.');
+      new OperationError('There is no element that satisfies condition in a sequence.') :
+      new OperationError('There is no element in a sequence.');
   }
 
   return element!;
@@ -49,8 +52,10 @@ export function single<T>(iterable: Iterable<T>, predicate?: Predicate<T, [numbe
  *
  * @param iterable
  * @param predicate
+ *
+ * @throws OperationError
  */
-export async function singleAsync<T>(iterable: AsyncIterable<T>, predicate?: AsyncPredicate<T, [number]>): Promise<T> {
+export async function singleAsync<E>(iterable: AsyncIterable<E>, predicate?: AsyncPredicate<E, [number]>): Promise<E> {
   const iterator = iterable[Symbol.asyncIterator]();
 
   let predicated = arguments.length > 1;
@@ -58,7 +63,7 @@ export async function singleAsync<T>(iterable: AsyncIterable<T>, predicate?: Asy
 
   let result = await iterator.next();
   let index = 0;
-  let element: T;
+  let element: E;
   let found = false;
 
   while (!result.done) {
@@ -68,7 +73,7 @@ export async function singleAsync<T>(iterable: AsyncIterable<T>, predicate?: Asy
           await iterator.return();
         }
 
-        throw new TypeError('There is more than one element.');
+        throw new OperationError('There is more than one element.');
       }
 
       element = result.value;
@@ -81,8 +86,8 @@ export async function singleAsync<T>(iterable: AsyncIterable<T>, predicate?: Asy
 
   if (!found) {
     throw predicated ?
-      new TypeError('There is no element that satisfies condition in a sequence.') :
-      new TypeError('There is no element in a sequence.');
+      new OperationError('There is no element that satisfies condition in a sequence.') :
+      new OperationError('There is no element in a sequence.');
   }
 
   return element!;

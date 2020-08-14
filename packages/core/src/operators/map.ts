@@ -1,4 +1,4 @@
-import { AsyncSelector, Selector } from '../selector';
+import { AsyncSelector, Selector } from '../common';
 
 /**
  * Projects each element of a sequence into a new form.

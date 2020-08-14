@@ -1,8 +1,8 @@
 import { Collection } from './collection';
-import { EqualityComparer } from './equality-comparer';
-import { Selector } from './selector';
+import { EqualityComparer, Selector } from '../common';
+import { OperationError } from '../errors';
 
-export class HashMapError<K> extends TypeError {
+export class HashMapError<K> extends OperationError {
   constructor(message: string, readonly key: K) {
     super(message);
   }

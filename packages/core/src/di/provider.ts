@@ -1,8 +1,7 @@
-import { Type } from './type';
+import { Type } from '../common';
 import { Injector } from './injection';
 import { ServiceKey, ServiceLifetime } from './service';
-import { HashMap } from './hash.map';
-import { Collection } from './collection';
+import { HashMap } from '../collections';
 
 /**
  * Specific error related to {@link Provider}.

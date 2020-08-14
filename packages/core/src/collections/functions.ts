@@ -1,5 +1,5 @@
-import { HashSet } from './hash.set';
-import { EqualityComparer } from './equality-comparer';
+import { HashSet } from './hash_set';
+import { EqualityComparer } from '../common';
 
 /**
  * {@link HashSet}

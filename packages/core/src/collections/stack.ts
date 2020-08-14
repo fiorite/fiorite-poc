@@ -1,8 +1,6 @@
 import { Collection } from './collection';
-import { EqualityComparer } from './equality-comparer';
-import { Cloneable } from './clone';
-
-export class StackError extends TypeError { }
+import { Cloneable, EqualityComparer } from '../common';
+import { OperationError } from '../errors';
 
 export class Stack<E> extends Collection<E> implements Cloneable {
   /**
@@ -78,7 +76,7 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    */
   peek(): E {
     if (this._buffer.length < 1) {
-      throw new StackError('The stack is empty.');
+      throw new OperationError('The stack is empty.');
     }
 
     return this._buffer[this._buffer.length - 1];
@@ -89,7 +87,7 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    */
   pop(): E {
     if (this._buffer.length < 1) {
-      throw new StackError('The stack is empty.');
+      throw new OperationError('The stack is empty.');
     }
 
     return this._buffer.pop()!;

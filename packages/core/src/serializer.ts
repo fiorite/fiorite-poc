@@ -1,5 +1,4 @@
-import { Type } from './type';
-import { Selector } from './selector';
+import { Type, Selector } from './common';
 import { DateNormalizer } from './normalizers/date';
 
 export interface Encoder {

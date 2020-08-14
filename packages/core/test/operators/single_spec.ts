@@ -22,7 +22,7 @@ describe('single()', () => {
     expect(result).equals(1);
   });
 
-  it('should throw TypeError when sequence has more than one element', done => {
+  it('should throw TypeError when sequence has more than one element', () => {
     try {
       single([1, 2]);
     } catch (error) {

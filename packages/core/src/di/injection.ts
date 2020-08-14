@@ -1,14 +1,7 @@
 import 'reflect-metadata';
 
-import { HashMap, HashMapError } from './hash.map';
-import { Disposable } from './disposable';
-import { Collection } from './collection';
-import { Type } from './type';
-import { Stack } from './stack';
-import { EqualityComparer } from './equality-comparer';
-import { Selector } from './selector';
-import { Cloneable } from './clone';
-import { tryCatch } from './try-catch';
+import { Collection, HashMap, HashMapError, Stack } from '../collections';
+import { Cloneable, Disposable, EqualityComparer, Selector, Type } from '../common';
 import { Provider, ProviderFactory, providerRegistry } from './provider';
 import { ServiceKey, ServiceLifetime } from './service';
 
@@ -231,12 +224,16 @@ export class Injector extends Collection<ServiceKey> implements Cloneable, Dispo
   constructor(providers: Iterable<Provider>, comparer = EqualityComparer.DEFAULT) {
     super();
 
-    tryCatch(() => {
+    try {
       this._providers = HashMap.from(providers, x => x.key, x => x, comparer)
-    }).catch(HashMapError, error => {
-      const key = error.key as ServiceKey;
-      throw new InjectorError('Injection with key "' + key.name + '" is not unique. Try remove duplicates.');
-    })[Symbol.invoke]();
+    } catch (error) {
+      if (error instanceof HashMapError) {
+        const key = error.key as ServiceKey;
+        error = new InjectorError('Injection with key "' + key.name + '" is not unique. Try remove duplicates.');
+      }
+
+      throw error;
+    }
 
     // try {
     //   this._providers = HashMap.from(descriptors, x => x.key, x => x, comparer);
@@ -282,7 +279,7 @@ export class Injector extends Collection<ServiceKey> implements Cloneable, Dispo
       }
     }
 
-    return tryCatch(() => {
+    try {
       this._callStack.push(key);
 
       const provider = this._providers.get(key);
@@ -297,13 +294,17 @@ export class Injector extends Collection<ServiceKey> implements Cloneable, Dispo
       // }
 
       return instance;
-    }).catch(HashMapError, () => {
-      throw new InjectorError(
-        'Injection with key "' + key.name + '" is not mapped yet. Try add it first.'
-      );
-    }).finally(() => {
+    } catch (error) {
+      if (error instanceof HashMapError) {
+        error = new InjectorError(
+          'Injection with key "' + key.name + '" is not mapped yet. Try add it first.'
+        );
+      }
+
+      throw error;
+    } finally {
       this._callStack.pop();
-    })[Symbol.invoke]();
+    }
   }
 
   /**
@@ -346,16 +347,16 @@ export class Injector extends Collection<ServiceKey> implements Cloneable, Dispo
 //   injector!: Injector;
 // }
 
-// class CompositeInjector extends Collection<ServiceKey> implements ServiceContainer {
-//   readonly _containers: HashSet<ServiceContainer>;
+// class CompositeInjector extends Collection<ServiceKey> implements Injector {
+//   readonly _containers: HashSet<Injector>;
 //
 //   get containers(): Collection<ServiceContainer> {
 //     return this._containers;
 //   }
 //
-//   constructor(containers: Iterable<ServiceContainer>, comparer = EqualityComparer.DEFAULT) {
+//   constructor(injectors: Iterable<ServiceContainer>, comparer = EqualityComparer.DEFAULT) {
 //     super();
-//     this._containers = new HashSet(containers, comparer);
+//     this._containers = new HashSet(injectors, comparer);
 //   }
 //
 //   /**

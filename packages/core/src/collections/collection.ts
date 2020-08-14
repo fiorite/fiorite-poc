@@ -1,7 +1,6 @@
-import { filter, flat, forEach, map, single, some, toArray } from './operators';
-import { Consumer } from './consumer';
-import { Predicate } from './predicate';
-import { Selector } from './selector';
+import { filter, flat, forEach, map, single, some, toArray } from '../operators';
+import { Callback, Predicate, Selector } from '../common';
+import { OperationError } from '../errors';
 
 export abstract class Collection<E> implements Iterable<E> {
   /**
@@ -35,12 +34,12 @@ export abstract class Collection<E> implements Iterable<E> {
   }
 
   /**
-   * Performs the specified {@param consumer} for each element in an sequence.
+   * Performs the specified {@param callback} for each element in an sequence.
    *
-   * @param consumer
+   * @param callback
    */
-  forEach(consumer: Consumer<E, [number]>): void {
-    return forEach(this, consumer);
+  forEach(callback: Callback<E, [number]>): void {
+    return forEach(this, callback);
   }
 
   /**
@@ -53,12 +52,12 @@ export abstract class Collection<E> implements Iterable<E> {
   }
 
   /**
-   * TODO: Describe.
+   * Returns the only element of a sequence, and throws an exception if there is not exactly one element in the sequence.
    */
   single(): E;
 
   /**
-   * TODO: Describe.
+   * Returns the only element of a sequence that satisfies a specified condition, and throws an exception if more than one such element exists.
    *
    * @param predicate
    */
@@ -67,34 +66,41 @@ export abstract class Collection<E> implements Iterable<E> {
   /**
    * @inheritDoc
    */
-  single(...args: [] | [Predicate<E, [number]>]): E {
+  single(...args: any[]): E {
     return single(this, ...args);
   }
 
   /**
-   * TODO: Describe.
+   * Returns the only element of a sequence, or a default value if the sequence is empty; this method throws an exception if there is more than one element in the sequence.
    */
   trySingle(): E | null;
 
   /**
-   * TODO: Describe.
+   * Returns the only element of a sequence that satisfies a specified condition or a default value if no such element exists; this method throws an exception if more than one element satisfies the condition.
    *
    * @param predicate
+   *
+   * @throws OperationError
    */
   trySingle(predicate: Predicate<E, [number]>): E | null;
 
   /**
    * @inheritDoc
    */
-  trySingle(...args: [] | [Predicate<E, [number]>]): E | null {
-    /**
-     * TODO: Implement.
-     */
-    throw new Error('Not implemented');
+  trySingle(...args: any[]): E | null {
+    try {
+      return single(this, ...args);
+    } catch (error) {
+      if (error instanceof OperationError) {
+        return null;
+      }
+
+      throw error;
+    }
   }
 
   /**
-   * TODO: Describe.
+   * Determines whether a sequence contains any elements.
    */
   some(): boolean;
 
@@ -108,7 +114,7 @@ export abstract class Collection<E> implements Iterable<E> {
   /**
    * @inheritDoc
    */
-  some(...args: [] | [Predicate<E, [number]>]): boolean {
+  some(...args: any[]): boolean {
     return some(this, ...args);
   }
 

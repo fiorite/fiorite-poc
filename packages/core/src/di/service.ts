@@ -1,4 +1,4 @@
-import { AbstractType, Type } from './type';
+import { AbstractType, Type } from '../common';
 
 /**
  * Represents service key.

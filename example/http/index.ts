@@ -1,5 +1,5 @@
 import { ok, proxy, serve } from '@fiorite/http';
-import { Consumer, Injector, ProviderCollection, Module, Scoped, Singleton, Transient, Type } from '@fiorite/core';
+import { Callback, Injector, Module, ProviderCollection, Scoped, Singleton, Transient, Type } from '@fiorite/core';
 
 serve(ctx => proxy('https://github.com/', ctx.request), 5000);
 
@@ -7,7 +7,7 @@ serve(x => {
   return ok('hello on 5001');
 }, 5001);
 
-function hostModule(moduleType: Type<Module>, action: Consumer<Injector>) {
+function hostModule(moduleType: Type<Module>, action: Callback<Injector>) {
   const injector = new ProviderCollection();
   const moduleRef = Module.create(moduleType, injector);
 
@@ -45,18 +45,15 @@ class WebModule implements Module {
   }
 }
 
-hostModule(WebModule, x => {
-  const context = x.get(Context);
-
-  console.log(
-    context.id, // _b71wtfl0w
-    context.constant.name, // foo
-    x.get(UniqueId), // _o207b1r1t
-    x.get(UniqueId), // _rhjzhps2d
-  );
-});
-
-
-
+// hostModule(WebModule, x => {
+//   const context = x.get(Context);
+//
+//   console.log(
+//     context.id, // _b71wtfl0w
+//     context.constant.name, // foo
+//     x.get(UniqueId), // _o207b1r1t
+//     x.get(UniqueId), // _rhjzhps2d
+//   );
+// });
 
 

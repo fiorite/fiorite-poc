@@ -1,4 +1,4 @@
-import { AsyncPredicate, Predicate } from '../predicate';
+import { AsyncPredicate, Predicate } from '../common';
 
 /**
  * Filters sequence using predicate.

@@ -13,7 +13,7 @@ import { HttpAdapter } from './http.adapter';
 import { HttpClient } from './http.client';
 import { HttpServer } from './http.server';
 import { HttpHeaders } from './http.headers';
-import { ProviderCollection } from '../../core/src/injection';
+import { ProviderCollection } from '../../core/src/di/injection';
 
 export class DefaultHttpAdapter extends HttpAdapter {
   static readonly default = new DefaultHttpAdapter();

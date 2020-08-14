@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "ts": "node -r ts-node/register -r tsconfig-paths/register",
-    "test": "mocha -r ts-node/register packages/**/*.spec.ts",
+    "test": "mocha -r ts-node/register packages/**/*_spec.ts",
     "example:http": "npm run ts -- example/http/index.ts",
     "typedoc": "typedoc packages --json docs/output.json"
   },

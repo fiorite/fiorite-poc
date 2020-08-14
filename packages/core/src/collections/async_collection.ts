@@ -1,8 +1,6 @@
-import { someAsync, filterAsync, flatAsync, forEachAsync, mapAsync, singleAsync, toArrayAsync } from './operators';
-import { AsyncConsumer } from './consumer';
-import { AsyncPredicate } from './predicate';
-import { AsyncSelector } from './selector';
-import { IterableCollection } from './collection';
+import { filterAsync, flatAsync, forEachAsync, mapAsync, singleAsync, someAsync, toArrayAsync } from '../operators';
+import { AsyncCallback, AsyncPredicate, AsyncSelector } from '../common';
+import { OperationError } from '../errors';
 
 export abstract class AsyncCollection<E> implements AsyncIterable<E> {
   /**
@@ -42,7 +40,7 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    *
    * @param consumer
    */
-  forEach(consumer: AsyncConsumer<E, [number]>): Promise<void> {
+  forEach(consumer: AsyncCallback<E, [number]>): Promise<void> {
     return forEachAsync(this, consumer);
   }
 
@@ -61,8 +59,35 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
   /**
    * @inheritDoc
    */
-  single(...args: [] | [AsyncPredicate<E, [number]>]): Promise<E> {
+  single(...args: any[]): Promise<E> {
     return singleAsync(this, ...args);
+  }
+
+  /**
+   * TODO: Add doc.
+   */
+  trySingle(): Promise<E | null>;
+
+  /**
+   * TODO: Add doc.
+   *
+   * @param predicate
+   */
+  trySingle(predicate: AsyncPredicate<E, [number]>): Promise<E | null>;
+
+  /**
+   * @inheritDoc
+   */
+  async trySingle(...args: any[]): Promise<E | null> {
+    try {
+      return await singleAsync(this, ...args);
+    } catch (error) {
+      if (error instanceof OperationError) {
+        return null;
+      }
+
+      throw error;
+    }
   }
 
   /**
@@ -80,7 +105,7 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
   /**
    * @inheritDoc
    */
-  some(...args: [] | [AsyncPredicate<E, [number]>]): Promise<boolean> {
+  some(...args: any[]): Promise<boolean> {
     return someAsync(this, ...args);
   }
 

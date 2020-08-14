@@ -1,17 +1,17 @@
-import { Type } from './type';
-import { Callable } from './callable';
-import { HashMap } from './hash.map';
+import { Type, Callable } from './common';
+import { HashMap } from './collections';
 
 export type TryStatement<R> = () => R;
 export type CatchStatement<E, R> = (error: E) => R;
 export type FinallyStatement = () => void;
 
-export class TryCatch<R> implements Callable<R> {
+export class TryCatch<R> extends Callable<R> {
   private readonly _try: TryStatement<R>;
   private readonly _catch: HashMap<Type, CatchStatement<unknown, R>>;
   private _finally: FinallyStatement = () => void 0;
 
   constructor(statement: TryStatement<R>, _finally: FinallyStatement = () => void 0) {
+    super();
     this._try = statement;
     this._catch = new HashMap<Type, CatchStatement<unknown, R>>();
     this._finally = _finally;
