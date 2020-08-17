@@ -1,3 +1,6 @@
-export { Injector, Injectable, Inject, InjectorError, ProviderCollection } from './injection';
-export { Provider, Transient, Singleton, Scoped, ProviderFactory, ProviderError } from './provider';
-export { ServiceKey, ServiceLifetime } from './service';
+export { Injection } from './injection';
+export { Scoped, Inject, Injectable, InjectionFactory, Singleton, Transient } from './decorators';
+export { InjectorBuilder } from './builder';
+export { Injector, InjectorError } from './injector';
+export { InjectionKey } from './key';
+export { InjectionLifetime } from './lifetime';

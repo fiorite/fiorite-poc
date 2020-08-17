@@ -68,12 +68,12 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    */
   static from<E, K, V>(iterable: Iterable<E>, key: Selector<E, K>, value: Selector<E, V>): HashMap<K, E>;
 
-  static from<E, K, V>(iterable: Iterable<E>, key: Selector<E, K>, value: Selector<E, V>, comparer: EqualityComparer): HashMap<K, V>;
+  static from<E, K, V>(iterable: Iterable<E>, key: Selector<E, K>, value: Selector<E, V>, comparer: EqualityComparer<K>): HashMap<K, V>;
 
   /**
    * @inheritDoc
    */
-  static from<E, K, V>(iterable: Iterable<E>, key: Selector<E, K>, value: Selector<E, V> = x => x as unknown as V, comparer = EqualityComparer.DEFAULT): HashMap<K, V> {
+  static from<E, K, V>(iterable: Iterable<E>, key: Selector<E, K>, value: Selector<E, V> = x => x as unknown as V, comparer: EqualityComparer<K> = EqualityComparer.DEFAULT): HashMap<K, V> {
     const buffer: [K, V][] = Array.from(iterable).map(e => [key(e), value(e)]);
 
     return new HashMap<K, V>(buffer, comparer);
@@ -85,7 +85,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    * @param source
    * @param comparer
    */
-  static proxy<K, V>(source: [K, V][], comparer = EqualityComparer.DEFAULT): HashMap<K, V> {
+  static proxy<K, V>(source: [K, V][], comparer: EqualityComparer<K> = EqualityComparer.DEFAULT): HashMap<K, V> {
     const instance = new HashMap<K, V>([], comparer);
 
     instance._buffer = source;
@@ -230,6 +230,8 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    * Gets entry value by {@param key} or throws {@link TypeError} if there is no entry with such key.
    *
    * @param key
+   *
+   * @throws
    */
   get(key: K): V {
     const index = this._buffer.findIndex(([x]) => this.comparer(key, x));
@@ -310,5 +312,9 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    */
   [Symbol.iterator](): Iterator<[K, V]> {
     return this._buffer[Symbol.iterator]();
+  }
+
+  includes(element: [K, V]): boolean {
+    return this._buffer.findIndex(([x]) => this.comparer(element[0], x)) > -1;
   }
 }

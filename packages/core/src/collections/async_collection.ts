@@ -1,5 +1,15 @@
-import { filterAsync, flatAsync, forEachAsync, mapAsync, singleAsync, someAsync, toArrayAsync } from '../operators';
-import { AsyncCallback, AsyncPredicate, AsyncSelector } from '../common';
+import {
+  filterAsync,
+  flatAsync,
+  forEachAsync,
+  includesAsync,
+  mapAsync,
+  singleAsync,
+  someAsync,
+  toArrayAsync,
+  countAsync
+} from '../operators';
+import { AsyncCallback, AsyncPredicate, AsyncSelector, EqualityComparer } from '../common';
 import { OperationError } from '../errors';
 
 export abstract class AsyncCollection<E> implements AsyncIterable<E> {
@@ -8,6 +18,13 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    */
   cast<R>(): AsyncCollection<R> {
     return this as unknown as AsyncCollection<R>;
+  }
+
+  /**
+   * TODO: Describe.
+   */
+  count(): Promise<number> {
+    return countAsync(this);
   }
 
   /**
@@ -42,6 +59,16 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    */
   forEach(consumer: AsyncCallback<E, [number]>): Promise<void> {
     return forEachAsync(this, consumer);
+  }
+
+  /**
+   * TODO: Describe; think about includes/contains.
+   *
+   * @param element
+   * @param comparer
+   */
+  includes(element: E, comparer: EqualityComparer<E> = EqualityComparer.DEFAULT): Promise<boolean> {
+    return includesAsync(this, element, comparer);
   }
 
   /**

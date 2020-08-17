@@ -1,5 +1,15 @@
 import { ok, proxy, serve } from '@fiorite/http';
-import { Callback, Injector, Module, ProviderCollection, Scoped, Singleton, Transient, Type } from '@fiorite/core';
+import {
+  Callback,
+  Injection,
+  Injector,
+  InjectorBuilder,
+  Module,
+  Scoped,
+  Singleton,
+  Transient,
+  Type
+} from '@fiorite/core';
 
 serve(ctx => proxy('https://github.com/', ctx.request), 5000);
 
@@ -8,13 +18,13 @@ serve(x => {
 }, 5001);
 
 function hostModule(moduleType: Type<Module>, action: Callback<Injector>) {
-  const injector = new ProviderCollection();
+  const injector = new InjectorBuilder();
   const moduleRef = Module.create(moduleType, injector);
 
   action(
     injector[Symbol.clone]()
-      .addAll(moduleRef.services)
-      .toInjector(),
+      .addAll(moduleRef.injector)
+      .build(),
   );
 }
 
@@ -36,24 +46,24 @@ class Constant {
 
 @Scoped()
 class Context {
-  constructor(readonly id: UniqueId, readonly constant: Constant) { }
+  constructor(readonly id: UniqueId, readonly constant: Constant, readonly injector: Injector) { }
 }
 
 class WebModule implements Module {
-  provide(injector: ProviderCollection) {
+  provide(injector: InjectorBuilder) {
+    // injector.
     injector.addAll([UniqueId, Context, Constant]);
   }
 }
 
-// hostModule(WebModule, x => {
-//   const context = x.get(Context);
-//
-//   console.log(
-//     context.id, // _b71wtfl0w
-//     context.constant.name, // foo
-//     x.get(UniqueId), // _o207b1r1t
-//     x.get(UniqueId), // _rhjzhps2d
-//   );
-// });
+hostModule(WebModule, x => {
+  const context = x.get(Context);
 
-
+  console.log(
+    context.injector,
+    context.id, // _b71wtfl0w
+    context.constant.name, // foo
+    x.get(UniqueId), // _o207b1r1t
+    x.get(UniqueId), // _rhjzhps2d
+  );
+});

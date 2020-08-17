@@ -1,5 +1,5 @@
 import { Request } from './request';
-import { Collection, Injector, Provider, ServiceKey } from '@fiorite/core';
+import { Collection, Injection, InjectionKey, Injector } from '@fiorite/core';
 
 export class HttpContext {
   get [Symbol.toStringTag]() {
@@ -9,17 +9,17 @@ export class HttpContext {
   private _injector: Injector;
 
   constructor(
-    providers: Collection<Provider>,
+    providers: Collection<Injection>,
     readonly request: Request,
   ) {
-    this._injector = Injector.from(providers);
+    this._injector = Injector.create(providers);
   }
 
-  get<T>(key: ServiceKey<T>): T {
+  get<T>(key: InjectionKey<T>): T {
     return this._injector.get(key);
   }
 
-  has<T>(key: ServiceKey<T>): boolean {
+  has<T>(key: InjectionKey<T>): boolean {
     return this._injector.has(key);
   }
 }

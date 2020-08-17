@@ -36,7 +36,7 @@ export class HashSet<E> extends Collection<E> {
    * @param buffer
    * @param comparer
    */
-  static proxy<E>(buffer: E[], comparer = EqualityComparer.DEFAULT): HashSet<E> {
+  static proxy<E>(buffer: E[], comparer: EqualityComparer<E> = EqualityComparer.DEFAULT): HashSet<E> {
     const instance = new HashSet<E>([], comparer);
 
     instance._buffer = buffer;
@@ -135,6 +135,10 @@ export class HashSet<E> extends Collection<E> {
    */
   [Symbol.iterator](): Iterator<E> {
     return this._buffer[Symbol.iterator]();
+  }
+
+  includes(element: E): boolean {
+    return this._buffer.findIndex(x => this.comparer(element, x)) > -1;
   }
 }
 

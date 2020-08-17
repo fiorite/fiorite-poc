@@ -1,7 +1,7 @@
 import type { ClientRequest, IncomingMessage, RequestOptions } from 'http';
 import { PassThrough } from 'stream';
 
-import { PromiseOr, Injector } from '@fiorite/core';
+import { Injector, InjectorBuilder, PromiseOr } from '@fiorite/core';
 
 import { Request } from './request';
 import { Response } from './response';
@@ -11,19 +11,17 @@ import { HttpContext } from './http.context';
 import { RequestHeaders } from './request.headers';
 import { HttpAdapter } from './http.adapter';
 import { HttpClient } from './http.client';
-import { HttpServer } from './http.server';
 import { HttpHeaders } from './http.headers';
-import { ProviderCollection } from '../../core/src/di/injection';
 
 export class DefaultHttpAdapter extends HttpAdapter {
   static readonly default = new DefaultHttpAdapter();
 
-  private services: ProviderCollection;
+  #injections: InjectorBuilder;
 
   private constructor() {
     super();
 
-    this.services = new ProviderCollection()
+    this.#injections = new InjectorBuilder()
       .addSingleton(DefaultHttpAdapter, this)
       .addSingleton(HttpAdapter, (x: Injector) => x.get(DefaultHttpAdapter))
       .addSingleton(HttpClient, new HttpClient(this))
@@ -78,7 +76,7 @@ export class DefaultHttpAdapter extends HttpAdapter {
       });
 
       const context = new HttpContext(
-        this.services[Symbol.clone]()
+        this.#injections[Symbol.clone]()
           .addScoped(Request, () => request),
         request,
       );

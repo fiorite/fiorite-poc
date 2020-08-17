@@ -1,3 +1,19 @@
+declare global {
+  interface SymbolConstructor {
+    readonly normalize: symbol;
+    readonly dispose: symbol;
+    readonly clone: symbol;
+    readonly equals: symbol;
+    readonly invoke: symbol;
+  }
+}
+
+(Symbol as any).normalize = Symbol('normalize');
+(Symbol as any).dispose = Symbol('dispose');
+(Symbol as any).clone = Symbol('clone');
+(Symbol as any).equals = Symbol('equals');
+(Symbol as any).invoke = Symbol('invoke');
+
 /**
  * Represents synchronous or asynchronous {@link Promise} type.
  */
@@ -11,6 +27,22 @@ export namespace PromiseOr {
 
     return selector(source);
   }
+}
+
+export function isClass(target: unknown) {
+  return typeof target === 'function' &&
+    typeof target.prototype === 'object' &&
+    target === target.prototype.constructor;
+}
+
+/**
+ * Checks whether object property is function.
+ *
+ * @param object
+ * @param key
+ */
+export function isMethod(object: unknown, key: string | symbol): boolean {
+  return object != null && typeof (object as any)[key] === 'function';
 }
 
 /**
@@ -69,6 +101,24 @@ export interface Disposable {
   [Symbol.dispose](): PromiseOr<void>;
 }
 
+export namespace Disposable {
+  export const dispose = (instance: unknown): boolean => {
+    if (implemented(instance)) {
+      cast(instance)[Symbol.dispose]();
+
+      return true;
+    }
+
+    return false;
+  };
+
+  export const implemented = (instance: unknown) =>
+    isMethod(instance, Symbol.dispose);
+
+  export const cast = (instance: unknown) =>
+    instance as Disposable;
+}
+
 export type EqualityComparer<T = unknown> = (x: T, y: T) => boolean;
 
 export namespace EqualityComparer {
@@ -90,11 +140,8 @@ export interface Equatable {
 }
 
 export namespace Equatable {
-  export function implemented(instance: unknown) {
-    return instance !== null
-      && typeof instance === 'object'
-      && typeof (instance as Equatable)[Symbol.equals] === 'function';
-  }
+  export const implemented = (instance: unknown) =>
+    isMethod(instance, Symbol.equals);
 }
 
 /**
@@ -135,3 +182,5 @@ export namespace Type {
   //   return Object.entries(map).find(([_, check]) => check(value))![0] as values;
   // }
 }
+
+export const inspectSymbol = Symbol.for('nodejs.util.inspect.custom');

@@ -2,12 +2,12 @@ import { Collection } from './collection';
 import { Cloneable, EqualityComparer } from '../common';
 import { OperationError } from '../errors';
 
-export class Stack<E> extends Collection<E> implements Cloneable {
+export class Queue<E> extends Collection<E> implements Cloneable {
   /**
    * Provides string tag.
    */
   get [Symbol.toStringTag]() {
-    return 'Stack';
+    return 'Queue';
   }
 
   /**
@@ -38,7 +38,7 @@ export class Stack<E> extends Collection<E> implements Cloneable {
   constructor(iterable: Iterable<E> = [], public comparer: EqualityComparer<E> = EqualityComparer.DEFAULT) {
     super();
 
-    this.pushAll(iterable);
+    this.enqueueAll(iterable);
   }
 
   /**
@@ -46,7 +46,7 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    *
    * @param element
    */
-  push(element: E): this {
+  enqueue(element: E): this {
     this._buffer.push(element);
 
     return this;
@@ -57,13 +57,13 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    *
    * @param iterable
    */
-  pushAll(iterable: Iterable<E>): this {
+  enqueueAll(iterable: Iterable<E>): this {
     const iterator = iterable[Symbol.iterator]();
 
     let result = iterator.next();
 
     while (!result.done) {
-      this.push(result.value);
+      this.enqueue(result.value);
 
       result = iterator.next();
     }
@@ -76,21 +76,21 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    */
   peek(): E {
     if (this._buffer.length < 1) {
-      throw new OperationError('The stack is empty.');
+      throw new OperationError('The queue is empty.');
     }
 
-    return this._buffer[this._buffer.length - 1];
+    return this._buffer[0];
   }
 
   /**
    * TODO: Describe.
    */
-  pop(): E {
+  dequeue(): E {
     if (this._buffer.length < 1) {
-      throw new OperationError('The stack is empty.');
+      throw new OperationError('The queue is empty.');
     }
 
-    return this._buffer.pop()!;
+    return this._buffer.shift()!;
   }
 
   /**
@@ -114,7 +114,7 @@ export class Stack<E> extends Collection<E> implements Cloneable {
   /**
    * Clones instance and internal buffer.
    */
-  [Symbol.clone](): Stack<E> {
+  [Symbol.clone](): Queue<E> {
     const clone = Object.create(this) as this;
     clone._buffer = this._buffer.slice();
     clone.comparer = this.comparer;

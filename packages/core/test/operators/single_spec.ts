@@ -1,19 +1,19 @@
 import { expect } from 'chai';
-import { fail } from 'assert';
 import { Readable } from 'stream';
 
 import { single, singleAsync } from '../../src/operators';
+import { OperationError } from '../../src';
 
 describe('single()', () => {
-  it('should throw TypeError when sequence is empty', () => {
+  it('should throw OperationError when sequence is empty', () => {
     try {
       single([]);
     } catch (error) {
-      expect(error).instanceOf(TypeError);
+      expect(error).instanceOf(OperationError);
       return;
     }
 
-    fail();
+    expect.fail();
   });
 
   it('should return single element', () => {
@@ -22,15 +22,15 @@ describe('single()', () => {
     expect(result).equals(1);
   });
 
-  it('should throw TypeError when sequence has more than one element', () => {
+  it('should throw OperationError when sequence has more than one element', () => {
     try {
       single([1, 2]);
     } catch (error) {
-      expect(error).instanceOf(TypeError);
+      expect(error).instanceOf(OperationError);
       return;
     }
 
-    fail();
+    expect.fail();
   });
 
   it('should return single element using predicate', () => {
@@ -39,30 +39,30 @@ describe('single()', () => {
     expect(result).equals(1);
   });
 
-  it('should throw TypeError when sequence has more than one element using predicate', () => {
+  it('should throw OperationError when sequence has more than one element using predicate', () => {
     try {
       single([1, 2, 1], x => x === 1);
     } catch (error) {
-      expect(error).instanceOf(TypeError);
+      expect(error).instanceOf(OperationError);
       return;
     }
 
-    fail();
+    expect.fail();
   });
 });
 
 describe('singleAsync()', () => {
-  it('should throw TypeError when sequence is empty', async () => {
+  it('should throw OperationError when sequence is empty', async () => {
     const stream = Readable.from([]);
 
     try {
       await singleAsync(stream);
     } catch (error) {
-      expect(error).instanceOf(TypeError);
+      expect(error).instanceOf(OperationError);
       return;
     }
 
-    fail();
+    expect.fail();
   });
 
   it('should return single element', async () => {
@@ -72,17 +72,17 @@ describe('singleAsync()', () => {
     expect(result).equals(1);
   });
 
-  it('should throw TypeError when sequence has more than one element', async () => {
+  it('should throw OperationError when sequence has more than one element', async () => {
     const stream = Readable.from([1, 2]);
 
     try {
       await singleAsync(stream);
     } catch (error) {
-      expect(error).instanceOf(TypeError);
+      expect(error).instanceOf(OperationError);
       return;
     }
 
-    fail();
+    expect.fail();
   });
 
   it('should return single element using predicate', async () => {
@@ -92,16 +92,16 @@ describe('singleAsync()', () => {
     expect(result).equals(1);
   });
 
-  it('should throw TypeError when sequence has more than one element using predicate', async () => {
+  it('should throw OperationError when sequence has more than one element using predicate', async () => {
     const stream = Readable.from([1, 2, 1]);
 
     try {
       await singleAsync(stream, x => x === 1);
     } catch (error) {
-      expect(error).instanceOf(TypeError);
+      expect(error).instanceOf(OperationError);
       return;
     }
 
-    fail();
+    expect.fail();
   });
 });

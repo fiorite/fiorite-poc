@@ -1,6 +1,7 @@
-import { filter, flat, forEach, map, single, some, toArray } from '../operators';
-import { Callback, Predicate, Selector } from '../common';
+import { filter, flat, forEach, includes, map, single, some, toArray } from '../operators';
+import { Callback, EqualityComparer, Predicate, Selector } from '../common';
 import { OperationError } from '../errors';
+import { count } from '../operators/count';
 
 export abstract class Collection<E> implements Iterable<E> {
   /**
@@ -15,6 +16,13 @@ export abstract class Collection<E> implements Iterable<E> {
    */
   cast<R>(): Collection<R> {
     return this as unknown as Collection<R>;
+  }
+
+  /**
+   * TODO: Describe.
+   */
+  count(): number {
+    return count(this);
   }
 
   /**
@@ -41,6 +49,27 @@ export abstract class Collection<E> implements Iterable<E> {
   forEach(callback: Callback<E, [number]>): void {
     return forEach(this, callback);
   }
+
+  /**
+   * TODO: Describe; think about includes/contains.
+   *
+   * @param element
+   * @param comparer
+   */
+  includes(element: E, comparer: EqualityComparer<E> = EqualityComparer.DEFAULT): boolean {
+    return includes(this, element, comparer);
+  }
+
+  // /**
+  //  * TODO: Describe; think about includes/contains.
+  //  * @alias {@link includes}
+  //  *
+  //  * @param element
+  //  * @param comparer
+  //  */
+  // contains(element: E, comparer = EqualityComparer.DEFAULT): boolean {
+  //   return includes(this, element, comparer);
+  // }
 
   /**
    * Filters sequence using predicate.

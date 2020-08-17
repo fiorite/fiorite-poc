@@ -1,11 +1,10 @@
 import { AppBuilder } from './app.builder';
-import { ProviderCollection } from './di';
+import { InjectorBuilder } from './di';
 import { Type } from './common';
 import { HashMap } from './collections';
-import { forEach } from '@fiorite/core/operators';
 
 export interface Module {
-  provide?(injector: ProviderCollection): void;
+  provide?(injector: InjectorBuilder): void;
   configure?(app: AppBuilder): void;
 }
 
@@ -18,7 +17,7 @@ const moduleMetadata = new HashMap<Type, ModuleOpts>();
 interface ModuleRef<T extends Module = Module> {
   type: Type<T>;
   instance: T;
-  services: ProviderCollection;
+  injector: InjectorBuilder;
 }
 
 export function Module(options: ModuleOpts): ClassDecorator {
@@ -29,26 +28,26 @@ export function Module(options: ModuleOpts): ClassDecorator {
 
 export namespace Module {
   // TODO: Provide services
-  export function create(moduleType: Type<Module>, providers: ProviderCollection = new ProviderCollection()): ModuleRef {
-    const injector = providers[Symbol.clone]().add(moduleType).toInjector();
+  export function create(moduleType: Type<Module>, builder: InjectorBuilder = new InjectorBuilder()): ModuleRef {
+    const injector = builder[Symbol.clone]().add(moduleType).build();
 
-    const moduleInjection = new ProviderCollection();
+    const moduleBuilder = new InjectorBuilder();
 
     if (moduleMetadata.has(moduleType)) {
       const options = moduleMetadata.get(moduleType);
 
-      forEach(options.providers, providers.add.bind(providers));
+      builder.addAll(options.providers);
     }
 
     const moduleInstance = injector.get(moduleType);
 
     if (moduleInstance.provide) {
-      moduleInstance.provide(providers);
+      moduleInstance.provide(builder);
     }
 
     // TODO: Add configure.
 
-    return { type: moduleType, instance: moduleInstance, services: moduleInjection };
+    return { type: moduleType, instance: moduleInstance, injector: moduleBuilder };
   }
 }
 
