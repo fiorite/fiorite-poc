@@ -11,10 +11,12 @@ import {
   Type
 } from '@fiorite/core';
 
-serve(ctx => proxy('https://github.com/', ctx.request), 5000);
+// serve(ctx => proxy('https://github.com/', ctx.request), 5000);
 
 serve(x => {
-  return ok('hello on 5001');
+  x.response.setHeader('Server', 'Fiorite');
+  x.response.body.end('Hello on 5001');
+  // return ok('hello on 5001');
 }, 5001);
 
 function hostModule(moduleType: Type<Module>, action: Callback<Injector>) {
@@ -58,6 +60,8 @@ class WebModule implements Module {
 
 hostModule(WebModule, x => {
   const context = x.get(Context);
+
+  x.awaitAll()
 
   console.log(
     context.injector,

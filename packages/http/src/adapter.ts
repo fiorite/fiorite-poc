@@ -1,6 +1,6 @@
 import { Request } from './request';
 import { Response } from './response';
-import { RequestHandler } from './request.handler';
+import { RequestHandler } from './request_handler';
 
 export abstract class HttpAdapter {
   abstract request(request: Request): Promise<Response>;

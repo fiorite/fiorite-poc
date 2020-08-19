@@ -1,11 +1,11 @@
 import { Stream } from 'stream';
 
-import { Selector } from '@fiorite/core';
+import { Disposable, Selector } from '@fiorite/core';
 
-import { ResponseBuilder } from './response.builder';
-import { ResponseHeaders } from './response.headers';
+import { ResponseBuilder } from './response_builder';
+import { ResponseHeaders } from './response_headers';
 
-export class Response {
+export class Response implements Disposable {
   get [Symbol.toStringTag]() {
     return 'Response';
   }
@@ -15,11 +15,16 @@ export class Response {
     return selector(builder).build();
   }
 
+  readonly headers: ResponseHeaders;
+
   constructor(
-    public statusCode: number,
-    public headers: ResponseHeaders,
-    public body: Stream,
-  ) { }
+    public statusCode = 200,
+    headers: ResponseHeaders | [string, string[]][] = [],
+    readonly body: Stream = new Stream(),
+  ) {
+    this.headers = Array.isArray(headers) ?
+      new ResponseHeaders(headers) : headers;
+  }
 
   bodyToString(): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -68,4 +73,12 @@ export class Response {
   }
 
   /** endregion {@link headers} facade */
+
+  [Symbol.dispose]() {
+    if ((this.body as any).end) {
+      (this.body as any).end();
+    }
+
+    this.headers.clear();
+  }
 }

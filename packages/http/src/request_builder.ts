@@ -1,10 +1,9 @@
 import { URL } from 'url';
 
-import { RequestMethod } from './request.method';
+import { RequestMethod } from './request_method';
 import { Request } from './request';
 import { Readable, Stream } from 'stream';
-import { RequestHeaders } from './request.headers';
-import { ResponseHeaders } from './response.headers';
+import { RequestHeaders } from './request_headers';
 
 export class RequestBuilder {
   get [Symbol.toStringTag]() {

@@ -1,4 +1,4 @@
-import { filter, flat, forEach, includes, map, single, some, toArray } from '../operators';
+import { awaitAll, filter, flat, forEach, includes, map, single, some, toArray } from '../operators';
 import { Callback, EqualityComparer, Predicate, Selector } from '../common';
 import { OperationError } from '../errors';
 import { count } from '../operators/count';
@@ -9,6 +9,13 @@ export abstract class Collection<E> implements Iterable<E> {
    */
   get empty() {
     return !this.some();
+  }
+
+  /**
+   * TODO: Describe.
+   */
+  async awaitAll(): Promise<Collection<E extends Promise<infer I> ? I : E>> {
+    return new IterableCollection(await awaitAll(this)) as any;
   }
 
   /**

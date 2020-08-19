@@ -6,12 +6,14 @@ import { Injector, InjectorBuilder, PromiseOr } from '@fiorite/core';
 import { Request } from './request';
 import { Response } from './response';
 import { HTTPS } from './constants';
-import { RequestHandler } from './request.handler';
-import { HttpContext } from './http.context';
-import { RequestHeaders } from './request.headers';
-import { HttpAdapter } from './http.adapter';
-import { HttpClient } from './http.client';
-import { HttpHeaders } from './http.headers';
+import { HttpContext } from './context';
+import { RequestHeaders } from './request_headers';
+import { HttpAdapter } from './adapter';
+import { HttpClient } from './client';
+import { HttpHeaders } from './headers';
+import { RequestHandler } from './request_handler';
+import { WritableResponse } from './writable_response';
+import { WritableBody } from './writable_body';
 
 export class DefaultHttpAdapter extends HttpAdapter {
   static readonly default = new DefaultHttpAdapter();
@@ -63,7 +65,7 @@ export class DefaultHttpAdapter extends HttpAdapter {
     });
   }
 
-  serve(handler: RequestHandler, port: number | string): void {
+  serve(callback: RequestHandler, port: number | string): void {
     import('http').then(m => m.createServer((incoming, outgoing) => {
       let url = incoming.url || '/';
 
@@ -75,16 +77,28 @@ export class DefaultHttpAdapter extends HttpAdapter {
         return x.method(incoming.method?.toLowerCase() || '').url(url);
       });
 
-      const context = new HttpContext(
-        this.#injections[Symbol.clone]()
-          .addScoped(Request, () => request),
-        request,
+      let response: WritableResponse;
+
+      const responseBody = new WritableBody(outgoing, () => {
+        outgoing.statusCode = response.statusCode;
+        response.headers.forEach(([name, value]) => outgoing.setHeader(name, value));
+      });
+
+      response = new WritableResponse(
+        200,
+        [],
+        responseBody,
       );
 
-      PromiseOr.then(handler(context), response => {
-        outgoing.writeHead(response.statusCode, response.headers.toRecord());
-        response.body.pipe(outgoing);
+      const context = new HttpContext(request, response);
+
+      // TODO: Before write – send headers.
+
+      outgoing.on('close', () => {
+        context[Symbol.dispose]();
       });
+
+      callback(context);
     }).listen(port));
   }
 }

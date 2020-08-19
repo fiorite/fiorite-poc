@@ -1,6 +1,6 @@
 import { Request } from './request';
 import { Response } from './response';
-import { HttpAdapter } from './http.adapter';
+import { HttpAdapter } from './adapter';
 
 export class HttpClient {
   get [Symbol.toStringTag]() {

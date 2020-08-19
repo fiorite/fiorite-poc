@@ -1,6 +1,6 @@
-import { HashMap } from '@fiorite/core';
+import { Disposable, HashMap } from '@fiorite/core';
 
-export class HttpHeaders<K extends string = string> extends HashMap<K, string[]> {
+export class HttpHeaders<K extends string = string> extends HashMap<K, string[]> implements Disposable {
   constructor(entries: [K, string[]][] = []) {
     /**
      * Case insensitive {@link string} comparer.
@@ -66,5 +66,9 @@ export class HttpHeaders<K extends string = string> extends HashMap<K, string[]>
       record[key] = values;
       return record;
     }, {} as Record<string, string[]>);
+  }
+
+  [Symbol.dispose]() {
+    this.clear();
   }
 }

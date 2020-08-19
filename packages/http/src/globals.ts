@@ -1,14 +1,15 @@
 import { URL } from 'url';
 
-import { RequestMethod } from './request.method';
-import { HttpClient } from './http.client';
+import { RequestMethod } from './request_method';
+import { HttpClient } from './client';
 import { Request } from './request';
 import { Response } from './response';
-import { RequestHandler } from './request.handler';
-import { HttpServer } from './http.server';
+import { RequestHandler } from './request_handler';
+import { HttpServer } from './server';
 import { Readable, Stream } from 'stream';
-import { ResponseHeaders } from './response.headers';
-import { DefaultHttpAdapter } from './default-http.adapter';
+import { ResponseHeaders } from './response_headers';
+import { DefaultHttpAdapter } from './default_adapter';
+import { RequestHandler } from './request_handler';
 
 const defaultHttpClient = new HttpClient(DefaultHttpAdapter.default);
 

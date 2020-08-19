@@ -7,3 +7,4 @@ export { single, singleAsync } from './single';
 export { toArray, toArrayAsync } from './to_array';
 export { includes, includesAsync } from './includes';
 export { count, countAsync } from './count';
+export { awaitAll } from './await';

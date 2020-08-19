@@ -1,5 +1,5 @@
-import { HttpHeaders } from './http.headers';
-import { HttpDate } from './http.date';
+import { HttpHeaders } from './headers';
+import { HttpDate } from './date';
 
 /**
  * TODO: Wrap known headers for better dx (development experience)  https://en.wikipedia.org/wiki/List_of_HTTP_header_fields

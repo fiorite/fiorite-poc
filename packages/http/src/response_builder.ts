@@ -1,7 +1,7 @@
 import { Readable, Stream } from 'stream';
 
 import { Response } from './response';
-import { ResponseHeaders } from './response.headers';
+import { ResponseHeaders } from './response_headers';
 
 export class ResponseBuilder {
   get [Symbol.toStringTag]() {

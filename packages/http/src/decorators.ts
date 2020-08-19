@@ -1,7 +1,7 @@
 import 'reflect-metadata';
-import { HttpContext } from './http.context';
+import { HttpContext } from './context';
 import { Inject } from '@fiorite/core';
-import { HttpHeaders } from './http.headers';
+import { HttpHeaders } from './headers';
 
 interface MethodRoute {
   handler: <T>(controller: T, context: HttpContext) => unknown;
