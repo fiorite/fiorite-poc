@@ -1,18 +1,48 @@
 import {
+  countAsync,
   filterAsync,
   flatAsync,
+  flatMapAsync,
   forEachAsync,
   includesAsync,
   mapAsync,
   singleAsync,
   someAsync,
-  toArrayAsync,
-  countAsync
+  toArrayAsync
 } from '../operators';
-import { AsyncCallback, AsyncPredicate, AsyncSelector, EqualityComparer } from '../common';
+import { AbstractType, AsyncCallback, AsyncPredicate, AsyncSelector, EqualityComparer } from '../common';
 import { OperationError } from '../errors';
 
+/**
+ * Describes abstract type of {@link Collection}.
+ */
+export interface AsyncCollectionStatic<E = unknown> extends AbstractType<AsyncCollection<E>> {
+  /**
+   * Returns function that is used to create a new {@link Collection}.
+   */
+  readonly [Symbol.species]: new <R>(sequence: AsyncIterable<R>) => AsyncCollection<R>;
+}
+
 export abstract class AsyncCollection<E> implements AsyncIterable<E> {
+  /**
+   * Returns function that is used to create a new {@link AsyncCollection}.
+   *
+   * @default {@link AsyncIterableCollection}.
+   */
+  static get [Symbol.species](): new <E>(sequence: AsyncIterable<E>) => AsyncCollection<E> {
+    return AsyncIterableCollection;
+  }
+
+  /**
+   * Creates a new {@link Collection} that applies provided sequence.
+   *
+   * @param sequence
+   * @protected
+   */
+  protected with<R>(sequence: AsyncIterable<R>): AsyncCollection<R> {
+    return new (this.constructor as AsyncCollectionStatic<R>)[Symbol.species](sequence);
+  }
+
   /**
    * Casts element type of a sequence.
    */
@@ -31,7 +61,16 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    * TODO: Describe
    */
   flat(): AsyncCollection<E extends AsyncIterable<infer I> ? I : E> {
-    return new IterableAsyncCollection(flatAsync(this));
+    return new AsyncIterableCollection(flatAsync(this));
+  }
+
+  /**
+   * TODO: Describe.
+   *
+   * @param selector
+   */
+  flatMap<R>(selector: AsyncSelector<E, R | Iterable<R> | AsyncIterable<R>, [number]>): AsyncCollection<R> {
+    return this.with(flatMapAsync(this, selector));
   }
 
   /**
@@ -40,7 +79,7 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    * @param predicate
    */
   filter(predicate: AsyncPredicate<E, [number]>): AsyncCollection<E> {
-    return new IterableAsyncCollection(filterAsync(this, predicate));
+    return this.with(filterAsync(this, predicate));
   }
 
   /**
@@ -49,7 +88,7 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    * @param selector
    */
   map<R>(selector: AsyncSelector<E, R, [number]>): AsyncCollection<R> {
-    return new IterableAsyncCollection(mapAsync(this, selector));
+    return this.with(mapAsync(this, selector));
   }
 
   /**
@@ -156,7 +195,10 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
   }
 }
 
-export class IterableAsyncCollection<E> extends AsyncCollection<E> {
+/**
+ * Default {@link AsyncCollection} implementation that wraps an original sequence.
+ */
+export class AsyncIterableCollection<E> extends AsyncCollection<E> {
   constructor(readonly source: AsyncIterable<E>) {
     super();
   }

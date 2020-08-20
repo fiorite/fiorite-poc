@@ -1,7 +1,7 @@
 import { AsyncPredicate, Predicate } from '../common';
 
 /**
- * TODO: Describe.
+ * Counts the number of elements in a sequence.
  *
  * @param iterable
  * @param predicate
@@ -26,7 +26,7 @@ export function count<E>(iterable: Iterable<E>, predicate: Predicate<E, [number]
 }
 
 /**
- * TODO: Describe.
+ * Counts the number of elements in a sequence.
  *
  * @param iterable
  * @param predicate

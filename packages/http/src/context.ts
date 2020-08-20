@@ -33,7 +33,9 @@ export class HttpContext implements Disposable {
     this.response[Symbol.dispose]();
 
     // TODO: Make async.
-    await this.features.values.map(Disposable.dispose).awaitAll();
+    await Promise.all(
+      this.features.values.map(Disposable.dispose)
+    );
 
     // this.#injector[Symbol.dispose]();
   }

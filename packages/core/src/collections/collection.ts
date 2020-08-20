@@ -1,9 +1,28 @@
-import { awaitAll, filter, flat, forEach, includes, map, single, some, toArray } from '../operators';
-import { Callback, EqualityComparer, Predicate, Selector } from '../common';
+import { count, filter, flat, flatMap, forEach, includes, map, single, some, toArray, toAsync } from '../operators';
+import { AbstractType, Callback, EqualityComparer, Predicate, Selector } from '../common';
 import { OperationError } from '../errors';
-import { count } from '../operators/count';
+import { AsyncCollection, AsyncCollectionStatic } from './async_collection';
+
+/**
+ * Describes abstract type of {@link Collection}.
+ */
+export interface CollectionStatic<E> extends AbstractType<Collection<E>> {
+  /**
+   * Returns function that is used to create a new {@link Collection}.
+   */
+  readonly [Symbol.species]: new <S>(sequence: Iterable<S>) => Collection<S>;
+}
 
 export abstract class Collection<E> implements Iterable<E> {
+  /**
+   * Returns function that is used to create a new {@link Collection}.
+   *
+   * @default {@link IterableCollection}.
+   */
+  static get [Symbol.species](): new <E>(sequence: Iterable<E>) => Collection<E> {
+    return IterableCollection;
+  }
+
   /**
    * Returns whether a sequence is empty.
    */
@@ -12,10 +31,13 @@ export abstract class Collection<E> implements Iterable<E> {
   }
 
   /**
-   * TODO: Describe.
+   * Creates a new {@link Collection} that applies provided sequence.
+   *
+   * @param sequence
+   * @protected
    */
-  async awaitAll(): Promise<Collection<E extends Promise<infer I> ? I : E>> {
-    return new IterableCollection(await awaitAll(this)) as any;
+  protected with<R>(sequence: Iterable<R>): Collection<R> {
+    return new (this.constructor as CollectionStatic<R>)[Symbol.species](sequence);
   }
 
   /**
@@ -26,7 +48,7 @@ export abstract class Collection<E> implements Iterable<E> {
   }
 
   /**
-   * TODO: Describe.
+   * Counts number of element in a sequence.
    */
   count(): number {
     return count(this);
@@ -38,14 +60,23 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param predicate
    */
   filter(predicate: Predicate<E, [number]>): Collection<E> {
-    return new IterableCollection(filter(this, predicate));
+    return this.with(filter(this, predicate));
   }
 
   /**
    * TODO: Describe
    */
   flat(): Collection<E extends Iterable<infer I> ? I : E> {
-    return new IterableCollection(flat(this));
+    return this.with(flat(this));
+  }
+
+  /**
+   * TODO: Describe.
+   *
+   * @param selector
+   */
+  flatMap<R>(selector: Selector<E, R, [number]>): Collection<R> {
+    return this.with(flatMap(this, selector));
   }
 
   /**
@@ -84,7 +115,7 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param selector
    */
   map<R>(selector: Selector<E, R, [number]>): Collection<R> {
-    return new IterableCollection(map(this, selector));
+    return this.with(map(this, selector));
   }
 
   /**
@@ -162,6 +193,13 @@ export abstract class Collection<E> implements Iterable<E> {
   }
 
   /**
+   * Converts {@link Collection} to {@link AsyncCollection}.
+   */
+  toAsync(delivery: AsyncCollectionStatic = AsyncCollection): AsyncCollection<E extends Promise<infer I> ? I : E> {
+    return new delivery[Symbol.species](toAsync(this));
+  }
+
+  /**
    * @inheritDoc
    */
   abstract [Symbol.iterator](): Iterator<E>;
@@ -174,8 +212,11 @@ export abstract class Collection<E> implements Iterable<E> {
   }
 }
 
+/**
+ * Default {@link Collection} implementation that wraps an original sequence.
+ */
 export class IterableCollection<E> extends Collection<E> {
-  constructor(readonly source: Iterable<E>) {
+  constructor(readonly sequence: Iterable<E>) {
     super();
   }
 
@@ -183,6 +224,6 @@ export class IterableCollection<E> extends Collection<E> {
    * @inheritDoc
    */
   [Symbol.iterator](): Iterator<E> {
-    return this.source[Symbol.iterator]();
+    return this.sequence[Symbol.iterator]();
   }
 }

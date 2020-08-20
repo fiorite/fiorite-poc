@@ -46,6 +46,33 @@ export function isMethod(object: unknown, key: string | symbol): boolean {
 }
 
 /**
+ * Checks whether an object has {@link Symbol.iterator} method.
+ *
+ * @param object
+ */
+export function isIterable(object: unknown) {
+  return isMethod(object, Symbol.iterator);
+}
+
+/**
+ * Checks whether an object has {@link Symbol.asyncIterator} method.
+ *
+ * @param object
+ */
+export function isAsyncIterable(object: unknown) {
+  return isMethod(object, Symbol.asyncIterator);
+}
+
+/**
+ * Checks whether an object has {@link Symbol.asyncIterator} method.
+ *
+ * @param object
+ */
+export function isPromise(object: unknown) {
+  return object instanceof Promise;
+}
+
+/**
  * Action that performs on element and returns no result.
  */
 export type Callback<E, A extends unknown[] = never[]> = (element: E, ...args: A) => void;
@@ -102,9 +129,9 @@ export interface Disposable {
 }
 
 export namespace Disposable {
-  export const dispose = (instance: unknown): boolean => {
+  export const dispose = async (instance: unknown): Promise<boolean> => {
     if (implemented(instance)) {
-      cast(instance)[Symbol.dispose]();
+      await cast(instance)[Symbol.dispose]();
 
       return true;
     }

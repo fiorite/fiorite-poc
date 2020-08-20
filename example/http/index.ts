@@ -1,7 +1,7 @@
-import { ok, proxy, serve } from '@fiorite/http';
+import { serve } from '@fiorite/http';
 import {
   Callback,
-  Injection,
+  Collection,
   Injector,
   InjectorBuilder,
   Module,
@@ -58,10 +58,11 @@ class WebModule implements Module {
   }
 }
 
-hostModule(WebModule, x => {
-  const context = x.get(Context);
+new Collection[Symbol.species]([[1], 2])
+  .flatMap(x => x);
 
-  x.awaitAll()
+hostModule(WebModule, async x => {
+  const context = x.get(Context);
 
   console.log(
     context.injector,
