@@ -1,8 +1,9 @@
 import { Request } from './request';
-import { Response } from './response';
 import { RequestHandler } from './request_handler';
+import { ReadableResponse } from './readable_response';
+import { Disposable } from '@fiorite/core';
 
 export abstract class HttpAdapter {
-  abstract request(request: Request): Promise<Response>;
-  abstract serve(handler: RequestHandler, port: number | string): void;
+  abstract request(request: Request): Promise<ReadableResponse>;
+  abstract serve(handler: RequestHandler, port: number | string): Disposable;
 }

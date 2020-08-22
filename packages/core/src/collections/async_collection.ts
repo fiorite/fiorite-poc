@@ -1,26 +1,35 @@
 import {
   countAsync,
-  filterAsync,
+  filterAsync, firstAsync,
   flatAsync,
   flatMapAsync,
   forEachAsync,
   includesAsync,
   mapAsync,
+  reduceAsync,
+  reverseAsync,
   singleAsync,
   someAsync,
   toArrayAsync
 } from '../operators';
-import { AbstractType, AsyncCallback, AsyncPredicate, AsyncSelector, EqualityComparer } from '../common';
-import { OperationError } from '../errors';
+import {
+  AbstractType,
+  AsyncAccumulator,
+  AsyncCallback,
+  AsyncPredicate,
+  AsyncSelector,
+  EqualityComparer, Predicate
+} from '../common';
+import { InvalidOperationError } from '../errors';
 
 /**
- * Describes abstract type of {@link Collection}.
+ * Describes abstract type of {@link AsyncCollection}.
  */
 export interface AsyncCollectionStatic<E = unknown> extends AbstractType<AsyncCollection<E>> {
   /**
    * Returns function that is used to create a new {@link Collection}.
    */
-  readonly [Symbol.species]: new <R>(sequence: AsyncIterable<R>) => AsyncCollection<R>;
+  readonly [Symbol.species]: new <R>(iterable: AsyncIterable<R>) => AsyncCollection<R>;
 }
 
 export abstract class AsyncCollection<E> implements AsyncIterable<E> {
@@ -29,8 +38,17 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    *
    * @default {@link AsyncIterableCollection}.
    */
-  static get [Symbol.species](): new <E>(sequence: AsyncIterable<E>) => AsyncCollection<E> {
+  static get [Symbol.species](): new <E>(iterable: AsyncIterable<E>) => AsyncCollection<E> {
     return AsyncIterableCollection;
+  }
+
+  /**
+   * Stores {@link EqualityComparer}.
+   */
+  [Symbol.comparer]: EqualityComparer<E>;
+
+  protected constructor(comparer: EqualityComparer<E> = EqualityComparer.DEFAULT) {
+    this[Symbol.comparer] = comparer;
   }
 
   /**
@@ -55,6 +73,15 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    */
   count(): Promise<number> {
     return countAsync(this);
+  }
+
+  /**
+   * TODO: Describe
+   */
+  first(): Promise<E>;
+  first(predicate: AsyncPredicate<E, [number]>): Promise<E>;
+  first(predicate: AsyncPredicate<E, [number]> = () => true): Promise<E> {
+    return firstAsync(this, predicate);
   }
 
   /**
@@ -106,8 +133,25 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    * @param element
    * @param comparer
    */
-  includes(element: E, comparer: EqualityComparer<E> = EqualityComparer.DEFAULT): Promise<boolean> {
+  includes(element: E, comparer: EqualityComparer<E> = this[Symbol.comparer]): Promise<boolean> {
     return includesAsync(this, element, comparer);
+  }
+
+  /**
+   * TODO: Describe.
+   */
+  reduce(accumulator: AsyncAccumulator<E, E, [number]>): Promise<E>;
+  reduce<A>(accumulator: AsyncAccumulator<E, A, [number]>, seed: A): Promise<A>;
+  reduce<A, R>(accumulator: AsyncAccumulator<E, A, [number]>, seed: A, selector: AsyncSelector<A, R>): Promise<R>;
+  reduce(...args: any[]): unknown {
+    return (reduceAsync as any)(this, ...args);
+  }
+
+  /**
+   * TODO: Describe.
+   */
+  reverse(): AsyncCollection<E> {
+    return this.with(reverseAsync(this));
   }
 
   /**
@@ -148,7 +192,7 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
     try {
       return await singleAsync(this, ...args);
     } catch (error) {
-      if (error instanceof OperationError) {
+      if (error instanceof InvalidOperationError) {
         return null;
       }
 
@@ -199,7 +243,7 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
  * Default {@link AsyncCollection} implementation that wraps an original sequence.
  */
 export class AsyncIterableCollection<E> extends AsyncCollection<E> {
-  constructor(readonly source: AsyncIterable<E>) {
+  constructor(readonly iterable: AsyncIterable<E>) {
     super();
   }
 
@@ -207,6 +251,15 @@ export class AsyncIterableCollection<E> extends AsyncCollection<E> {
    * @inheritDoc
    */
   [Symbol.asyncIterator](): AsyncIterator<E> {
-    return this.source[Symbol.asyncIterator]();
+    return this.iterable[Symbol.asyncIterator]();
   }
+}
+
+/**
+ * Creates a new {@link AsyncCollection} using {@link AsyncCollection[Symbol.species]} constructor.
+ *
+ * @param iterable
+ */
+export function collectAsync<E>(iterable: AsyncIterable<E>): AsyncCollection<E> {
+  return new AsyncCollection[Symbol.species](iterable);
 }

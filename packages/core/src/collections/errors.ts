@@ -1,6 +1,6 @@
-import { OperationError } from '../errors';
+import { InvalidOperationError } from '../errors';
 
-export class HashMapError<K> extends OperationError {
+export class HashMapError<K> extends InvalidOperationError {
   constructor(message: string, readonly key: K) {
     super(message);
   }

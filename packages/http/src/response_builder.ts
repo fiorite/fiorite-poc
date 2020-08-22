@@ -2,6 +2,7 @@ import { Readable, Stream } from 'stream';
 
 import { Response } from './response';
 import { ResponseHeaders } from './response_headers';
+import { NotImplementedError } from '@fiorite/core';
 
 export class ResponseBuilder {
   get [Symbol.toStringTag]() {
@@ -33,6 +34,7 @@ export class ResponseBuilder {
   }
 
   build(): Response {
-    return new Response(this._statusCode, this._headers, this._body);
+    throw new NotImplementedError();
+    // return new Response(this._statusCode, this._headers, this._body);
   }
 }

@@ -5,7 +5,7 @@ export type TryStatement<R> = () => R;
 export type CatchStatement<E, R> = (error: E) => R;
 export type FinallyStatement = () => void;
 
-export class TryCatch<R> extends Callable<R> {
+export class TryCatch<R> extends Callable<(...args: any[]) => R> {
   private readonly _try: TryStatement<R>;
   private readonly _catch: HashMap<Type, CatchStatement<unknown, R>>;
   private _finally: FinallyStatement = () => void 0;
@@ -19,7 +19,7 @@ export class TryCatch<R> extends Callable<R> {
 
   catch<E>(errorType: Type<E>): TryCatch<R | null>;
   catch<E>(errorType: Type<E>, statement: CatchStatement<E, R>): TryCatch<R>;
-  catch(errorType: Type, statement: CatchStatement<unknown, unknown> = () => null): TryCatch<unknown> {
+  catch(errorType: Type, statement: CatchStatement<unknown, unknown> = () => null): TryCatch<any> {
     this._catch.add(errorType, statement as CatchStatement<unknown, R>);
 
     return this;

@@ -1,74 +1,28 @@
-import { serve } from '@fiorite/http';
-import {
-  Callback,
-  Collection,
-  Injector,
-  InjectorBuilder,
-  Module,
-  Scoped,
-  Singleton,
-  Transient,
-  Type
-} from '@fiorite/core';
+import { Module, ProviderCollection, } from '@fiorite/core';
+import { HttpContext } from '@fiorite/http';
+import { createWebApp, Endpoint, Route } from '@fiorite/web';
 
-// serve(ctx => proxy('https://github.com/', ctx.request), 5000);
-
-serve(x => {
-  x.response.setHeader('Server', 'Fiorite');
-  x.response.body.end('Hello on 5001');
-  // return ok('hello on 5001');
-}, 5001);
-
-function hostModule(moduleType: Type<Module>, action: Callback<Injector>) {
-  const injector = new InjectorBuilder();
-  const moduleRef = Module.create(moduleType, injector);
-
-  action(
-    injector[Symbol.clone]()
-      .addAll(moduleRef.injector)
-      .build(),
-  );
+class FileDescriptor {
+  readonly path = __dirname + '/image.jpeg';
+  readonly type = 'image/jpeg';
 }
 
-// Injector
-
-@Transient()
-class UniqueId extends String {
-  constructor() {
-    super('_' + Math.random().toString(36).substr(2, 9));
+@Route('**')
+class FileEndpoint extends Endpoint {
+  handle(context: HttpContext) {
+    const description = context.getService(FileDescriptor);
+    return this.file(description.path, description.type);
   }
 }
 
-@Singleton()
-class Constant {
-  readonly name = 'foo';
-
-  constructor() { }
-}
-
-@Scoped()
-class Context {
-  constructor(readonly id: UniqueId, readonly constant: Constant, readonly injector: Injector) { }
-}
-
-class WebModule implements Module {
-  provide(injector: InjectorBuilder) {
-    // injector.
-    injector.addAll([UniqueId, Context, Constant]);
+class Test implements Module {
+  configure(providers: ProviderCollection) {
+    providers
+      .addSingleton(FileDescriptor)
+      .useCors()
+      .useResponseCache()
+      .addRoute('**', FileEndpoint);
   }
 }
 
-new Collection[Symbol.species]([[1], 2])
-  .flatMap(x => x);
-
-hostModule(WebModule, async x => {
-  const context = x.get(Context);
-
-  console.log(
-    context.injector,
-    context.id, // _b71wtfl0w
-    context.constant.name, // foo
-    x.get(UniqueId), // _o207b1r1t
-    x.get(UniqueId), // _rhjzhps2d
-  );
-});
+createWebApp([Test]).run(5000);

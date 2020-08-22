@@ -1,6 +1,6 @@
 import { Request } from './request';
-import { Response } from './response';
 import { HttpAdapter } from './adapter';
+import { ReadableResponse } from './readable_response';
 
 export class HttpClient {
   get [Symbol.toStringTag]() {
@@ -9,7 +9,7 @@ export class HttpClient {
 
   constructor(readonly adapter: HttpAdapter) { }
 
-  request(request: Request): Promise<Response> {
+  request(request: Request): Promise<ReadableResponse> {
     return this.adapter.request(request);
   }
 }

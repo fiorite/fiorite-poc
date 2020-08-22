@@ -14,24 +14,31 @@ export class HashSet<E> extends Collection<E> {
    *
    * @private
    */
-  private _buffer: E[] = [];
+  #buffer: E[] = [];
+
+  /**
+   * Gets {@link #buffer} as {@link ReadonlyArray}.
+   */
+  get buffer(): readonly E[] {
+    return this.#buffer;
+  }
 
   /**
    * @inheritDoc
    */
   get empty() {
-    return this._buffer.length < 1;
+    return this.#buffer.length < 1;
   }
 
   /**
    * Returns the number of items.
    */
   get size(): number {
-    return this._buffer.length;
+    return this.#buffer.length;
   }
 
   /**
-   * Instantiates set, applies {@param comparer} and sets {@param buffer} as a {@link _buffer}.
+   * Instantiates set, applies {@param comparer} and sets {@param buffer} as a {@link #buffer}.
    *
    * @param buffer
    * @param comparer
@@ -39,7 +46,7 @@ export class HashSet<E> extends Collection<E> {
   static proxy<E>(buffer: E[], comparer: EqualityComparer<E> = EqualityComparer.DEFAULT): HashSet<E> {
     const instance = new HashSet<E>([], comparer);
 
-    instance._buffer = buffer;
+    instance.#buffer = buffer;
 
     return instance;
   }
@@ -48,8 +55,8 @@ export class HashSet<E> extends Collection<E> {
    * @param iterable
    * @param comparer
    */
-  constructor(iterable: Iterable<E> = [], public comparer: EqualityComparer<E> = EqualityComparer.DEFAULT) {
-    super();
+  constructor(iterable: Iterable<E> = [], comparer: EqualityComparer<E> = EqualityComparer.DEFAULT) {
+    super(comparer);
     this.addAll(iterable);
   }
 
@@ -59,10 +66,10 @@ export class HashSet<E> extends Collection<E> {
    * @param element
    */
   add(element: E): this {
-    const index = this._buffer.findIndex(x => this.comparer(element, x));
+    const index = this.#buffer.findIndex(x => this[Symbol.comparer](element, x));
 
     if (index < 0) {
-      this._buffer.push(element);
+      this.#buffer.push(element);
     }
 
     return this;
@@ -91,7 +98,7 @@ export class HashSet<E> extends Collection<E> {
    * @param element
    */
   has(element: E): boolean {
-    return this._buffer.findIndex(x => this.comparer(element, x)) > -1;
+    return this.#buffer.findIndex(x => this[Symbol.comparer](element, x)) > -1;
   }
 
   /**
@@ -100,10 +107,10 @@ export class HashSet<E> extends Collection<E> {
    * @param element
    */
   delete(element: E): this {
-    const index = this._buffer.findIndex(x => this.comparer(element, x));
+    const index = this.#buffer.findIndex(x => this[Symbol.comparer](element, x));
 
     if (index > -1) {
-      this._buffer.splice(index, 1);
+      this.#buffer.splice(index, 1);
     }
 
     return this;
@@ -113,7 +120,7 @@ export class HashSet<E> extends Collection<E> {
    * Deletes all the elements from the set.
    */
   clear(): this {
-    this._buffer.splice(0, this._buffer.length);
+    this.#buffer.splice(0, this.#buffer.length);
 
     return this;
   }
@@ -124,8 +131,8 @@ export class HashSet<E> extends Collection<E> {
   [Symbol.clone](): HashSet<E> {
     const clone = Object.create(this) as this;
 
-    clone._buffer = this._buffer.slice();
-    clone.comparer = this.comparer;
+    clone.#buffer = this.#buffer.slice();
+    clone[Symbol.comparer] = this[Symbol.comparer];
 
     return clone;
   }
@@ -134,11 +141,11 @@ export class HashSet<E> extends Collection<E> {
    * @inheritDoc
    */
   [Symbol.iterator](): Iterator<E> {
-    return this._buffer[Symbol.iterator]();
+    return this.#buffer[Symbol.iterator]();
   }
 
   includes(element: E): boolean {
-    return this._buffer.findIndex(x => this.comparer(element, x)) > -1;
+    return this.#buffer.findIndex(x => this[Symbol.comparer](element, x)) > -1;
   }
 }
 

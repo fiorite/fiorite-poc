@@ -9,7 +9,6 @@ import { HttpServer } from './server';
 import { Readable, Stream } from 'stream';
 import { ResponseHeaders } from './response_headers';
 import { DefaultHttpAdapter } from './default_adapter';
-import { RequestHandler } from './request_handler';
 
 const defaultHttpClient = new HttpClient(DefaultHttpAdapter.default);
 

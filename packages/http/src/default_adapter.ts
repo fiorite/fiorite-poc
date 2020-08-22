@@ -1,40 +1,40 @@
 import type { ClientRequest, IncomingMessage, RequestOptions } from 'http';
+import { createServer } from 'http';
 import { PassThrough } from 'stream';
 
-import { Injector, InjectorBuilder, PromiseOr } from '@fiorite/core';
+import { Disposable } from '@fiorite/core';
 
 import { Request } from './request';
 import { Response } from './response';
 import { HTTPS } from './constants';
 import { HttpContext } from './context';
-import { RequestHeaders } from './request_headers';
 import { HttpAdapter } from './adapter';
-import { HttpClient } from './client';
-import { HttpHeaders } from './headers';
 import { RequestHandler } from './request_handler';
 import { WritableResponse } from './writable_response';
-import { WritableBody } from './writable_body';
+import { ResponseBody } from './response_body';
+import { ReadableResponse } from './readable_response';
+import { FeatureCollection } from './feature_collection';
 
 export class DefaultHttpAdapter extends HttpAdapter {
   static readonly default = new DefaultHttpAdapter();
 
-  #injections: InjectorBuilder;
+  // #injections: InjectorBuilder;
+  //
+  // private constructor() {
+  //   super();
+  //
+  //   this.#injections = new InjectorBuilder()
+  //     .addSingleton(DefaultHttpAdapter, this)
+  //     .addSingleton(HttpAdapter, (x: Injector) => x.get(DefaultHttpAdapter))
+  //     .addSingleton(HttpClient, new HttpClient(this))
+  //     //
+  //     .addScoped(RequestHeaders, (x: Injector) => x.get(Request).headers)
+  //     .addScoped(HttpHeaders, (x: Injector) => x.get(RequestHeaders))
+  //   ;
+  // }
 
-  private constructor() {
-    super();
-
-    this.#injections = new InjectorBuilder()
-      .addSingleton(DefaultHttpAdapter, this)
-      .addSingleton(HttpAdapter, (x: Injector) => x.get(DefaultHttpAdapter))
-      .addSingleton(HttpClient, new HttpClient(this))
-      //
-      .addScoped(RequestHeaders, (x: Injector) => x.get(Request).headers)
-      .addScoped(HttpHeaders, (x: Injector) => x.get(RequestHeaders))
-    ;
-  }
-
-  request(request: Request): Promise<Response> {
-    return new Promise<Response>((resolve, reject) => {
+  request(request: Request): Promise<ReadableResponse> {
+    return new Promise<ReadableResponse>((resolve, reject) => {
       const options: RequestOptions = {
         method: request.method.toUpperCase(),
         protocol: request.url.protocol,
@@ -55,7 +55,8 @@ export class DefaultHttpAdapter extends HttpAdapter {
               .body(body);
           });
 
-          resolve(response);
+          // TODO: Fix that.
+          resolve(response as ReadableResponse);
           incoming.pipe(body);
         });
 
@@ -65,8 +66,8 @@ export class DefaultHttpAdapter extends HttpAdapter {
     });
   }
 
-  serve(callback: RequestHandler, port: number | string): void {
-    import('http').then(m => m.createServer((incoming, outgoing) => {
+  serve(callback: RequestHandler, port: number | string): Disposable {
+    const server = createServer((incoming, outgoing) => {
       let url = incoming.url || '/';
 
       if (url.startsWith('/')) {
@@ -74,14 +75,15 @@ export class DefaultHttpAdapter extends HttpAdapter {
       }
 
       const request = Request.build(x => {
-        return x.method(incoming.method?.toLowerCase() || '').url(url);
+        return x.method(incoming.method?.toLowerCase() || '').headers(Object.entries(incoming.headers) as any).url(url);
       });
 
       let response: WritableResponse;
 
-      const responseBody = new WritableBody(outgoing, () => {
+      const responseBody = new ResponseBody(outgoing, () => {
         outgoing.statusCode = response.statusCode;
         response.headers.forEach(([name, value]) => outgoing.setHeader(name, value));
+        responseBody.headersSent = true;
       });
 
       response = new WritableResponse(
@@ -90,7 +92,12 @@ export class DefaultHttpAdapter extends HttpAdapter {
         responseBody,
       );
 
-      const context = new HttpContext(request, response);
+      const context = new HttpContext(
+        new FeatureCollection([
+          [Request, request],
+          [WritableResponse, response]
+        ])
+      );
 
       // TODO: Before write – send headers.
 
@@ -99,6 +106,22 @@ export class DefaultHttpAdapter extends HttpAdapter {
       });
 
       callback(context);
-    }).listen(port));
+    });
+
+    server.listen(port);
+
+    return {
+      [Symbol.dispose]() {
+        return new Promise((resolve, reject) => {
+          server.close(error => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve();
+            }
+          });
+        });
+      }
+    };
   }
 }

@@ -2,9 +2,13 @@ import { Writable } from 'stream';
 
 import { Callback } from '@fiorite/core';
 
-export class WritableBody extends Writable {
+export class ResponseBody extends Writable {
   #prepare: Callback<void>;
   #write: (chunk: any, encoding: BufferEncoding, callback: (error?: (Error | null)) => void) => void;
+
+  headersSent = false;
+  readonly readable = false;
+  readonly writable = true;
 
   constructor(readonly destination: Writable = new Writable(), prepare: Callback<void> = () => void 0) {
     super({
@@ -24,7 +28,7 @@ export class WritableBody extends Writable {
       this.#prepare();
 
       this.#write = (chunk: any, encoding: BufferEncoding, callback: (error?: (Error | null)) => void) => {
-        destination._write(chunk, encoding, callback);
+        destination.write(chunk, encoding, callback);
       };
 
       destination.write(chunk, encoding, callback);

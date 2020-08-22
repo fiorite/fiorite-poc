@@ -4,9 +4,15 @@ export * from './common';
 export * from './collections';
 export * from './di';
 
-export * from './errors';
+export {
+  InvalidOperationError,
+  InvalidOperation,
+  NotImplementedError,
+  NotImplemented,
+} from './errors';
 
 export { Serializer, JsonEncoder, serialize, Normalizer, Encoder, Normalizable } from './serializer';
-export { Module, module } from './module';
+// export { Module, module } from './module';
+export { Module, provideModule, runModule } from './module';
 export { AppBuilder } from './app.builder';
 export { tryCatch } from './try_catch';

@@ -1,7 +1,26 @@
-import { count, filter, flat, flatMap, forEach, includes, map, single, some, toArray, toAsync } from '../operators';
-import { AbstractType, Callback, EqualityComparer, Predicate, Selector } from '../common';
-import { OperationError } from '../errors';
+import {
+  count,
+  filter,
+  first,
+  flat,
+  flatMap,
+  forEach,
+  includes,
+  map,
+  reduce,
+  reverse,
+  single,
+  some,
+  toArray,
+  toAsync
+} from '../operators';
+import { AbstractType, Accumulator, Callback, EqualityComparer, inspectSymbol, Predicate, Selector } from '../common';
+import { InvalidOperationError } from '../errors';
 import { AsyncCollection, AsyncCollectionStatic } from './async_collection';
+
+export interface CollectionConstructor {
+  new <E>(iterable: Iterable<E>): Collection<E>;
+}
 
 /**
  * Describes abstract type of {@link Collection}.
@@ -10,7 +29,7 @@ export interface CollectionStatic<E> extends AbstractType<Collection<E>> {
   /**
    * Returns function that is used to create a new {@link Collection}.
    */
-  readonly [Symbol.species]: new <S>(sequence: Iterable<S>) => Collection<S>;
+  readonly [Symbol.species]: new <R>(iterable: Iterable<R>) => Collection<R>;
 }
 
 export abstract class Collection<E> implements Iterable<E> {
@@ -19,9 +38,14 @@ export abstract class Collection<E> implements Iterable<E> {
    *
    * @default {@link IterableCollection}.
    */
-  static get [Symbol.species](): new <E>(sequence: Iterable<E>) => Collection<E> {
+  static get [Symbol.species](): new <E>(iterable: Iterable<E>) => Collection<E> {
     return IterableCollection;
   }
+
+  /**
+   * Stores {@link EqualityComparer}.
+   */
+  [Symbol.comparer]: EqualityComparer<E>;
 
   /**
    * Returns whether a sequence is empty.
@@ -30,14 +54,18 @@ export abstract class Collection<E> implements Iterable<E> {
     return !this.some();
   }
 
+  protected constructor(comparer: EqualityComparer<E> = EqualityComparer.DEFAULT) {
+    this[Symbol.comparer] = comparer;
+  }
+
   /**
    * Creates a new {@link Collection} that applies provided sequence.
    *
-   * @param sequence
+   * @param iterable
    * @protected
    */
-  protected with<R>(sequence: Iterable<R>): Collection<R> {
-    return new (this.constructor as CollectionStatic<R>)[Symbol.species](sequence);
+  protected with<R>(iterable: Iterable<R>): Collection<R> {
+    return new (this.constructor as CollectionStatic<R>)[Symbol.species](iterable);
   }
 
   /**
@@ -61,6 +89,15 @@ export abstract class Collection<E> implements Iterable<E> {
    */
   filter(predicate: Predicate<E, [number]>): Collection<E> {
     return this.with(filter(this, predicate));
+  }
+
+  /**
+   * TODO: Describe
+   */
+  first(): E;
+  first(predicate: Predicate<E, [number]>): E;
+  first(predicate: Predicate<E, [number]> = () => true): E {
+    return first(this, predicate);
   }
 
   /**
@@ -94,7 +131,7 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param element
    * @param comparer
    */
-  includes(element: E, comparer: EqualityComparer<E> = EqualityComparer.DEFAULT): boolean {
+  includes(element: E, comparer = this[Symbol.comparer]): boolean {
     return includes(this, element, comparer);
   }
 
@@ -116,6 +153,23 @@ export abstract class Collection<E> implements Iterable<E> {
    */
   map<R>(selector: Selector<E, R, [number]>): Collection<R> {
     return this.with(map(this, selector));
+  }
+
+  /**
+   * TODO: Describe.
+   */
+  reduce(accumulator: Accumulator<E, E, [number]>): E;
+  reduce<A>(accumulator: Accumulator<E, A, [number]>, seed: A): A;
+  reduce<A, R>(accumulator: Accumulator<E, A, [number]>, seed: A, selector: Selector<A, R>): R;
+  reduce(...args: any[]): unknown {
+    return (reduce as any)(this, ...args);
+  }
+
+  /**
+   * TODO: Describe.
+   */
+  reverse(): Collection<E> {
+    return this.with(reverse(this));
   }
 
   /**
@@ -147,7 +201,7 @@ export abstract class Collection<E> implements Iterable<E> {
    *
    * @param predicate
    *
-   * @throws OperationError
+   * @throws InvalidOperationError
    */
   trySingle(predicate: Predicate<E, [number]>): E | null;
 
@@ -158,7 +212,7 @@ export abstract class Collection<E> implements Iterable<E> {
     try {
       return single(this, ...args);
     } catch (error) {
-      if (error instanceof OperationError) {
+      if (error instanceof InvalidOperationError) {
         return null;
       }
 
@@ -210,13 +264,17 @@ export abstract class Collection<E> implements Iterable<E> {
   [Symbol.normalize](): E[] {
     return this.toArray();
   }
+
+  [inspectSymbol]() {
+    return this[Symbol.normalize]();
+  }
 }
 
 /**
  * Default {@link Collection} implementation that wraps an original sequence.
  */
 export class IterableCollection<E> extends Collection<E> {
-  constructor(readonly sequence: Iterable<E>) {
+  constructor(readonly iterable: Iterable<E>) {
     super();
   }
 
@@ -224,6 +282,15 @@ export class IterableCollection<E> extends Collection<E> {
    * @inheritDoc
    */
   [Symbol.iterator](): Iterator<E> {
-    return this.sequence[Symbol.iterator]();
+    return this.iterable[Symbol.iterator]();
   }
+}
+
+/**
+ * Creates a new {@link Collection} using {@link Collection[Symbol.species]} constructor.
+ *
+ * @param iterable
+ */
+export function collect<E>(iterable: Iterable<E>): Collection<E> {
+  return new Collection[Symbol.species](iterable);
 }

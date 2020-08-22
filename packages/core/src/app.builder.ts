@@ -1,1 +1,5 @@
-export interface AppBuilder { }
+import { ProviderCollection } from './di';
+
+export class AppBuilder {
+  services!: ProviderCollection;
+}

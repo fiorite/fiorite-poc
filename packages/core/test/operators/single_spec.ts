@@ -2,14 +2,14 @@ import { expect } from 'chai';
 import { Readable } from 'stream';
 
 import { single, singleAsync } from '../../src/operators';
-import { OperationError } from '../../src';
+import { InvalidOperationError } from '../../src';
 
 describe('single()', () => {
   it('should throw OperationError when sequence is empty', () => {
     try {
       single([]);
     } catch (error) {
-      expect(error).instanceOf(OperationError);
+      expect(error).instanceOf(InvalidOperationError);
       return;
     }
 
@@ -26,7 +26,7 @@ describe('single()', () => {
     try {
       single([1, 2]);
     } catch (error) {
-      expect(error).instanceOf(OperationError);
+      expect(error).instanceOf(InvalidOperationError);
       return;
     }
 
@@ -43,7 +43,7 @@ describe('single()', () => {
     try {
       single([1, 2, 1], x => x === 1);
     } catch (error) {
-      expect(error).instanceOf(OperationError);
+      expect(error).instanceOf(InvalidOperationError);
       return;
     }
 
@@ -58,7 +58,7 @@ describe('singleAsync()', () => {
     try {
       await singleAsync(stream);
     } catch (error) {
-      expect(error).instanceOf(OperationError);
+      expect(error).instanceOf(InvalidOperationError);
       return;
     }
 
@@ -78,7 +78,7 @@ describe('singleAsync()', () => {
     try {
       await singleAsync(stream);
     } catch (error) {
-      expect(error).instanceOf(OperationError);
+      expect(error).instanceOf(InvalidOperationError);
       return;
     }
 
@@ -98,7 +98,7 @@ describe('singleAsync()', () => {
     try {
       await singleAsync(stream, x => x === 1);
     } catch (error) {
-      expect(error).instanceOf(OperationError);
+      expect(error).instanceOf(InvalidOperationError);
       return;
     }
 

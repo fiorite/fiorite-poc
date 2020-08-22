@@ -16,7 +16,8 @@
       "@fiorite/core/operators": ["core/src/operators"],
       "@fiorite/db": ["db/src"],
       "@fiorite/http": ["http/src"],
-      "@fiorite/sqlite": ["sqlite/src"]
+      "@fiorite/sqlite": ["sqlite/src"],
+      "@fiorite/web": ["web/src"]
     }
   },
   "include": [

@@ -1,6 +1,10 @@
 import { Disposable, HashMap } from '@fiorite/core';
 
 export class HttpHeaders<K extends string = string> extends HashMap<K, string[]> implements Disposable {
+  get [Symbol.toStringTag]() {
+    return 'HttpHeaders';
+  }
+
   constructor(entries: [K, string[]][] = []) {
     /**
      * Case insensitive {@link string} comparer.

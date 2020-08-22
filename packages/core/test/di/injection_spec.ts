@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { Injectable, Injection, InjectionLifetime, Injector } from '../../src/di';
+import { Injectable, Injection, InjectionLifetime, Injector } from '../../src/di_old';
 import { Disposable } from '../../src/common';
 
 describe('Injection', () => {

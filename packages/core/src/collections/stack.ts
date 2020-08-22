@@ -1,6 +1,6 @@
 import { Collection } from './collection';
 import { Cloneable, EqualityComparer } from '../common';
-import { OperationError } from '../errors';
+import { InvalidOperationError } from '../errors';
 
 export class Stack<E> extends Collection<E> implements Cloneable {
   /**
@@ -11,22 +11,22 @@ export class Stack<E> extends Collection<E> implements Cloneable {
   }
 
   /**
+   * TODO: Describe.
+   */
+  #buffer: E[] = [];
+
+  /**
    * @inheritDoc
    */
   get empty() {
-    return this._buffer.length < 1;
+    return this.#buffer.length < 1;
   }
 
   /**
    * TODO: Describe.
    */
-  private _buffer: E[] = [];
-
-  /**
-   * TODO: Describe.
-   */
   get size() {
-    return this._buffer.length;
+    return this.#buffer.length;
   }
 
   /**
@@ -35,9 +35,8 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    * @param iterable
    * @param comparer
    */
-  constructor(iterable: Iterable<E> = [], public comparer: EqualityComparer<E> = EqualityComparer.DEFAULT) {
-    super();
-
+  constructor(iterable: Iterable<E> = [], comparer: EqualityComparer<E> = EqualityComparer.DEFAULT) {
+    super(comparer);
     this.pushAll(iterable);
   }
 
@@ -47,7 +46,7 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    * @param element
    */
   push(element: E): this {
-    this._buffer.push(element);
+    this.#buffer.push(element);
 
     return this;
   }
@@ -75,22 +74,22 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    * TODO: Describe.
    */
   peek(): E {
-    if (this._buffer.length < 1) {
-      throw new OperationError('The stack is empty.');
+    if (this.#buffer.length < 1) {
+      throw new InvalidOperationError('The stack is empty.');
     }
 
-    return this._buffer[this._buffer.length - 1];
+    return this.#buffer[this.#buffer.length - 1];
   }
 
   /**
    * TODO: Describe.
    */
   pop(): E {
-    if (this._buffer.length < 1) {
-      throw new OperationError('The stack is empty.');
+    if (this.#buffer.length < 1) {
+      throw new InvalidOperationError('The stack is empty.');
     }
 
-    return this._buffer.pop()!;
+    return this.#buffer.pop()!;
   }
 
   /**
@@ -99,14 +98,14 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    * @param element
    */
   has(element: E): boolean {
-    return this._buffer.findIndex(x => this.comparer(element, x)) > -1;
+    return this.#buffer.findIndex(x => this[Symbol.comparer](element, x)) > -1;
   }
 
   /**
    * TODO: Describe.
    */
   clear(): this {
-    this._buffer.splice(0, this._buffer.length);
+    this.#buffer.splice(0, this.#buffer.length);
 
     return this;
   }
@@ -116,8 +115,8 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    */
   [Symbol.clone](): Stack<E> {
     const clone = Object.create(this) as this;
-    clone._buffer = this._buffer.slice();
-    clone.comparer = this.comparer;
+    clone.#buffer = this.#buffer.slice();
+    clone[Symbol.comparer] = this[Symbol.comparer];
     return clone;
   }
 
@@ -125,6 +124,6 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    * @inheritDoc
    */
   [Symbol.iterator](): Iterator<E> {
-    return this._buffer[Symbol.iterator]();
+    return this.#buffer[Symbol.iterator]();
   }
 }

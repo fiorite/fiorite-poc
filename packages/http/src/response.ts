@@ -4,8 +4,9 @@ import { Disposable, Selector } from '@fiorite/core';
 
 import { ResponseBuilder } from './response_builder';
 import { ResponseHeaders } from './response_headers';
+import { StatusCode } from './status_code';
 
-export class Response implements Disposable {
+export abstract class Response implements Disposable {
   get [Symbol.toStringTag]() {
     return 'Response';
   }
@@ -17,8 +18,8 @@ export class Response implements Disposable {
 
   readonly headers: ResponseHeaders;
 
-  constructor(
-    public statusCode = 200,
+  protected constructor(
+    public statusCode: StatusCode | number = StatusCode.Default,
     headers: ResponseHeaders | [string, string[]][] = [],
     readonly body: Stream = new Stream(),
   ) {
@@ -41,44 +42,40 @@ export class Response implements Disposable {
 
   /** region {@link headers} facade */
 
-  addHeader(key: string, value: string | string[]): this {
-    this.headers.add(key, value);
-    return this;
-  }
-
-  setHeader(key: string, value: string | string[]): this {
-    this.headers.set(key, value);
-
-    return this;
-  }
-
-  getHeader(key: string): string[] {
-    return this.headers.get(key);
-  }
-
-  hasHeader(key: string): boolean {
-    return this.headers.has(key);
-  }
-
-  deleteHeader(key: string): this {
-    this.headers.delete(key);
-
-    return this;
-  }
-
-  clearHeaders(): this {
-    this.headers.clear();
-
-    return this;
-  }
+  // addHeader(key: string, value: string | string[]): this {
+  //   this.headers.add(key, value);
+  //   return this;
+  // }
+  //
+  // setHeader(key: string, value: string | string[]): this {
+  //   this.headers.set(key, value);
+  //
+  //   return this;
+  // }
+  //
+  // getHeader(key: string): string[] {
+  //   return this.headers.get(key);
+  // }
+  //
+  // hasHeader(key: string): boolean {
+  //   return this.headers.has(key);
+  // }
+  //
+  // deleteHeader(key: string): this {
+  //   this.headers.delete(key);
+  //
+  //   return this;
+  // }
+  //
+  // clearHeaders(): this {
+  //   this.headers.clear();
+  //
+  //   return this;
+  // }
 
   /** endregion {@link headers} facade */
 
   [Symbol.dispose]() {
-    if ((this.body as any).end) {
-      (this.body as any).end();
-    }
-
     this.headers.clear();
   }
 }

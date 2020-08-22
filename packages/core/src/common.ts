@@ -1,6 +1,9 @@
+import { NotImplementedError } from './errors';
+
 declare global {
   interface SymbolConstructor {
     readonly normalize: symbol;
+    readonly comparer: symbol;
     readonly dispose: symbol;
     readonly clone: symbol;
     readonly equals: symbol;
@@ -9,6 +12,7 @@ declare global {
 }
 
 (Symbol as any).normalize = Symbol('normalize');
+(Symbol as any).comparer = Symbol('comparer');
 (Symbol as any).dispose = Symbol('dispose');
 (Symbol as any).clone = Symbol('clone');
 (Symbol as any).equals = Symbol('equals');
@@ -102,6 +106,9 @@ export type Selector<E, R = E, A extends unknown[] = never[]> = (element: E, ...
  */
 export type AsyncSelector<E, R = E, A extends unknown[] = never[]> = (element: E, ...args: A) => PromiseOr<R>;
 
+export type Accumulator<E, R = E, A extends unknown[] = never[]> = (accumulate: R, next: E, ...args: A) => R;
+export type AsyncAccumulator<E, R = E, A extends unknown[] = never[]> = (accumulate: R, next: E, ...args: A) => PromiseOr<R>;
+
 export interface Cloneable {
   [Symbol.clone](): unknown;
 }
@@ -109,19 +116,17 @@ export interface Cloneable {
 /**
  * Mixin to map arguments and types in case {@link Function} do not expose such information.
  */
-export interface Callable<R = unknown, A extends unknown[] = []> extends Function {
-  (...args: A): R;
+export interface Callable<F extends (...args: any) => any> extends Function {
+  (...args: Parameters<F>): ReturnType<F>;
 }
 
-export abstract class Callable<R = unknown, A extends unknown[] = []> extends Function {
-  protected constructor() {
+export class Callable<F extends (...args: any) => any> extends Function {
+  constructor(callback: (...args: Parameters<F>) => ReturnType<F> = () => { throw new NotImplementedError() }) {
     super();
     return new Proxy(this, {
-      apply: (target, thisArg, args: any[]) => target[Symbol.invoke](...args)
+      apply: (target, thisArg, args: Parameters<F>) => callback(...args),
     });
   }
-
-  abstract [Symbol.invoke](...args: A[]): R;
 }
 
 export interface Disposable {
@@ -160,6 +165,16 @@ export namespace EqualityComparer {
 
     return x === y;
   };
+
+  export function tryGet<T>(instance: unknown): EqualityComparer<T> {
+    return isMethod(instance, Symbol.comparer) ?
+      (instance as any)[Symbol.comparer] as EqualityComparer<T> :
+      DEFAULT;
+  }
+
+  export function select<T, R>(selector: Selector<T, R>, comparer: EqualityComparer<R> = DEFAULT): EqualityComparer<T> {
+    return (x, y) => comparer(selector(x), selector(y));
+  }
 }
 
 export interface Equatable {
@@ -179,9 +194,14 @@ export interface Type<T = unknown> extends Function {
 }
 
 /**
+ * Identifies constructable classes.
+ */
+export type Instance<T = unknown> = T & { constructor: Type<T>; };
+
+/**
  * Identifies abstract class.
  */
-export interface AbstractType<T> extends Function {
+export interface AbstractType<T = unknown> extends Function {
   prototype: T;
 }
 

@@ -1,5 +1,5 @@
-import { DefaultInjector, Injector } from '../../src/di/injector';
-import { Injection } from '../../src/di';
+import { DefaultInjector, Injector } from '../../src/di_old/injector';
+import { Injection } from '../../src/di_old';
 import { expect } from 'chai';
 
 describe('DefaultInjector', () => {

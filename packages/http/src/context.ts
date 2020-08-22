@@ -1,42 +1,43 @@
-import { Collection, Disposable, HashMap, Injection, InjectionKey, Injector, Type } from '@fiorite/core';
+import { AbstractType, Disposable, HashMap, Injector, ProviderDescriptor, ServiceKey } from '@fiorite/core';
 
 import { Request } from './request';
 import { WritableResponse } from './writable_response';
+import { FeatureCollection } from './feature_collection';
 
 export class HttpContext implements Disposable {
   get [Symbol.toStringTag]() {
     return 'HttpContext';
   }
 
-  readonly features = new HashMap<Type<unknown>, unknown>();
-
-  // #injector: Injector;
-
-  constructor(
-    // providers: Collection<Injection>,
-    readonly request: Request,
-    readonly response: WritableResponse = new WritableResponse(),
-  ) {
-    // this.#injector = Injector.create(providers);
+  get request(): Request {
+    return this.features.get(Request);
   }
-  //
-  // get<T>(key: InjectionKey<T>): T {
-  //   // return this.#injector.get(key);
-  // }
-  //
-  // has<T>(key: InjectionKey<T>): boolean {
-  //   // return this.#injector.has(key);
-  // }
+
+  get response(): WritableResponse {
+    return this.features.get(WritableResponse);
+  }
+
+  get services(): Injector {
+    return this.features.get(Injector);
+  }
+
+  constructor(readonly features: FeatureCollection) { }
+
+  getFeature<T>(type: AbstractType<T>): T {
+    return this.features.get(type) as T;
+  }
+
+  addFeature<T>(type: AbstractType<T>, feature: T): this {
+    this.features.add(type, feature);
+
+    return this;
+  }
+
+  getService<T>(type: ServiceKey<T> | ProviderDescriptor<T>): T {
+    return this.services.get(type);
+  }
 
   async [Symbol.dispose]() {
-    // this.request[Symbol.dispose]();
-    this.response[Symbol.dispose]();
-
-    // TODO: Make async.
-    await Promise.all(
-      this.features.values.map(Disposable.dispose)
-    );
-
-    // this.#injector[Symbol.dispose]();
+    await Promise.all(this.features.values.map(Disposable.dispose));
   }
 }

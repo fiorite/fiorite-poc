@@ -1,4 +1,4 @@
-import { OperationError } from '../errors';
+import { InvalidOperationError } from '../errors';
 import { AsyncPredicate, Predicate } from '../common';
 
 /**
@@ -7,7 +7,7 @@ import { AsyncPredicate, Predicate } from '../common';
  * @param iterable
  * @param predicate
  *
- * @throws OperationError
+ * @throws InvalidOperationError
  */
 export function single<E>(iterable: Iterable<E>, predicate?: Predicate<E, [number]>): E {
   const iterator = iterable[Symbol.iterator]();
@@ -27,7 +27,7 @@ export function single<E>(iterable: Iterable<E>, predicate?: Predicate<E, [numbe
           iterator.return();
         }
 
-        throw new OperationError('There is more than one element.');
+        throw new InvalidOperationError('There is more than one element.');
       }
 
       element = result.value;
@@ -40,8 +40,8 @@ export function single<E>(iterable: Iterable<E>, predicate?: Predicate<E, [numbe
 
   if (!found) {
     throw predicated ?
-      new OperationError('There is no element that satisfies condition in a sequence.') :
-      new OperationError('There is no element in a sequence.');
+      new InvalidOperationError('There is no element that satisfies condition in a sequence.') :
+      new InvalidOperationError('There is no element in a sequence.');
   }
 
   return element!;
@@ -53,7 +53,7 @@ export function single<E>(iterable: Iterable<E>, predicate?: Predicate<E, [numbe
  * @param iterable
  * @param predicate
  *
- * @throws OperationError
+ * @throws InvalidOperationError
  */
 export async function singleAsync<E>(iterable: AsyncIterable<E>, predicate?: AsyncPredicate<E, [number]>): Promise<E> {
   const iterator = iterable[Symbol.asyncIterator]();
@@ -73,7 +73,7 @@ export async function singleAsync<E>(iterable: AsyncIterable<E>, predicate?: Asy
           await iterator.return();
         }
 
-        throw new OperationError('There is more than one element.');
+        throw new InvalidOperationError('There is more than one element.');
       }
 
       element = result.value;
@@ -86,8 +86,8 @@ export async function singleAsync<E>(iterable: AsyncIterable<E>, predicate?: Asy
 
   if (!found) {
     throw predicated ?
-      new OperationError('There is no element that satisfies condition in a sequence.') :
-      new OperationError('There is no element in a sequence.');
+      new InvalidOperationError('There is no element that satisfies condition in a sequence.') :
+      new InvalidOperationError('There is no element in a sequence.');
   }
 
   return element!;

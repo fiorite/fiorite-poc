@@ -1,10 +1,11 @@
 import { HttpHeaders } from './headers';
 import { HttpDate } from './date';
+import { RequestHeader } from './request_header';
 
 /**
  * TODO: Wrap known headers for better dx (development experience)  https://en.wikipedia.org/wiki/List_of_HTTP_header_fields
  */
-export class RequestHeaders extends HttpHeaders {
+export class RequestHeaders extends HttpHeaders<RequestHeader | string> {
   get accept(): string[] {
     return this.get('accept');
   }
@@ -257,6 +258,32 @@ export class RequestHeaders extends HttpHeaders {
     null === value ?
       this.delete('if-modified-since') :
       this.set('if-modified-since', HttpDate.stringify(value));
+  }
+
+  /**
+   * Allows a 304 Not Modified to be returned if content is unchanged.
+   *
+   * If-Modified-Since: Sat, 29 Oct 1994 19:43:31 GMT
+   */
+  get [RequestHeader.IfModifiedSince](): Date | null {
+    const values = this.get(RequestHeader.IfModifiedSince);
+
+    return values.length ?
+      HttpDate.parse(values[0]) :
+      null;
+  }
+
+  /**
+   * Allows a 304 Not Modified to be returned if content is unchanged.
+   *
+   * If-Modified-Since: Sat, 29 Oct 1994 19:43:31 GMT
+   *
+   * @param value
+   */
+  set [RequestHeader.IfModifiedSince](value: Date | null) {
+    null === value ?
+      this.delete(RequestHeader.IfModifiedSince) :
+      this.set(RequestHeader.IfModifiedSince, HttpDate.stringify(value));
   }
 
   get ['if-none-match'](): string[] {
