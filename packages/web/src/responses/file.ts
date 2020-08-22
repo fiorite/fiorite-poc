@@ -1,8 +1,8 @@
 import { createReadStream, PathLike, statSync } from 'fs';
 
-import { ReadableResponse, ResponseHeader } from '@fiorite/http';
+import { Response, ResponseHeader } from '@fiorite/http';
 
-export class FileResponse extends ReadableResponse {
+export class FileResponse extends Response {
   constructor(path: PathLike, contentType = 'application/octet-stream') {
     const stream = createReadStream(path);
     const stats = statSync(path);

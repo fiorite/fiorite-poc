@@ -2,6 +2,7 @@ import { ServiceKey } from './service_key';
 import { Collection } from '../collections';
 import { Callable, Disposable, PromiseOr } from '../common';
 import { ProviderDescriptor } from './provider_descriptor';
+import { InvalidOperationError } from '../errors';
 
 export interface Injector extends Function {
   /**
@@ -35,7 +36,15 @@ export abstract class Injector extends Callable<InjectorFunction> implements Dis
    * @throws InvalidOperationError if there is no services or more than one service registered with the same key.
    */
   get<T>(key: ServiceKey<T> | ProviderDescriptor<T>): T {
-    return this(key).single();
+    try {
+      return this(key).single();
+    } catch (error) {
+      if (error instanceof InvalidOperationError) {
+        throw new Error('Unable to locate "' + key.toString() + '"');
+      }
+
+      throw error;
+    }
   }
 
   /**

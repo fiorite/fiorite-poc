@@ -1,25 +1,25 @@
-import { HttpContext, RequestHandler, RequestHeader, ResponseBody, ResponseHeader, StatusCode } from '@fiorite/http';
+import { Readable } from 'stream';
+
+import { HttpContext, RequestHandler, RequestHeader, ResponseHeader, StatusCode } from '@fiorite/http';
 
 import { Middleware } from '../middleware';
 
 export class ResponseCacheMiddleware extends Middleware {
-  async handle(context: HttpContext, next: RequestHandler) {
-    await next(context);
+  async handle(context: HttpContext, handle: RequestHandler) {
+    await handle(context);
 
     const { request, response } = context;
 
-    if (!response.body.headersSent) {
-      const ifModifiedSince = request.headers[RequestHeader.IfModifiedSince];
-      const lastModified = response.headers[ResponseHeader.LastModified];
-
-      if (
-        null !== ifModifiedSince &&
-        null !== lastModified &&
-        lastModified.getTime() === lastModified.getTime()
-      ) {
-        response.statusCode = StatusCode.NotModified;
-        response.body = new ResponseBody(); // TODO: Replace.
-      }
+    if (
+      request.headers.has(RequestHeader.IfModifiedSince) &&
+      request.headers[RequestHeader.IfModifiedSince] !== response.headers[ResponseHeader.LastModified]
+    ) {
+      response.statusCode = StatusCode.NotModified;
+      response.body = new Readable({ // TODO: Replace with default stream or something else.
+        read() {
+          return null;
+        }
+      });
     }
   }
 }

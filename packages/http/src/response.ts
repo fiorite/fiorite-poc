@@ -1,81 +1,30 @@
-import { Stream } from 'stream';
+import { Readable, Writable } from 'stream';
 
-import { Disposable, Selector } from '@fiorite/core';
-
-import { ResponseBuilder } from './response_builder';
-import { ResponseHeaders } from './response_headers';
 import { StatusCode } from './status_code';
+import { HttpMessage } from './message';
+import { HttpMessageBody } from './message_body';
+import { ResponseHeaders } from './response_headers';
+import { ResponseHeader } from './response_header';
 
-export abstract class Response implements Disposable {
+export class Response extends HttpMessage {
   get [Symbol.toStringTag]() {
     return 'Response';
   }
 
-  static build(selector: Selector<ResponseBuilder>): Response {
-    const builder = new ResponseBuilder();
-    return selector(builder).build();
-  }
+  /**
+   * @override
+   */
+  headers!: ResponseHeaders;
 
-  readonly headers: ResponseHeaders;
-
-  protected constructor(
+  constructor(
     public statusCode: StatusCode | number = StatusCode.Default,
-    headers: ResponseHeaders | [string, string[]][] = [],
-    readonly body: Stream = new Stream(),
+    headers: ResponseHeaders | [ResponseHeader | string, string[]][], // TODO: Make it concrete.
+    body: Readable | Writable | HttpMessageBody,
   ) {
-    this.headers = Array.isArray(headers) ?
-      new ResponseHeaders(headers) : headers;
-  }
-
-  bodyToString(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const buffer: Buffer[] = [];
-      this.body.on('data', chunk => buffer.push(chunk));
-      this.body.on('end', () => resolve(Buffer.concat(buffer).toString()));
-      this.body.on('error', reject);
-    });
-  }
-
-  bodyToJson<T>(): Promise<T> {
-    return this.bodyToString().then(JSON.parse);
-  }
-
-  /** region {@link headers} facade */
-
-  // addHeader(key: string, value: string | string[]): this {
-  //   this.headers.add(key, value);
-  //   return this;
-  // }
-  //
-  // setHeader(key: string, value: string | string[]): this {
-  //   this.headers.set(key, value);
-  //
-  //   return this;
-  // }
-  //
-  // getHeader(key: string): string[] {
-  //   return this.headers.get(key);
-  // }
-  //
-  // hasHeader(key: string): boolean {
-  //   return this.headers.has(key);
-  // }
-  //
-  // deleteHeader(key: string): this {
-  //   this.headers.delete(key);
-  //
-  //   return this;
-  // }
-  //
-  // clearHeaders(): this {
-  //   this.headers.clear();
-  //
-  //   return this;
-  // }
-
-  /** endregion {@link headers} facade */
-
-  [Symbol.dispose]() {
-    this.headers.clear();
+    super(
+      Array.isArray(headers) ? new ResponseHeaders(headers) : headers,
+      body instanceof HttpMessageBody ? body : HttpMessageBody.of(body),
+    );
   }
 }
+

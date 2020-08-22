@@ -31,6 +31,8 @@ export class ProviderCollection extends Collection<ProviderDescriptor> implement
 
   add(instance: object): this;
   add(type: Type): this;
+  add<T>(key: ServiceKey<T>, factory: Provide<T>): this;
+  add<T>(key: ServiceKey<T>, instance: object): this;
   add<T>(key: ServiceKey<T>, alias: ServiceKey<T>): this;
   add<T>(type: Type<T>, args: Type[]): this;
   add(...args: unknown[]): this {
@@ -85,13 +87,27 @@ export class ProviderCollection extends Collection<ProviderDescriptor> implement
             ...parameters.map(paramType => injector.get(paramType)),
           );
         };
-      } else {
+      } else if (isClass(args[1])) {
         const [type, alias] = args as [ServiceKey, ServiceKey];
 
         key = type;
         lifetime = ServiceLifetime.Singleton;
 
         provide = injector => injector.get(alias);
+      } else if (typeof args[1] === 'object') {
+        const [type, instance] = args as [ServiceKey, Instance];
+
+        key = type;
+        provide = () => instance;
+        lifetime = ServiceLifetime.Singleton;
+      } else if (typeof args[1] === 'function') {
+        const [type, factory] = args as [ServiceKey, Provide];
+
+        key = type;
+        provide = injector => factory(injector);
+        lifetime = ServiceLifetime.Singleton;
+      } else {
+        throw new RangeError();
       }
     } else {
       throw new RangeError();

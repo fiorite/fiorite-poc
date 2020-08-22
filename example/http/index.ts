@@ -1,5 +1,6 @@
+import { createServer } from 'http';
 import { Module, ProviderCollection, } from '@fiorite/core';
-import { HttpContext } from '@fiorite/http';
+import { HttpContext, HttpServer, NodeHttpAdapter } from '@fiorite/http';
 import { createWebApp, Endpoint, Route } from '@fiorite/web';
 
 class FileDescriptor {
@@ -19,10 +20,19 @@ class Test implements Module {
   configure(providers: ProviderCollection) {
     providers
       .addSingleton(FileDescriptor)
-      .useCors()
+      .useCors({ origin: ['*'], methods: ['*'], headers: ['*'] })
+      .useWebSockets()
       .useResponseCache()
       .addRoute('**', FileEndpoint);
   }
 }
 
 createWebApp([Test]).run(5000);
+
+new HttpServer(NodeHttpAdapter.default).serve(context => {
+  context.response.end();
+}, 5001);
+
+createServer((req, res) => {
+  res.end();
+}).listen(5002);

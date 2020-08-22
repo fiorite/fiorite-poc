@@ -4,6 +4,9 @@ import { Response } from './response';
 import { ResponseHeaders } from './response_headers';
 import { NotImplementedError } from '@fiorite/core';
 
+/**
+ * @deprecated Ought to be refactored.
+ */
 export class ResponseBuilder {
   get [Symbol.toStringTag]() {
     return 'ResponseBuilder';

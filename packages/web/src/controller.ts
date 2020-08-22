@@ -1,6 +1,6 @@
 import { PathLike } from 'fs';
 
-import { FileResponse } from './responses/file';
+import { FileResponse } from './responses';
 
 export abstract class Controller {
   /**

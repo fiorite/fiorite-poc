@@ -1,8 +1,8 @@
-import { AbstractType, Disposable, HashMap, Injector, ProviderDescriptor, ServiceKey } from '@fiorite/core';
+import { AbstractType, Disposable, Injector, ProviderDescriptor, ServiceKey } from '@fiorite/core';
 
 import { Request } from './request';
-import { WritableResponse } from './writable_response';
 import { FeatureCollection } from './feature_collection';
+import { Response } from './response';
 
 export class HttpContext implements Disposable {
   get [Symbol.toStringTag]() {
@@ -13,12 +13,23 @@ export class HttpContext implements Disposable {
     return this.features.get(Request);
   }
 
-  get response(): WritableResponse {
-    return this.features.get(WritableResponse);
+  get response(): Response {
+    return this.features.get(Response);
   }
 
   get services(): Injector {
     return this.features.get(Injector);
+  }
+
+  static from(request: Request, response: Response) {
+    return new HttpContext(
+      new FeatureCollection(
+        [
+          [Request, request],
+          [Response, response],
+        ]
+      )
+    );
   }
 
   constructor(readonly features: FeatureCollection) { }

@@ -96,13 +96,37 @@ export class RequestHeaders extends HttpHeaders<RequestHeader | string> {
     this.set('cache-control', values);
   }
 
-  get ['connection'](): string[] {
-    return this.get('connection');
+  // region Connection
+
+  get ['connection'](): string | null {
+    const value = this.get('connection');
+
+    return value.length ?
+      value[0] :
+      null;
   }
 
-  set ['connection'](values: string[]) {
-    this.set('connection', values);
+  set ['connection'](value: string | null) {
+    null === value ?
+      this.delete('connection') :
+      this.set('connection', value);
   }
+
+  get [RequestHeader.Connection](): string | null {
+    const value = this.get(RequestHeader.Connection);
+
+    return value.length ?
+      value[0] :
+      null;
+  }
+
+  set [RequestHeader.Connection](value: string | null) {
+    null === value ?
+      this.delete(RequestHeader.Connection) :
+      this.set(RequestHeader.Connection, value);
+  }
+
+  // endregion
 
   get ['content-encoding'](): string[] {
     return this.get('content-encoding');
@@ -426,12 +450,32 @@ export class RequestHeaders extends HttpHeaders<RequestHeader | string> {
     this.set('user-agent', values);
   }
 
-  get ['upgrade'](): string[] {
-    return this.get('upgrade');
+  get ['upgrade'](): string | null {
+    const value = this.get('upgrade');
+
+    return value.length ?
+      value[0] :
+      null;
   }
 
-  set ['upgrade'](values: string[]) {
-    this.set('upgrade', values);
+  set ['upgrade'](value: string | null) {
+    null === value ?
+      this.delete('upgrade') :
+      this.set('upgrade', value);
+  }
+
+  get [RequestHeader.Upgrade](): string | null {
+    const value = this.get(RequestHeader.Upgrade);
+
+    return value.length ?
+      value[0] :
+      null;
+  }
+
+  set [RequestHeader.Upgrade](value: string | null) {
+    null === value ?
+      this.delete(RequestHeader.Upgrade) :
+      this.set(RequestHeader.Upgrade, value);
   }
 
   get ['via'](): string[] {
