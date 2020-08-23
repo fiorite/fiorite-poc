@@ -2,10 +2,10 @@ import WebSocket from 'ws';
 import { IncomingMessage } from 'http';
 
 import { HttpContext, RequestHandler, RequestHeader } from '@fiorite/http';
-import { InvalidOperationError } from '@fiorite/core';
+import { Injector, InvalidOperationError } from '@fiorite/core';
 
 import { Middleware } from '../middleware';
-import { WebSocketRef } from '../web_socket_ref';
+import { WebSocketContext } from '../web_socket_ref';
 
 const EMPTY_HEAD = Buffer.from('');
 
@@ -17,13 +17,15 @@ export class WebSocketsMiddleware extends Middleware {
       request.headers[RequestHeader.Connection] === 'Upgrade' &&
       request.headers[RequestHeader.Upgrade] === 'websocket'
     ) {
+      const injector = context.getFeature(Injector);
+
       if (request.body instanceof IncomingMessage) {
-        const server = context.getService(WebSocket.Server);
+        const server = injector.get(WebSocket.Server);
         const message = request.body;
 
         await new Promise((resolve, reject) => {
           server.handleUpgrade(message, message.socket, EMPTY_HEAD, client => {
-            context.getService(WebSocketRef).client = client;
+            injector.get(WebSocketContext).client = client;
 
             client.on('close', resolve);
             client.on('error', reject);

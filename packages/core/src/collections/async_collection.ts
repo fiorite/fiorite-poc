@@ -1,6 +1,8 @@
 import {
+  appendAsync,
   countAsync,
-  filterAsync, firstAsync,
+  filterAsync,
+  firstAsync,
   flatAsync,
   flatMapAsync,
   forEachAsync,
@@ -18,7 +20,7 @@ import {
   AsyncCallback,
   AsyncPredicate,
   AsyncSelector,
-  EqualityComparer, Predicate
+  EqualityComparer
 } from '../common';
 import { InvalidOperationError } from '../errors';
 
@@ -59,6 +61,15 @@ export abstract class AsyncCollection<E> implements AsyncIterable<E> {
    */
   protected with<R>(sequence: AsyncIterable<R>): AsyncCollection<R> {
     return new (this.constructor as AsyncCollectionStatic<R>)[Symbol.species](sequence);
+  }
+
+  /**
+   * TODO: Describe.
+   */
+  append(element: E): AsyncCollection<E> {
+    return this.with(
+      appendAsync(this, element),
+    );
   }
 
   /**

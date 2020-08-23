@@ -1,96 +1,136 @@
-import { ServiceKey } from './service_key';
-import { Collection } from '../collections';
-import { Callable, Disposable, PromiseOr } from '../common';
-import { ProviderDescriptor } from './provider_descriptor';
+import { inspectServiceKey, ServiceKey } from './service_key';
+import { Collection, HashMap, HashMapError, Stack } from '../collections';
+import { Provider } from './provider';
 import { InvalidOperationError } from '../errors';
+import { Disposable, tryDispose } from '../common';
 
-export interface Injector extends Function {
+export class Injector {
   /**
-   * Inject all services with a key.
+   * Tracks key dependencies to prevent circular dependency.
    *
-   * @param key
+   * @protected
    */
-  <T>(key: ServiceKey<T> | ProviderDescriptor<T>): Collection<T>;
-}
+  #callStack: Stack<Provider>;
 
-export type InjectorFunction = <T>(key: ServiceKey<T> | ProviderDescriptor<T>) => Collection<T>;
-
-export abstract class Injector extends Callable<InjectorFunction> implements Disposable {
-  protected constructor() {
-    super(key => this.provide(key));
+  constructor(readonly providers: Collection<Provider>) {
+    this.#callStack = new Stack<Provider>();
   }
 
   /**
-   * Provides service collection with a key.
-   *
-   * @param key
-   * @protected
+   * @param provider
+   * @param providerInjector uses as Provider#provide(Injector) argument.
    */
-  protected abstract provide<T>(key: ServiceKey<T> | ProviderDescriptor<T>): Collection<T>;
+  resolve<T>(provider: Provider<T>, providerInjector: Injector = this): T {
+    if (this.#callStack.includes(provider)) {
+      // TODO: Add key to string.
+      const path = [...this.#callStack.append(provider).map(x => inspectServiceKey(x.key))].join(' > ');
+      throw new InvalidOperationError('Circular dependency detected: ' + path);
+    }
 
-  /**
-   * Gets a single instance with a key.
-   *
-   * @param key
-   *
-   * @throws InvalidOperationError if there is no services or more than one service registered with the same key.
-   */
-  get<T>(key: ServiceKey<T> | ProviderDescriptor<T>): T {
+    if (!this.#callStack.empty) {
+      const previous = this.#callStack.peek();
+
+      // TODO: Add #compare method.
+      if (previous.lifetime.value < provider.lifetime.value) {
+        // TODO: Add better error.
+        throw new InvalidOperationError('Lifetime, dude');
+      }
+    }
+
     try {
-      return this(key).single();
+      this.#callStack.push(provider);
+
+      return provider.provide(providerInjector) as T;
     } catch (error) {
-      if (error instanceof InvalidOperationError) {
-        throw new Error('Unable to locate "' + key.toString() + '"');
+      if (error instanceof HashMapError) {
+        error = new InvalidOperationError(
+          'Provider with key "' + ((error.key as any).name || error.key) + '" is not bound. Try add it.'
+        );
       }
 
       throw error;
+    } finally {
+      this.#callStack.pop();
     }
   }
 
   /**
-   * Gets all instances with a key.
+   * Gets first service by specified key.
+   *
+   * @param key
+   *
+   * @throws InvalidOperationError service with a type is not bound or there is more than one service with the same key.
+   */
+  get<T>(key: ServiceKey<T>): T {
+    return this.resolve(
+      this.providers.single(x => key === x.key) as Provider<T>,
+    );
+  }
+
+  /**
+   * Gets service collection of specified type.
    *
    * @param key
    */
   getAll<T>(key: ServiceKey<T>): Collection<T> {
-    return this(key);
+    return this.providers.cast<Provider<T>>()
+      .filter(x => key === x.key)
+      .map(x => this.resolve(x));
   }
 
   /**
-   * Checks whether at least one instance with a key registered.
+   * Checks whether key exists
    *
    * @param key
    */
   has(key: ServiceKey): boolean {
-    return this(key).some();
+    return this.providers.some(provider => key === provider.key);
   }
 
-  /**
-   * Gets a single service with key or null if there is no such service.
-   *
-   * @param key
-   *
-   * @throws InvalidOperationError if more than one service registered with the same key.
-   */
-  tryGet<T>(key: ServiceKey<T>): T | null;
-
-  /**
-   * Gets a single service with key or {@param or} if there is no such service.
-   *
-   * @param key
-   * @param or
-   *
-   * @throws InvalidOperationError if more than one service registered with the same key.
-   */
-  tryGet<T>(key: ServiceKey<T>, or: T): T;
-
-  /**
-   * @inheritDoc
-   */
-  tryGet<T>(key: ServiceKey<T>, or: T | null = null): T | null {
-    return this(key).trySingle() || or;
-  }
-
-  abstract [Symbol.dispose](): PromiseOr<void>;
+  // TODO: Add try API.
 }
 
+export class ScopedInjector extends Injector implements Disposable {
+  /**
+   * Stores scoped instances.
+   *
+   * @private
+   */
+  #instances: HashMap<Provider, unknown>;
+
+  /**
+   * Stores original injector.
+   *
+   * @private
+   */
+  readonly #injector: Injector;
+
+  constructor(injector: Injector) {
+    super(injector.providers);
+
+    this.#injector = injector;
+    this.#instances = new HashMap<Provider, unknown>();
+  }
+
+  resolve<T>(provider: Provider<T>, providerInjector: Injector = this): T {
+    if (provider.lifetime.isScoped) {
+      if (!this.#instances.has(provider)) {
+        const service = this.#injector.resolve(provider, providerInjector);
+        this.#instances.set(provider, service);
+      }
+
+      return this.#instances.get(provider) as T;
+    }
+
+    return this.#injector.resolve(provider, providerInjector);
+  }
+
+  async [Symbol.dispose]() {
+    await Promise.all(
+      this.#instances.values
+        .map(instance => tryDispose(instance))
+    );
+
+    this.#instances.clear();
+  }
+}

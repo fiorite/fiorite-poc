@@ -1,3 +1,4 @@
+export { append, appendAsync } from './append';
 export { some, someAsync } from './some';
 export { filter, filterAsync } from './filter';
 export { firstAsync, first } from './first';

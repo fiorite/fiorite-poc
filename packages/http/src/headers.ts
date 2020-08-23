@@ -1,4 +1,5 @@
 import { Disposable, HashMap } from '@fiorite/core';
+import { single } from '@fiorite/core/operators';
 
 export class HttpHeaders<K extends string = string> extends HashMap<K, string[]> implements Disposable {
   get [Symbol.toStringTag]() {
@@ -60,6 +61,16 @@ export class HttpHeaders<K extends string = string> extends HashMap<K, string[]>
 
     return super.delete(key);
   }
+
+  // region Single
+
+  getSingle(key: K) {
+    return single(
+      this.get(key),
+    );
+  }
+
+  // endregion
 
   /**
    * Converts map to {@link Record<string, string[]>}.

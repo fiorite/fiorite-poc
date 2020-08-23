@@ -227,7 +227,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
     const index = this.#buffer.findIndex(([x]) => this.keyComparer(key, x));
 
     if (index < 0) {
-      throw new HashMapError('An entry with such key is not exist.', key);
+      throw new HashMapError('An entry with key "' + key +  '" is not exist.', key);
     }
 
     return this.#buffer[index][1];

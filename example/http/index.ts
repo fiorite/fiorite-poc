@@ -1,5 +1,5 @@
 import { createServer } from 'http';
-import { Module, ProviderCollection, } from '@fiorite/core';
+import { Injector, Module, ProviderCollection, } from '@fiorite/core';
 import { HttpContext, HttpServer, NodeHttpAdapter } from '@fiorite/http';
 import { createWebApp, Endpoint, Route } from '@fiorite/web';
 
@@ -11,7 +11,7 @@ class FileDescriptor {
 @Route('**')
 class FileEndpoint extends Endpoint {
   handle(context: HttpContext) {
-    const description = context.getService(FileDescriptor);
+    const description = context.getFeature(Injector).get(FileDescriptor);
     return this.file(description.path, description.type);
   }
 }

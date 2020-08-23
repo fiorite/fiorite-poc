@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 import { InvalidOperationError } from '@fiorite/core';
 
-export class WebSocketRef {
+export class WebSocketContext {
   #client: WebSocket | null = null;
 
   get client(): WebSocket {

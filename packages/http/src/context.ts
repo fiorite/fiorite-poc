@@ -1,4 +1,4 @@
-import { AbstractType, Disposable, Injector, ProviderDescriptor, ServiceKey } from '@fiorite/core';
+import { AbstractType, Disposable, Injector, Provider, ServiceKey } from '@fiorite/core';
 
 import { Request } from './request';
 import { FeatureCollection } from './feature_collection';
@@ -15,10 +15,6 @@ export class HttpContext implements Disposable {
 
   get response(): Response {
     return this.features.get(Response);
-  }
-
-  get services(): Injector {
-    return this.features.get(Injector);
   }
 
   static from(request: Request, response: Response) {
@@ -42,10 +38,6 @@ export class HttpContext implements Disposable {
     this.features.add(type, feature);
 
     return this;
-  }
-
-  getService<T>(type: ServiceKey<T> | ProviderDescriptor<T>): T {
-    return this.services.get(type);
   }
 
   async [Symbol.dispose]() {

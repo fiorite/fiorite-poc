@@ -1,15 +1,30 @@
-import { AbstractType, Type } from '../common';
+import { AbstractType, isClass, Type } from '../common';
 
-export type ServiceKey<T = unknown> = Type<T> | AbstractType<T> | symbol | string;
-//
-// export function ServiceKey<T>(description: string = ''): Type<T> {
-//   return class ServiceKey {
-//     static readonly description = description;
-//
-//     static [Symbol.equals]() {
-//       return false;
-//     }
-//
-//     private constructor() { }
-//   } as unknown as Type<T>;
-// }
+/**
+ * Describes type of service key.
+ */
+export type ServiceKey<T = unknown> = AbstractType<T> | Type<T> | symbol | string;
+
+/**
+ * Gets readable name of service key.
+ *
+ * @param key
+ */
+export function inspectServiceKey(key: ServiceKey): string {
+  if (typeof key === 'function') {
+    const prototype = key.prototype as any;
+    const prefix = Symbol.toStringTag in prototype ? prototype[Symbol.toStringTag] : 'class';
+    return `[${prefix} ${key.name}]`;
+  }
+
+  return key.toString();
+}
+
+/**
+ * Checks whether value is valid service key.
+ *
+ * @param value
+ */
+export function isServiceKey(value: unknown): boolean {
+  return isClass(value) || ['string', 'symbol'].includes(typeof value);
+}

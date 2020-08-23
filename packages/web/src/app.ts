@@ -6,8 +6,9 @@ import {
   Module,
   provideModule,
   ProviderCollection,
-  ProviderDescriptor,
-  Type
+  Provider,
+  Type,
+  ScopedInjector
 } from '@fiorite/core';
 import { HttpServer, NodeHttpAdapter, RequestHandler, Response, ResponseHeader } from '@fiorite/http';
 
@@ -26,18 +27,19 @@ import { Readable } from 'stream';
 
 export class WebApp {
   constructor(
-    readonly providers: ProviderCollection,
+    readonly injector: Injector,
     readonly server: HttpServer,
   ) { }
 
   run(port: string | number): Disposable {
-    const callback = this.providers.filter(x => x.key === Middleware)
-      .cast<ProviderDescriptor<Middleware>>()
+    const callback = this.injector.providers.filter(x => x.key === Middleware)
+      .cast<Provider<Middleware>>()
       .reverse()
       .reduce<RequestHandler>((next, descriptor) => {
-        return context => context.getService(descriptor).handle(context, next);
+        return context => context.getFeature(Injector)
+          .resolve(descriptor).handle(context, next);
       }, async context => { // TODO: Add router.
-        const result = await context.services.getAll(RouteDescriptor)
+        const result = await context.getFeature(Injector).getAll(RouteDescriptor)
           .first().callback(context);
 
         if (result instanceof Readable) {
@@ -63,7 +65,7 @@ export class WebApp {
 
     // TODO: Replace callback.
     return this.server.serve(context => {
-      context.addFeature(Injector, this.providers.createInjector());
+      context.addFeature(Injector, new ScopedInjector(this.injector));
       callback(context);
     }, port);
   }
@@ -76,5 +78,5 @@ export function createWebApp(modules: Iterable<Type<Module>>): WebApp {
 
   const server = new HttpServer(NodeHttpAdapter.default);
 
-  return new WebApp(providers, server);
+  return new WebApp(new Injector(providers), server);
 }

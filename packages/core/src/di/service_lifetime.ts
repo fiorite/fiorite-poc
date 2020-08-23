@@ -1,5 +1,8 @@
 import { Equatable } from '../common';
 
+/**
+ * Custom class instead of enum in order to increase overloading possibilities.
+ */
 export class ServiceLifetime implements Equatable {
   /**
    * Providers string tag of an instance.
@@ -44,6 +47,10 @@ export class ServiceLifetime implements Equatable {
     return ServiceLifetime.Scoped.value === this.value;
   }
 
+  /**
+   * @param value number value of lifetime.
+   * @private
+   */
   private constructor(readonly value: number) { }
 
   [Symbol.equals](other: unknown): boolean {

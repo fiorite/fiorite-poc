@@ -11,6 +11,11 @@ export class Request extends HttpMessage {
   }
 
   /**
+   * TODO: Use unique value and reuse request X-Request-ID || X-Correlation-ID.
+   */
+  id: symbol = Symbol('0');
+
+  /**
    * @override
    */
   headers!: RequestHeaders;

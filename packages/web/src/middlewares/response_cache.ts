@@ -10,9 +10,13 @@ export class ResponseCacheMiddleware extends Middleware {
 
     const { request, response } = context;
 
+    const ifModifiedSince = request.headers[RequestHeader.IfModifiedSince];
+    const lastModified = response.headers[ResponseHeader.LastModified];
+
     if (
-      request.headers.has(RequestHeader.IfModifiedSince) &&
-      request.headers[RequestHeader.IfModifiedSince] !== response.headers[ResponseHeader.LastModified]
+      null !== ifModifiedSince &&
+      null !== lastModified &&
+      lastModified.getTime() === lastModified.getTime()
     ) {
       response.statusCode = StatusCode.NotModified;
       response.body = new Readable({ // TODO: Replace with default stream or something else.

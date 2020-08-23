@@ -39,6 +39,12 @@ export function isClass(target: unknown) {
     target === target.prototype.constructor;
 }
 
+export function isInstance(value: unknown) {
+  return null !== value &&
+    typeof value === 'object' &&
+    typeof (value as Instance).constructor === 'function';
+}
+
 /**
  * Checks whether object property is function.
  *
@@ -116,10 +122,16 @@ export interface Cloneable {
 /**
  * Mixin to map arguments and types in case {@link Function} do not expose such information.
  */
+/**
+ * @deprecated Main issue of such interface is on "await" call (await get(Callable) equals get(Callable)()).
+ */
 export interface Callable<F extends (...args: any) => any> extends Function {
   (...args: Parameters<F>): ReturnType<F>;
 }
 
+/**
+ * @deprecated Main issue of such interface is on "await" call (await get(Callable) equals get(Callable)()).
+ */
 export class Callable<F extends (...args: any) => any> extends Function {
   constructor(callback: (...args: Parameters<F>) => ReturnType<F> = () => { throw new NotImplementedError() }) {
     super();
@@ -129,11 +141,51 @@ export class Callable<F extends (...args: any) => any> extends Function {
   }
 }
 
+/**
+ * Contract for disposable interface.
+ */
 export interface Disposable {
   [Symbol.dispose](): PromiseOr<void>;
 }
 
+/**
+ * Calls #[Symbol.dispose]() on provided instance.
+ *
+ * @param instance
+ */
+export function dispose(instance: Disposable): PromiseOr<void> {
+  return instance[Symbol.dispose]();
+}
+
+/**
+ * Checks whether provided instance is disposable.
+ *
+ * @param instance
+ */
+export function isDisposable(instance: unknown): boolean {
+  return isMethod(instance, Symbol.dispose);
+}
+
+/**
+ * Tries to call #[Symbol.dispose]() on instance whether is implements {@link Disposable}.
+ * Returns {@link true} whether interface implementation and {@link false} if not.
+ *
+ * @param instance
+ */
+export async function tryDispose(instance: unknown): Promise<boolean> {
+  if (isDisposable(instance)) {
+    await dispose(instance as Disposable);
+
+    return true;
+  }
+
+  return false;
+}
+
 export namespace Disposable {
+  /**
+   * @deprecated use dispose() instead.
+   */
   export const dispose = async (instance: unknown): Promise<boolean> => {
     if (implemented(instance)) {
       await cast(instance)[Symbol.dispose]();
@@ -144,9 +196,15 @@ export namespace Disposable {
     return false;
   };
 
+  /**
+   * @deprecated use isDisposable() instead.
+   */
   export const implemented = (instance: unknown) =>
     isMethod(instance, Symbol.dispose);
 
+  /**
+   * @deprecated don't use anymore.
+   */
   export const cast = (instance: unknown) =>
     instance as Disposable;
 }
@@ -189,20 +247,20 @@ export namespace Equatable {
 /**
  * Identifies constructable classes.
  */
-export interface Type<T = unknown> extends Function {
-  new (...args: any[]): T;
-}
-
-/**
- * Identifies constructable classes.
- */
-export type Instance<T = unknown> = T & { constructor: Type<T>; };
+export type Instance<T = unknown> = T & { constructor: Type<T> };
 
 /**
  * Identifies abstract class.
  */
 export interface AbstractType<T = unknown> extends Function {
   prototype: T;
+}
+
+/**
+ * Identifies constructable classes.
+ */
+export interface Type<T = unknown> extends AbstractType<T> {
+  new (...args: any[]): T;
 }
 
 export namespace Type {

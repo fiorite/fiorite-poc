@@ -11,13 +11,17 @@ export function first<E>(iterable: Iterable<E>, predicate: Predicate<E, [number]
   let result = iterator.next();
 
   if (result.done) {
-    throw new InvalidOperationError('The source is empty.');
+    throw new InvalidOperationError('The sequence is empty.');
   }
 
   let index = 0;
 
   while (!result.done) {
     if (predicate(result.value, index)) {
+      if (iterator.return) {
+        iterator.return();
+      }
+
       return result.value;
     }
 
@@ -41,6 +45,10 @@ export async function firstAsync<E>(iterable: AsyncIterable<E>, predicate: Async
 
   while (!result.done) {
     if (await predicate(result.value, index)) {
+      if (iterator.return) {
+        await iterator.return();
+      }
+
       return result.value;
     }
 

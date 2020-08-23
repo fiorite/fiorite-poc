@@ -1,4 +1,4 @@
-import { Type, Selector } from './common';
+import { Selector, Type } from './common';
 import { DateNormalizer } from './normalizers/date';
 
 export interface Encoder {
@@ -94,7 +94,7 @@ export class Serializer {
     } else if (Type.is('function', normalizer)) {
       normalize = normalizer as Selector<T, R>;
     } else if (Type.is('class', normalizer)) {
-      const prototype = (normalizer as Type<T>).prototype;
+      const prototype = (normalizer as unknown as Type<Normalizable>).prototype;
 
       normalize = (
         typeof prototype[Symbol.normalize] === 'function' ?
@@ -123,6 +123,6 @@ export class Serializer {
 
 export const serialize = Serializer.default.serialize.bind(Serializer.default);
 
-export interface Normalizable<T> {
+export interface Normalizable<T = unknown> {
   [Symbol.normalize](): T;
 }

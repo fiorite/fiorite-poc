@@ -7,7 +7,7 @@ import { HttpDate } from './date';
  */
 export class ResponseHeaders extends HttpHeaders<ResponseHeader | string> {
   /**
-   * TODO: Describe.
+   * @inheritDoc {@link ResponseHeader.LastModified}.
    */
   get [ResponseHeader.LastModified](): Date | null {
     const values = this.get(ResponseHeader.LastModified);
@@ -18,11 +18,29 @@ export class ResponseHeaders extends HttpHeaders<ResponseHeader | string> {
   }
 
   /**
-   * TODO: Describe.
+   * @inheritDoc {@link ResponseHeader.LastModified}.
    */
   set [ResponseHeader.LastModified](value: Date | null) {
     null === value ?
       this.delete(ResponseHeader.LastModified) :
       this.set(ResponseHeader.LastModified, HttpDate.stringify(value));
+  }
+
+  /**
+   * Literal view.
+   *
+   * @inheritDoc {@link ResponseHeader.LastModified}.
+   */
+  get ['last-modified'](): Date | null {
+    return this[ResponseHeader.LastModified];
+  }
+
+  /**
+   * Literal view.
+   *
+   * @inheritDoc {@link ResponseHeader.LastModified}.
+   */
+  set ['last-modified'](value: Date | null) {
+    this[ResponseHeader.LastModified] = value;
   }
 }

@@ -1,4 +1,5 @@
 import {
+  append,
   count,
   filter,
   first,
@@ -66,6 +67,15 @@ export abstract class Collection<E> implements Iterable<E> {
    */
   protected with<R>(iterable: Iterable<R>): Collection<R> {
     return new (this.constructor as CollectionStatic<R>)[Symbol.species](iterable);
+  }
+
+  /**
+   * TODO: Describe.
+   */
+  append(element: E): Collection<E> {
+    return this.with(
+      append(this, element),
+    );
   }
 
   /**
