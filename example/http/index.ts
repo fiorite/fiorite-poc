@@ -9,23 +9,39 @@ import { createWebApp, Endpoint, Route } from '@fiorite/web';
 
   const subject = new Subject<number>();
 
-  operate(subject).then(() => console.log('Operation done!'));
+  subject
+    .filter(x => x % 2 === 0)
+    .tap(x => console.log('tap: ' + x))
+    .listen(x => console.log('listen: ' + x))
+    .then(() => console.log('stop listen!'));
 
-  for (let i = 0; i < 25; i++) { // Add (n) elements.
-    subject.add(i);
-  }
+  let i = 0;
 
-  await subject.close();
+  setInterval(() => {
+    let limit = i + 100;
 
-  async function operate(strings: AsyncCollection<number>) {
-    strings.first(x => x === 20)
+    for (; i < limit; i++) { // Add (n) elements.
+      subject.add(i);
+    }
+  }, 1000);
+
+  setTimeout(() => {
+    subject.close();
+  }, 5000);
+
+  // await numbers.close();
+
+  // operate(numbers).then(() => console.log('Operation done!'));
+
+  async function operate(numbers: AsyncCollection<number>) {
+    numbers.first(x => x === 20)
       .then(x => console.log('first: "' + x + '"'))
       .catch(error => console.error('first: ' + error));
 
-    strings.count()
+    numbers.count()
       .then(count => console.log('count: ' + count));
 
-    for await (const string of strings) {
+    for await (const string of numbers) {
       console.log('for await ... of: ' + string);
     }
   }

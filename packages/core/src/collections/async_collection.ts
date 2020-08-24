@@ -7,11 +7,13 @@ import {
   flatMapAsync,
   forEachAsync,
   includesAsync,
+  listenAsync,
   mapAsync,
   reduceAsync,
   reverseAsync,
   singleAsync,
   someAsync,
+  tapAsync,
   toArrayAsync
 } from '../operators';
 import {
@@ -23,6 +25,7 @@ import {
   EqualityComparer
 } from '../common';
 import { InvalidOperationError } from '../errors';
+import { Listener } from '../listener';
 
 /**
  * Describes abstract type of {@link AsyncCollection}.
@@ -149,6 +152,14 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
   }
 
   /**
+   * TODO: Describe
+   *
+   */
+  listen(callback: AsyncCallback<E, [number]>): Listener {
+    return listenAsync(this, callback);
+  }
+
+  /**
    * TODO: Describe.
    */
   reduce(accumulator: AsyncAccumulator<E, E, [number]>): Promise<E>;
@@ -228,6 +239,13 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    */
   some(...args: any[]): Promise<boolean> {
     return someAsync(this, ...args);
+  }
+
+  /**
+   * Performs callback on every emission and returns identical collection.
+   */
+  tap(callback: AsyncCallback<E, [number]>): AsyncCollection<E> {
+    return this.with(tapAsync(this, callback));
   }
 
   /**

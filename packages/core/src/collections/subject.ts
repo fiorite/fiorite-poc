@@ -1,23 +1,18 @@
 import { AsyncCollection } from './async_collection';
-import { Callback, Disposable } from '../common';
-import { HashSet } from './hash_set';
+import { Callback, Closeable } from '../common';
 import { Queue } from './queue';
 import { forEach } from '../operators';
-import { Collection } from './collection';
+import { Listener } from '../listener';
 
-export class Subject<E = unknown> extends AsyncCollection<E> implements Disposable {
-  private subs: Subscription<E>[] = [];
-
-  get subscriptions() {
-    return this.subs as readonly Subscription<E>[];
-  }
+export class Subject<E = unknown> extends AsyncCollection<E> implements Closeable {
+  private listeners: SubjectListener<E>[] = [];
 
   constructor() {
     super();
   }
 
   add(element: E): this {
-    this.subs.forEach(iterator => iterator.add(element));
+    this.listeners.forEach(iterator => iterator.add(element));
 
     return this;
   }
@@ -29,34 +24,36 @@ export class Subject<E = unknown> extends AsyncCollection<E> implements Disposab
   }
 
   throw(error: Error): void {
-    this.subs.forEach(iterator => iterator.throw(error));
+    this.listeners.forEach(iterator => iterator.throw(error));
   }
 
   close() {
-    return this[Symbol.dispose]();
+    return this[Symbol.close]();
   }
 
-  async [Symbol.dispose]() {
+  async [Symbol.close]() {
     // TODO: Mind about concurrency.
-    const subs = this.subs.slice();
+    const subs = this.listeners.slice();
 
     await Promise.all(
-      subs.map(sub => sub.return())
+      subs.map(sub => sub[Symbol.close]())
     );
   }
 
   [Symbol.asyncIterator](): AsyncIterator<E> {
-    const sub = new Subscription<E>(sub => {
-      const index = this.subs.findIndex(x => x === sub);
+    const listener = new SubjectListener<E>();
+
+    listener.then(() => {
+      const index = this.listeners.findIndex(x => x === listener);
 
       if (index > -1) {
-        this.subs.splice(index, 1);
+        this.listeners.splice(index, 1);
       }
     });
 
-    this.subs.push(sub);
+    this.listeners.push(listener);
 
-    return sub;
+    return listener;
   }
 }
 
@@ -71,11 +68,14 @@ interface Message {
   value: unknown;
 }
 
-export class Subscription<E> implements AsyncIterator<E> {
+export class SubjectListener<E> extends Listener implements AsyncIterator<E>, Closeable {
   messages = new Queue<Message>();
   listeners = new Queue<Callback<Message>>();
 
-  constructor(readonly onUnsubscribe: Callback<Subscription<E>>) { }
+  constructor() {
+    super();
+    this.then(() => this.return());
+  }
 
   add(element: E) {
     this.messages.enqueue({ type: MessageType.Data, value: element });
@@ -125,7 +125,7 @@ export class Subscription<E> implements AsyncIterator<E> {
     this.messages.enqueue({ type: MessageType.Error, value: error });
     this.digest();
 
-    this.onUnsubscribe(this);
+    this.close();
 
     return { done: true, value: undefined };
   }
@@ -134,7 +134,7 @@ export class Subscription<E> implements AsyncIterator<E> {
     this.messages.enqueue({ type: MessageType.Return, value });
     this.digest();
 
-    this.onUnsubscribe(this);
+    this.close();
 
     return { done: true, value: undefined };
   }

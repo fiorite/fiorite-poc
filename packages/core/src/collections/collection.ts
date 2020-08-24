@@ -7,17 +7,20 @@ import {
   flatMap,
   forEach,
   includes,
+  listen,
   map,
   reduce,
   reverse,
   single,
   some,
+  tap,
   toArray,
   toAsync
 } from '../operators';
 import { AbstractType, Accumulator, Callback, EqualityComparer, inspectSymbol, Predicate, Selector } from '../common';
 import { InvalidOperationError } from '../errors';
 import { AsyncCollection, AsyncCollectionStatic } from './async_collection';
+import { Listener } from '../listener';
 
 export interface CollectionConstructor {
   new <E>(iterable: Iterable<E>): Collection<E>;
@@ -145,6 +148,14 @@ export abstract class Collection<E> implements Iterable<E> {
     return includes(this, element, comparer);
   }
 
+  /**
+   * TODO: Describe
+   *
+   */
+  listen(callback: Callback<E, [number]>): Listener {
+    return listen(this, callback);
+  }
+
   // /**
   //  * TODO: Describe; think about includes/contains.
   //  * @alias {@link includes}
@@ -247,6 +258,13 @@ export abstract class Collection<E> implements Iterable<E> {
    */
   some(...args: any[]): boolean {
     return some(this, ...args);
+  }
+
+  /**
+   * Performs callback on every emission and returns identical collection.
+   */
+  tap(callback: Callback<E, [number]>): Collection<E> {
+    return this.with(tap(this, callback));
   }
 
   /**

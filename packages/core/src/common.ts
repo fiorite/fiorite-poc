@@ -6,6 +6,7 @@ declare global {
     readonly comparer: symbol;
     readonly dispose: symbol;
     readonly clone: symbol;
+    readonly close: symbol;
     readonly equals: symbol;
     readonly invoke: symbol;
   }
@@ -14,6 +15,7 @@ declare global {
 (Symbol as any).normalize = Symbol('normalize');
 (Symbol as any).comparer = Symbol('comparer');
 (Symbol as any).dispose = Symbol('dispose');
+(Symbol as any).close = Symbol('close');
 (Symbol as any).clone = Symbol('clone');
 (Symbol as any).equals = Symbol('equals');
 (Symbol as any).invoke = Symbol('invoke');
@@ -182,6 +184,28 @@ export async function tryDispose(instance: unknown): Promise<boolean> {
   return false;
 }
 
+export interface Closeable {
+  [Symbol.close](): void | Promise<void>;
+}
+
+export function close(instance: Closeable): PromiseOr<void> {
+  return instance[Symbol.close]();
+}
+
+export function isCloseable(instance: unknown): boolean {
+  return isMethod(instance, Symbol.close);
+}
+
+export async function tryClose(instance: unknown): Promise<boolean> {
+  if (isCloseable(instance)) {
+    await close(instance as Closeable);
+
+    return true;
+  }
+
+  return false;
+}
+
 export namespace Disposable {
   /**
    * @deprecated use dispose() instead.
@@ -203,7 +227,7 @@ export namespace Disposable {
     isMethod(instance, Symbol.dispose);
 
   /**
-   * @deprecated don't use anymore.
+   * @deprecated don't use it anymore.
    */
   export const cast = (instance: unknown) =>
     instance as Disposable;

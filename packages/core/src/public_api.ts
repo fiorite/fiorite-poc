@@ -16,3 +16,4 @@ export { Serializer, JsonEncoder, serialize, Normalizer, Encoder, Normalizable }
 export { Module, provideModule, runModule } from './module';
 export { AppBuilder } from './app.builder';
 export { tryCatch } from './try_catch';
+export { Listener } from './listener';
