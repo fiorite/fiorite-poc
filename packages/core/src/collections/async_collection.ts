@@ -34,7 +34,7 @@ export interface AsyncCollectionStatic<E = unknown> extends AbstractType<AsyncCo
   readonly [Symbol.species]: new <R>(iterable: AsyncIterable<R>) => AsyncCollection<R>;
 }
 
-export abstract class AsyncCollection<E> implements AsyncIterable<E> {
+export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
   /**
    * Returns function that is used to create a new {@link AsyncCollection}.
    *
