@@ -4,6 +4,11 @@ Fiorite is a development framework for building web applications using TypeScrip
 
 - ⚠️ Status: **In development**
 
+## Requirements
+
+- ES2019
+- TypeScript 2.8
+
 ## TODO
 
 - [x] Finalize injection proto: scopes, clarify terms (service/provider/injector etc)
@@ -16,3 +21,7 @@ Fiorite is a development framework for building web applications using TypeScrip
 - [ ] Think about angular ssr solution.
 - [ ] Inspect improvements (make collection readable).
  
+ 
+- [ ] Add reflect manager to store reflected metadata.
+- [ ] Implement `@singletone`, `@scoped`, `@transient`, `@inject`, `@injectAll` decorators.
+- [ ] Add tests for `di` component.  

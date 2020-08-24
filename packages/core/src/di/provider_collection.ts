@@ -13,6 +13,9 @@ import {
   TransientTuple
 } from './provider';
 
+/**
+ * Provider collection that encapsulates factory methods for the easiest provider configuration.
+ */
 export class ProviderCollection extends Collection<Provider> implements Cloneable, Disposable {
   #buffer: Provider[] = [];
 
@@ -25,10 +28,41 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
     this.addAll(iterable);
   }
 
+  /**
+   * Adds provider to collection.
+   *
+   * @param provider
+   */
   add(provider: Provider): this;
+
+  /**
+   * Creates provider using tuple signature and adds it to collection.
+   *
+   * @param tuple
+   */
   add(tuple: ProviderTuple): this;
+
+  /**
+   * Creates provider with specified type and adds it to collection.
+   *
+   * @param type
+   */
   add(type: Type): this;
+
+  /**
+   * Creates provider with specified type, lifetime and adds it to collection.
+   *
+   * @param type
+   * @param lifetime
+   */
   add(type: Type, lifetime: ServiceLifetime): this
+
+  /**
+   * Creates provider with specified type
+   *
+   * @param key
+   * @param type
+   */
   add<T>(key: ServiceKey<T>, type: Type<T>): this;
   add<T>(key: ServiceKey<T>, factory: ServiceFactory<T>): this;
   add<T extends object>(key: ServiceKey<T>, instance: T): this;
@@ -60,8 +94,8 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
     return this;
   }
 
-  addSingleton(provider: SingletonTuple): this;
   addSingleton(type: Type): this;
+  addSingleton(provider: SingletonTuple): this;
   addSingleton<T>(key: ServiceKey<T>, type: Type<T>): this;
   addSingleton<T>(key: ServiceKey<T>, factory: ServiceFactory<T>): this;
   addSingleton<T extends object>(key: ServiceKey<T>, instance: T): this;
@@ -83,8 +117,8 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
     return this;
   }
 
+  addScoped(type: Type): this;
   addScoped(tuple: ScopedTuple): this;
-  addScoped(type: Type<object>): this;
   addScoped<T>(key: ServiceKey<T>, type: Type<T>): this;
   addScoped<T>(key: ServiceKey<T>, factory: ServiceFactory<T>): this;
   addScoped(...args: ScopedTuple | [ScopedTuple]): this {
@@ -99,14 +133,14 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
     return this.add(provider);
   }
 
-  addAllScoped(iterable: Iterable<Type<object> | ScopedTuple>): this {
+  addAllScoped(iterable: Iterable<Type | ScopedTuple>): this {
     forEach(iterable, element => this.addScoped(element as any)); // TODO: Make it compatible.
 
     return this;
   }
 
+  addTransient(type: Type): this;
   addTransient(tuple: TransientTuple): this;
-  addTransient(type: Type<object>): this;
   addTransient<T>(key: ServiceKey<T>, type: Type<T>): this;
   addTransient<T>(key: ServiceKey<T>, factory: ServiceFactory<T>): this;
   addTransient(...args: TransientTuple | [TransientTuple]): this {
@@ -127,12 +161,22 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
     return this;
   }
 
+  /**
+   * Checks whether specified provider exists in a collection.
+   *
+   * @param provider
+   */
   has(provider: Provider): boolean {
-    return this.#buffer.findIndex(x => x[Symbol.equals](provider)) > -1;
+    return this.some(x => x[Symbol.equals](provider));
   }
 
+  /**
+   * Checks whether at least one provider with specified key exists.
+   *
+   * @param key
+   */
   hasKey(key: ServiceKey): boolean {
-    return this.#buffer.findIndex(x => x.key === key) > -1;
+    return this.some(x => key === x.key);
   }
 
   /**
@@ -146,6 +190,9 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
     return instance;
   }
 
+  /**
+   * Disposes all singleton providers.
+   */
   async [Symbol.dispose]() {
     await Promise.all(
       this.filter(provider => null !== provider.instance)
@@ -153,6 +200,9 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
     );
   }
 
+  /**
+   * Returns provider iterator.
+   */
   [Symbol.iterator]() {
     return this.#buffer[Symbol.iterator]();
   }

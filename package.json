@@ -4,11 +4,19 @@
   "description": "Development framework for building server applications using TypeScript/JavaScript",
   "author": "fiorite",
   "license": "MIT",
+  "homepage": "https://fiorite.dev",
   "scripts": {
     "ts": "node -r ts-node/register -r tsconfig-paths/register",
     "test": "mocha -r ts-node/register -r tsconfig-paths/register packages/**/*_spec.ts",
     "example:http": "npm run ts -- example/http/index.ts",
     "typedoc": "typedoc packages --json docs/output.json"
+  },
+  "bugs": {
+    "url": "https://github.com/fiorite/fiorite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fiorite/fiorite.git"
   },
   "devDependencies": {
     "@types/chai": "^4.2.12",

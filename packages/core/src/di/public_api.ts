@@ -5,4 +5,4 @@ export { Provider, TransientTuple, ScopedTuple, SingletonTuple, ProviderTuple } 
 export { ProviderCollection } from './provider_collection';
 export { Injector, ScopedInjector } from './injector';
 export { Inject, InjectAll } from './inject';
-export { Injectable, Scoped, Singleton, Transient } from './decorators';
+export { Injectable, Scoped, Singleton, Transient, injectable, singleton, transient, scoped } from './decorators';

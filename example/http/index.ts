@@ -19,7 +19,7 @@ class FileEndpoint extends Endpoint {
 class Test implements Module {
   configure(providers: ProviderCollection) {
     providers
-      .addSingleton(FileDescriptor)
+      .add(FileDescriptor)
       .useCors({ origin: ['*'], methods: ['*'], headers: ['*'] })
       .useWebSockets()
       .useResponseCache()

@@ -2,7 +2,13 @@ import { isServiceKey, ServiceKey } from './service_key';
 import { Injector } from './injector';
 import { ServiceLifetime } from './service_lifetime';
 import { Disposable, Equatable, Instance, isClass, isInstance, tryDispose, Type } from '../common';
-import { InvalidOperationError, NotImplementedError } from '../errors';
+import {
+  ArgumentError,
+  InvalidOperationError,
+  NotImplementedError,
+  ArgumentsLengthError,
+  InternalError
+} from '../errors';
 import { ServiceFactory } from './service_factory';
 
 /**
@@ -28,6 +34,9 @@ export type ScopedTuple = [Type] | [ServiceKey, Type | ServiceFactory];
  */
 export type TransientTuple = [Type] | [ServiceKey, Type | ServiceFactory];
 
+/**
+ * Service qualifier that stores key, lifetime and other mapping data.
+ */
 export class Provider<T = unknown> implements Equatable, Disposable {
   /**
    * Gets instance string tag.
@@ -66,7 +75,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
       return this.#instance;
     }
 
-    throw new InvalidOperationError('Unable to get #instance of non-singleton provider.');
+    throw new InvalidOperationError('Unable to get instance of non-singleton provider.');
   }
 
   /**
@@ -78,7 +87,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
     if (this.lifetime.isSingleton) {
       if (value !== this.#instance) {
         if (null !== this.#instance) {
-          throw new InvalidOperationError(); // TODO: Add Informative error.
+          throw new InvalidOperationError('Unable to set singleton instance twice.');
         }
 
         this.#instance = value;
@@ -98,7 +107,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
   #instance: T | null = null;
 
   /**
-   * Stores function that creates service.
+   * Stores internal function that creates service.
    *
    * @internal
    * @private
@@ -107,14 +116,50 @@ export class Provider<T = unknown> implements Equatable, Disposable {
     throw new NotImplementedError();
   };
 
+  /**
+   * Creates singleton provider with specified type.
+   * Service key would be same as provided type.
+   *
+   * @param type
+   */
   static singleton<T>(type: Type<T>): Provider<T>;
+
+  /**
+   * Creates singleton provider with specified instance.
+   * Service key consumes from instance.constructor.
+   *
+   * @param instance
+   */
   static singleton<T extends object>(instance: T): Provider<T>;
+
+  /**
+   * Creates singleton provider with specified key and type.
+   *
+   * @param key
+   * @param type
+   */
   static singleton<T>(key: ServiceKey<T>, type: Type<T>): Provider<T>;
+
+  /**
+   * Creates singleton provider with specified key and factory.
+   *
+   * @param key
+   * @param factory
+   */
   static singleton<T>(key: ServiceKey<T>, factory: ServiceFactory<T>): Provider<T>;
+
+  /**
+   * Creates singleton provider with specified key and instance.
+   *
+   * @param key
+   * @param instance
+   */
   static singleton<T extends object>(key: ServiceKey<T>, instance: T): Provider<T>;
 
   /**
-   * @internal tuple overload.
+   * Creates singleton provider using argument tuple.
+   *
+   * @internal
    */
   static singleton<T>(...tuple: SingletonTuple): Provider<T>;
 
@@ -125,12 +170,34 @@ export class Provider<T = unknown> implements Equatable, Disposable {
     return new Provider<T>(...args as SingletonTuple);
   }
 
+  /**
+   * Creates scoped service with specified type.
+   * Service key would be same as provided type.
+   *
+   * @param type
+   */
   static scoped<T>(type: Type<T>): Provider<T>;
+
+  /**
+   * Creates scoped service with specified key and type.
+   *
+   * @param key
+   * @param type
+   */
   static scoped<T>(key: ServiceKey<T>, type: Type<T>): Provider<T>;
+
+  /**
+   * Creates scoped service with specified key and factory.
+   *
+   * @param key
+   * @param factory
+   */
   static scoped<T>(key: ServiceKey<T>, factory: ServiceFactory<T>): Provider<T>;
 
   /**
-   * @internal tuple overload.
+   * Creates scoped provider using tuple.
+   *
+   * @internal
    */
   static scoped<T>(...tuple: ScopedTuple): Provider<T>;
 
@@ -143,12 +210,34 @@ export class Provider<T = unknown> implements Equatable, Disposable {
     );
   }
 
+  /**
+   * Creates transient provider with specified type.
+   * Service key would be same as provided type.
+   *
+   * @param type
+   */
   static transient<T>(type: Type<T>): Provider<T>;
+
+  /**
+   * Creates transient provider with specified key and type.
+   *
+   * @param key
+   * @param type
+   */
   static transient<T>(key: ServiceKey<T>, type: Type<T>): Provider<T>;
+
+  /**
+   * Creates transient provider with specified key and factory.
+   *
+   * @param key
+   * @param factory
+   */
   static transient<T>(key: ServiceKey<T>, factory: ServiceFactory<T>): Provider<T>;
 
   /**
-   * @internal tuple overload.
+   * Creates transient provider using tuple.
+   *
+   * @internal
    */
   static transient<T>(...tuple: TransientTuple): Provider<T>;
 
@@ -161,16 +250,81 @@ export class Provider<T = unknown> implements Equatable, Disposable {
     );
   }
 
+  /**
+   * Instantiates provider with specified type.
+   * Service key would be same as provided type.
+   * Service lifetime is {@link ServiceLifetime.Singleton}.
+   *
+   * @param type
+   */
   constructor(type: Type<T>);
+
+  /**
+   * Instantiates provider with specified instance.
+   * Service key consumes from instance.constructor.
+   * Service lifetime is {@link ServiceLifetime.Singleton}.
+   *
+   * @param instance
+   */
   constructor(instance: Instance<T>);
+
+  /**
+   * Instantiates provide with specified type and lifetime.
+   * Service key would be same as provided type.
+   *
+   * @param type
+   * @param lifetime
+   */
   constructor(type: Type<T>, lifetime: ServiceLifetime);
+
+  /**
+   * Instantiates provide with specified key and type.
+   * Service lifetime is {@link ServiceLifetime.Singleton}.
+   *
+   * @param key
+   * @param type
+   */
   constructor(key: ServiceKey<T>, type: Type<T>);
+
+  /**
+   * Instantiates provide with specified key and factory.
+   * Service lifetime is {@link ServiceLifetime.Singleton}.
+   *
+   * @param key
+   * @param factory
+   */
   constructor(key: ServiceKey<T>, factory: ServiceFactory<T>);
+
+  /**
+   * Instantiates provide with specified key and instance.
+   * Service lifetime is {@link ServiceLifetime.Singleton}.
+   *
+   * @param key
+   * @param instance
+   */
   constructor(key: ServiceKey<T>, instance: Instance<T>);
+
+  /**
+   * Instantiates provide with specified key, type and lifetime.
+   *
+   * @param key
+   * @param type
+   * @param lifetime
+   */
   constructor(key: ServiceKey<T>, type: Type<T>, lifetime: ServiceLifetime);
+
+  /**
+   * Instantiates provide with specified key, factory and lifetime.
+   *
+   * @param key
+   * @param factory
+   * @param lifetime
+   */
   constructor(key: ServiceKey<T>, factory: ServiceFactory<T>, lifetime: ServiceLifetime);
 
   /**
+   * Instantiates provider using tuple.
+   *
    * @internal tuple overload.
    */
   constructor(...tuple: ProviderTuple);
@@ -191,7 +345,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
         this.key = a.constructor;
         this.instance = a;
       } else {
-        throw new InvalidOperationError(); // TODO: Add informative error.
+        throw new ArgumentError(`First argument should be Type or instance. "${a}" was provided.`);
       }
     } else if (args.length === 2) {
       const [a, b] = args;
@@ -203,7 +357,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
           this.key = a;
           this.type = a;
         } else {
-          throw new InvalidOperationError(); // TODO: Add informative error.
+          throw new ArgumentError(`First argument should be Type. "${a}" was provided.`);
         }
       } else if (isServiceKey(a)) {
         this.key = a;
@@ -216,33 +370,36 @@ export class Provider<T = unknown> implements Equatable, Disposable {
         } else if (typeof b === 'function') {
           this.factory = b;
         } else {
-          throw new InvalidOperationError(); // TODO: Add informative error.
+          throw new ArgumentError(`Second argument should be Type or ServiceFactory or instance. "${b}" was provided.`);
         }
       } else {
-        throw new InvalidOperationError(); // TODO: Add informative error.
+        throw new ArgumentError(`First argument should be instance of ServiceLifetime or valid ServiceKey. "${a}" was provided.`);
       }
     } else if (args.length === 3) {
       const [a, b, c] = args;
 
-      if (isServiceKey(a) && c instanceof ServiceLifetime) {
-        this.key = a;
-        this.lifetime = c;
+      if (isServiceKey(a)) {
+        if (c instanceof ServiceLifetime) {
+          this.key = a;
+          this.lifetime = c;
 
-        if (isClass(b)) {
-          this.type = b;
-        } else if (typeof b === 'function') {
-          this.factory = b;
+          if (isClass(b)) {
+            this.type = b;
+          } else if (typeof b === 'function') {
+            this.factory = b;
+          } else {
+            throw new ArgumentError(`Second argument should be Type or ServiceFactory. "${b}" was provided.`);
+          }
         } else {
-          throw new InvalidOperationError(); // TODO: Add informative error.
+          throw new ArgumentError(`Third argument should be instance of ServiceLifetime. "${c}" was provided.`);
         }
       } else {
-        throw new InvalidOperationError(); // TODO: Add informative error.
+        throw new ArgumentError(`First argument should be valid ServiceKey. "${a}" was provided.`);
       }
     } else {
-      throw new InvalidOperationError(); // TODO: Add informative error.
+      throw new ArgumentsLengthError(args.length, [1, 3]);
     }
 
-    // Bind service accessor.
     if (null !== this.type) {
       // TODO: Resolve @Inject() || @InjectAll().
 
@@ -250,7 +407,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
 
       if (!Array.isArray(parameters)) {
         if (this.type.length > 0) {
-          throw new InvalidOperationError('Class "' + this.type.name + '" is not decorated. Please decorate your class at least by @Injectable().');
+          throw new InvalidOperationError('Class "' + this.type.name + '" is not decorated. Please decorate your class at least with @Injectable().');
         } else {
           parameters = [];
         }
@@ -264,7 +421,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
     } else if (null !== this.instance) {
       // Do nothing.
     } else {
-      throw new InvalidOperationError(); // TODO: Add informative error.
+      throw new InternalError('Provider has no defined type, factory and instance.');
     }
   }
 
@@ -290,6 +447,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
    */
   async [Symbol.dispose]() {
     await tryDispose(this.instance);
+    this.#instance = null;
   }
 
   /**
