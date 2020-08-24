@@ -4,25 +4,26 @@ import { ServiceLifetime } from './service_lifetime';
 import { Disposable, Equatable, Instance, isClass, isInstance, tryDispose, Type } from '../common';
 import {
   ArgumentError,
-  InvalidOperationError,
-  NotImplementedError,
   ArgumentsLengthError,
-  InternalError
+  InternalError,
+  InvalidOperationError,
+  NotImplementedError
 } from '../errors';
 import { ServiceFactory } from './service_factory';
 
 /**
  * Tuple signature for any provider.
  */
-export type ProviderTuple = [Type] |
+export type ProviderTuple = [Type | Instance] |
+  [Type, unknown] |
   [Type, ServiceLifetime] |
-  [ServiceKey, Type | ServiceFactory | object] |
+  [ServiceKey, Type | ServiceFactory | unknown] |
   [ServiceKey, Type | ServiceFactory, ServiceLifetime];
 
 /**
  * Tuple signature for singleton provider.
  */
-export type SingletonTuple = [Type] | [ServiceKey, Type | ServiceFactory | object];
+export type SingletonTuple = [Type | Instance] | [Type, unknown] | [ServiceKey, Type | ServiceFactory | unknown];
 
 /**
  * Tuple signature for scoped provider.
@@ -67,15 +68,9 @@ export class Provider<T = unknown> implements Equatable, Disposable {
 
   /**
    * Gets service instance.
-   *
-   * @throws InvalidOperationError provider lifetime is not singleton.
    */
   get instance(): T | null {
-    if (this.lifetime.isSingleton) {
-      return this.#instance;
-    }
-
-    throw new InvalidOperationError('Unable to get instance of non-singleton provider.');
+    return this.#instance;
   }
 
   /**
@@ -130,7 +125,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
    *
    * @param instance
    */
-  static singleton<T extends object>(instance: T): Provider<T>;
+  static singleton<T>(instance: Instance<T>): Provider<T>;
 
   /**
    * Creates singleton provider with specified key and type.
@@ -154,7 +149,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
    * @param key
    * @param instance
    */
-  static singleton<T extends object>(key: ServiceKey<T>, instance: T): Provider<T>;
+  static singleton<T>(key: ServiceKey<T>, instance: T): Provider<T>;
 
   /**
    * Creates singleton provider using argument tuple.
@@ -302,7 +297,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
    * @param key
    * @param instance
    */
-  constructor(key: ServiceKey<T>, instance: Instance<T>);
+  constructor(key: ServiceKey<T>, instance: T);
 
   /**
    * Instantiates provide with specified key, type and lifetime.

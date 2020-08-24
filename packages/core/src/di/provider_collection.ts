@@ -1,4 +1,4 @@
-import { Cloneable, Disposable, tryDispose, Type } from '../common';
+import { Cloneable, Disposable, Instance, tryDispose, Type } from '../common';
 import { forEach } from '../operators';
 import { Collection } from '../collections';
 import { ServiceKey } from './service_key';
@@ -50,6 +50,13 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
   add(type: Type): this;
 
   /**
+   * Creates provider with specified type and adds it to collection.
+   *
+   * @param type
+   */
+  add(type: Instance): this;
+
+  /**
    * Creates provider with specified type, lifetime and adds it to collection.
    *
    * @param type
@@ -68,7 +75,7 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
   add<T extends object>(key: ServiceKey<T>, instance: T): this;
   add<T>(key: ServiceKey<T>, type: Type<T>, lifetime: ServiceLifetime): this;
   add<T>(key: ServiceKey<T>, factory: ServiceFactory<T>, lifetime: ServiceLifetime): this;
-  add(...args: [Provider | ProviderTuple] | ProviderTuple): this {
+  add(...args: any[]): this {
     let provider: Provider;
 
     if (args.length === 1 && args[0] instanceof Provider) {
@@ -88,7 +95,7 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
     return this;
   }
 
-  addAll(iterable: Iterable<Provider | ProviderTuple | Type>): this {
+  addAll(iterable: Iterable<Provider | ProviderTuple | Type | Instance>): this {
     forEach(iterable, element => this.add(element as any));
 
     return this;
@@ -96,10 +103,11 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
 
   addSingleton(type: Type): this;
   addSingleton(provider: SingletonTuple): this;
+  addSingleton(instance: Instance): this;
   addSingleton<T>(key: ServiceKey<T>, type: Type<T>): this;
   addSingleton<T>(key: ServiceKey<T>, factory: ServiceFactory<T>): this;
-  addSingleton<T extends object>(key: ServiceKey<T>, instance: T): this;
-  addSingleton(...args: SingletonTuple | [SingletonTuple]): this {
+  addSingleton<T>(key: ServiceKey<T>, instance: T): this;
+  addSingleton(...args: any[]): this {
     let provider: Provider;
 
     if (args.length === 1 && Array.isArray(args[0])) {
