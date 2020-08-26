@@ -1,27 +1,28 @@
 import { AsyncPredicate, Predicate } from '../common';
-import { InvalidOperationError } from '../errors';
 
-export function first<E>(iterable: Iterable<E>, predicate: Predicate<E, [number]> = () => true): E {
+/**
+ * TODO: Describe.
+ *
+ * @param iterable
+ * @param predicate
+ */
+export function every<E>(iterable: Iterable<E>, predicate: Predicate<E, [number]>): boolean {
   if (Array.isArray(iterable)) {
-    return iterable.find(predicate);
+    return iterable.every(predicate);
   }
 
   const iterator = iterable[Symbol.iterator]();
 
   let result = iterator.next();
 
-  if (result.done) {
-    throw new InvalidOperationError('The sequence is empty.');
-  }
-
   if (predicate.length < 2) { // If client don't request index.
     while (!result.done) {
-      if ((predicate as Predicate<E>)(result.value)) {
+      if (!(predicate as Predicate<E>)(result.value)) {
         if (iterator.return) {
           iterator.return();
         }
 
-        return result.value;
+        return false;
       }
 
       result = iterator.next();
@@ -30,12 +31,12 @@ export function first<E>(iterable: Iterable<E>, predicate: Predicate<E, [number]
     let index = 0;
 
     while (!result.done) {
-      if (predicate(result.value, index)) {
+      if (!predicate(result.value, index)) {
         if (iterator.return) {
           iterator.return();
         }
 
-        return result.value;
+        return false;
       }
 
       result = iterator.next();
@@ -43,26 +44,28 @@ export function first<E>(iterable: Iterable<E>, predicate: Predicate<E, [number]
     }
   }
 
-  throw new InvalidOperationError('No element satisfies the condition in predicate.');
+  return true;
 }
 
-export async function firstAsync<E>(iterable: AsyncIterable<E>, predicate: AsyncPredicate<E, [number]> = () => true): Promise<E> {
+/**
+ * TODO: Describe.
+ *
+ * @param iterable
+ * @param predicate
+ */
+export async function everyAsync<E>(iterable: AsyncIterable<E>, predicate: AsyncPredicate<E, [number]>): Promise<boolean> {
   const iterator = iterable[Symbol.asyncIterator]();
 
   let result = await iterator.next();
 
-  if (result.done) {
-    throw new InvalidOperationError('The sequence is empty.');
-  }
-
   if (predicate.length < 2) { // If client don't request index.
     while (!result.done) {
-      if (await (predicate as AsyncPredicate<E>)(result.value)) {
+      if (!await (predicate as AsyncPredicate<E>)(result.value)) {
         if (iterator.return) {
           await iterator.return();
         }
 
-        return result.value;
+        return false;
       }
 
       result = await iterator.next();
@@ -71,12 +74,12 @@ export async function firstAsync<E>(iterable: AsyncIterable<E>, predicate: Async
     let index = 0;
 
     while (!result.done) {
-      if (await predicate(result.value, index)) {
+      if (!await predicate(result.value, index)) {
         if (iterator.return) {
           await iterator.return();
         }
 
-        return result.value;
+        return false;
       }
 
       result = await iterator.next();
@@ -84,5 +87,5 @@ export async function firstAsync<E>(iterable: AsyncIterable<E>, predicate: Async
     }
   }
 
-  throw new InvalidOperationError('No element satisfies the condition in predicate.');
+  return true;
 }

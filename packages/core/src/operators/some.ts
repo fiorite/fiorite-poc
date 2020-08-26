@@ -7,22 +7,41 @@ import { AsyncPredicate, Predicate } from '../common';
  * @param predicate
  */
 export function some<E>(iterable: Iterable<E>, predicate: Predicate<E, [number]> = () => true): boolean {
+  if (Array.isArray(iterable)) {
+    return iterable.some(predicate);
+  }
+
   const iterator = iterable[Symbol.iterator]();
 
   let result = iterator.next();
-  let index = 0;
 
-  while (!result.done) {
-    if (predicate(result.value, index)) {
-      if (iterator.return) {
-        iterator.return();
+  if (predicate.length < 2) {
+    while (!result.done) {
+      if ((predicate as Predicate<E>)(result.value)) {
+        if (iterator.return) {
+          iterator.return();
+        }
+
+        return true;
       }
 
-      return true;
+      result = iterator.next();
     }
+  } else {
+    let index = 0;
 
-    result = iterator.next();
-    index++;
+    while (!result.done) {
+      if (predicate(result.value, index)) {
+        if (iterator.return) {
+          iterator.return();
+        }
+
+        return true;
+      }
+
+      result = iterator.next();
+      index++;
+    }
   }
 
   return false;
@@ -34,7 +53,7 @@ export function some<E>(iterable: Iterable<E>, predicate: Predicate<E, [number]>
  * @param iterable
  * @param predicate
  */
-export async function someAsync<T>(iterable: AsyncIterable<T>, predicate: AsyncPredicate<T, [number]> = () => true): Promise<boolean> {
+export async function someAsync<E>(iterable: AsyncIterable<E>, predicate: AsyncPredicate<E, [number]> = () => true): Promise<boolean> {
   const iterator = iterable[Symbol.asyncIterator]();
 
   let result = await iterator.next();

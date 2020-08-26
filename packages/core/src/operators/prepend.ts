@@ -1,16 +1,16 @@
 import { AsyncOperator, Operator } from '../common';
-import { ArgumentsLengthError } from '../errors';
 import { compose } from './compose';
+import { ArgumentsLengthError } from '../errors';
 
-export function append<E>(element: E): Operator<E> & AsyncOperator<E>;
-export function append<E>(iterable: Iterable<E>, element: E): Iterable<E>;
-export function append<E>(iterable: AsyncIterable<E>, element: E): AsyncIterable<E>;
-export function append<E>(...args: unknown[]): unknown {
+export function prepend<E>(element: E): Operator<E> & AsyncOperator<E>;
+export function prepend<E>(iterable: Iterable<E>, element: E): Iterable<E>;
+export function prepend<E>(iterable: AsyncIterable<E>, element: E): AsyncIterable<E>;
+export function prepend<E>(...args: unknown[]): unknown {
   let element: E;
 
   const operator = compose<E>(
-    iterable => appendSync(iterable, element),
-    iterable => appendAsync(iterable, element),
+    iterable => prependSync(iterable, element),
+    iterable => prependAsync(iterable, element),
   );
 
   if (args.length === 1) {
@@ -27,12 +27,22 @@ export function append<E>(...args: unknown[]): unknown {
 }
 
 /**
- * Appends elements to the end of a new sequence.
+ * Prepends elements to the end of a new sequence.
  *
  * @param iterable
  * @param elements
  */
-function *appendSync<E>(iterable: Iterable<E>, ...elements: E[]): Iterable<E> {
+function *prependSync<E>(iterable: Iterable<E>, ...elements: E[]): Iterable<E> {
+  const iterator2 = elements[Symbol.iterator]();
+
+  let result2 = iterator2.next();
+
+  while (!result2.done) {
+    yield result2.value;
+
+    result2 = iterator2.next();
+  }
+
   const iterator1 = iterable[Symbol.iterator]();
 
   let result1 = iterator1.next();
@@ -42,7 +52,15 @@ function *appendSync<E>(iterable: Iterable<E>, ...elements: E[]): Iterable<E> {
 
     result1 = iterator1.next();
   }
+}
 
+/**
+ * Prepends elements to the end of a new sequence.
+ *
+ * @param iterable
+ * @param elements
+ */
+async function *prependAsync<E>(iterable: AsyncIterable<E>, ...elements: E[]): AsyncIterable<E> {
   const iterator2 = elements[Symbol.iterator]();
 
   let result2 = iterator2.next();
@@ -52,15 +70,7 @@ function *appendSync<E>(iterable: Iterable<E>, ...elements: E[]): Iterable<E> {
 
     result2 = iterator2.next();
   }
-}
 
-/**
- * Appends elements to the end of a new sequence.
- *
- * @param iterable
- * @param elements
- */
-async function *appendAsync<E>(iterable: AsyncIterable<E>, ...elements: E[]): AsyncIterable<E> {
   const iterator1 = iterable[Symbol.asyncIterator]();
 
   let result1 = await iterator1.next();
@@ -69,15 +79,5 @@ async function *appendAsync<E>(iterable: AsyncIterable<E>, ...elements: E[]): As
     yield result1.value;
 
     result1 = await iterator1.next();
-  }
-
-  const iterator2 = elements[Symbol.iterator]();
-
-  let result2 = iterator2.next();
-
-  while (!result2.done) {
-    yield result2.value;
-
-    result2 = iterator2.next();
   }
 }

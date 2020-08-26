@@ -1,6 +1,8 @@
 import {
   append,
+  concat,
   count,
+  every,
   filter,
   first,
   flat,
@@ -9,22 +11,33 @@ import {
   includes,
   listen,
   map,
+  prepend,
   reduce,
   reverse,
   single,
+  skip,
   some,
+  take,
   tap,
   toArray,
-  toAsync
+  toAsync,
+  toSync
 } from '../operators';
-import { AbstractType, Accumulator, Callback, EqualityComparer, inspectSymbol, Predicate, Selector } from '../common';
-import { InvalidOperationError } from '../errors';
+import {
+  AbstractType,
+  Callback,
+  EqualityComparer,
+  inspectSymbol,
+  isAsyncIterable,
+  isIterable,
+  Operator,
+  Predicate,
+  Reducer,
+  Selector
+} from '../common';
+import { ArgumentError, InvalidOperationError } from '../errors';
 import { AsyncCollection, AsyncCollectionStatic } from './async_collection';
 import { Listener } from '../listener';
-
-export interface CollectionConstructor {
-  new <E>(iterable: Iterable<E>): Collection<E>;
-}
 
 /**
  * Describes abstract type of {@link Collection}.
@@ -47,6 +60,13 @@ export abstract class Collection<E> implements Iterable<E> {
   }
 
   /**
+   * Gets string tag.
+   */
+  get [Symbol.toStringTag]() {
+    return 'Collection';
+  }
+
+  /**
    * Stores {@link EqualityComparer}.
    */
   [Symbol.comparer]: EqualityComparer<E>;
@@ -54,7 +74,7 @@ export abstract class Collection<E> implements Iterable<E> {
   /**
    * Returns whether a sequence is empty.
    */
-  get empty() {
+  get empty(): boolean {
     return !this.some();
   }
 
@@ -73,26 +93,53 @@ export abstract class Collection<E> implements Iterable<E> {
   }
 
   /**
-   * TODO: Describe.
+   * Appends element to the end of a new sequence.
    */
   append(element: E): Collection<E> {
-    return this.with(
-      append(this, element),
-    );
+    return this.pipe(append(element));
   }
 
   /**
-   * Casts element type of a sequence.
+   * Concatenates provided sequences into a new sequence.
+   */
+  concat(other: Iterable<E>): Collection<E> {
+    return this.pipe(concat(other));
+  }
+
+  /**
+   * Casts a new sequence type.
    */
   cast<R>(): Collection<R> {
     return this as unknown as Collection<R>;
   }
 
   /**
-   * Counts number of element in a sequence.
+   * Counts the number of elements in a sequence.
+   */
+  count(): number;
+
+  /**
+   * Counts the number of elements in a sequence.
+   */
+  count(predicate: Predicate<E, [number]>): number;
+
+  /**
+   * @internal
+   */
+  count(...args: [] | [Predicate<E, [number]>]): number;
+
+  /**
+   * @inheritDoc
    */
   count(): number {
     return count(this);
+  }
+
+  /**
+   * TODO: Describe
+   */
+  every(predicate: Predicate<E, [number]>): boolean {
+    return every(this, predicate);
   }
 
   /**
@@ -150,7 +197,6 @@ export abstract class Collection<E> implements Iterable<E> {
 
   /**
    * TODO: Describe
-   *
    */
   listen(callback: Callback<E, [number]>): Listener {
     return listen(this, callback);
@@ -168,7 +214,7 @@ export abstract class Collection<E> implements Iterable<E> {
   // }
 
   /**
-   * Filters sequence using predicate.
+   * TODO: Describe.
    *
    * @param selector
    */
@@ -178,10 +224,36 @@ export abstract class Collection<E> implements Iterable<E> {
 
   /**
    * TODO: Describe.
+   *
+   * @param operator
    */
-  reduce(accumulator: Accumulator<E, E, [number]>): E;
-  reduce<A>(accumulator: Accumulator<E, A, [number]>, seed: A): A;
-  reduce<A, R>(accumulator: Accumulator<E, A, [number]>, seed: A, selector: Selector<A, R>): R;
+  pipe<R>(operator: Operator<E, Iterable<R>>): Collection<R>;
+
+  /**
+   * @inheritDoc
+   */
+  pipe(...operators: Operator<any>[]): Collection<any> {
+    console.log(operators);
+    return this.with(
+      operators.reduce((iterable, operator) => {
+        return operator(iterable);
+      }, this as Iterable<any>)
+    );
+  }
+
+  /**
+   * TODO: Describe.
+   */
+  prepend(element: E): Collection<E> {
+    return this.pipe(prepend(element));
+  }
+
+  /**
+   * TODO: Describe.
+   */
+  reduce(reducer: Reducer<E, E, [number]>): E;
+  reduce<A>(reducer: Reducer<E, A, [number]>, seed: A): A;
+  reduce<A, R>(reducer: Reducer<E, A, [number]>, seed: A, selector: Selector<A, R>): R;
   reduce(...args: any[]): unknown {
     return (reduce as any)(this, ...args);
   }
@@ -210,6 +282,15 @@ export abstract class Collection<E> implements Iterable<E> {
    */
   single(...args: any[]): E {
     return single(this, ...args);
+  }
+
+  /**
+   * TODO: Describe.
+   *
+   * @param count
+   */
+  skip(count: number): Collection<E> {
+    return this.with(skip(this, count));
   }
 
   /**
@@ -261,6 +342,15 @@ export abstract class Collection<E> implements Iterable<E> {
   }
 
   /**
+   * TODO: Describe.
+   *
+   * @param count
+   */
+  take(count: number): Collection<E> {
+    return this.with(take(this, count));
+  }
+
+  /**
    * Performs callback on every emission and returns identical collection.
    */
   tap(callback: Callback<E, [number]>): Collection<E> {
@@ -275,10 +365,10 @@ export abstract class Collection<E> implements Iterable<E> {
   }
 
   /**
-   * Converts {@link Collection} to {@link AsyncCollection}.
+   * Converts a sequence to {@link AsyncCollection}.
    */
-  toAsync(delivery: AsyncCollectionStatic = AsyncCollection): AsyncCollection<E extends Promise<infer I> ? I : E> {
-    return new delivery[Symbol.species](toAsync(this));
+  toAsync(collectionType: AsyncCollectionStatic = AsyncCollection): AsyncCollection<E extends Promise<infer I> ? I : E> {
+    return new collectionType[Symbol.species](toAsync(this));
   }
 
   /**
@@ -287,14 +377,17 @@ export abstract class Collection<E> implements Iterable<E> {
   abstract [Symbol.iterator](): Iterator<E>;
 
   /**
-   * Normalizes a sequence as an array.
+   * Normalizes sequence.
    */
   [Symbol.normalize](): E[] {
     return this.toArray();
   }
 
+  /**
+   * NodeJS inspect symbol.
+   */
   [inspectSymbol]() {
-    return this[Symbol.normalize]();
+    return [this[Symbol.toStringTag], this[Symbol.normalize]()];
   }
 }
 
@@ -319,6 +412,50 @@ export class IterableCollection<E> extends Collection<E> {
  *
  * @param iterable
  */
-export function collect<E>(iterable: Iterable<E>): Collection<E> {
-  return new Collection[Symbol.species](iterable);
+export function collect<E>(iterable: Iterable<E>): Collection<E>;
+
+/**
+ * Creates a new {@link AsyncCollection} using {@link AsyncCollection[Symbol.species]} constructor.
+ *
+ * @param iterable
+ */
+export function collect<E>(iterable: AsyncIterable<E>): AsyncCollection<E>;
+
+/**
+ * @inheritDoc
+ */
+export function collect<E>(iterable: Iterable<E> | AsyncIterable<E>): Collection<E> | AsyncCollection<E> {
+  if (isIterable(iterable)) {
+    return new Collection[Symbol.species](iterable as Iterable<E>);
+  } else if (isAsyncIterable(iterable)) {
+    return new AsyncCollection[Symbol.species](iterable as AsyncIterable<E>);
+  }
+
+   throw new ArgumentError(); // TODO: Add better message.
+}
+
+/**
+ * Extension to convert async collection to sync.
+ */
+declare module './async_collection' {
+  interface AsyncCollection<E> {
+    /**
+     * Converts a sequence to {@link Collection}.
+     */
+    toSync(): Promise<Collection<E>>;
+
+    /**
+     * Converts a sequence to {@link Collection} using specified collection type.
+     *
+     * @param collectionType
+     */
+    toSync(collectionType: CollectionStatic<E>): Promise<Collection<E>>;
+  }
+}
+
+/**
+ * @inheritDoc
+ */
+AsyncCollection.prototype.toSync = async function <E>(this: AsyncCollection<E>, collectionType: CollectionStatic<E> = Collection): Promise<Collection<E>> {
+  return new collectionType[Symbol.species](await toSync(this));
 }

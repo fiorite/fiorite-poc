@@ -3,6 +3,7 @@ import { AsyncPredicate, Predicate } from '../common';
 
 /**
  * TODO: Describe.
+ * TODO: Add index optimization.
  *
  * @param iterable
  * @param predicate

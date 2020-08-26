@@ -1,19 +1,20 @@
-import { Accumulator, AsyncAccumulator, AsyncSelector, Selector } from '../common';
+import { Reducer, AsyncReducer, AsyncSelector, Selector } from '../common';
 
-export function reduce<E>(iterable: Iterable<E>, accumulator: Accumulator<E, E, [number]>): E;
-export function reduce<E, A>(iterable: Iterable<E>, accumulator: Accumulator<E, A, [number]>, seed: A): A;
-export function reduce<E, A, R>(iterable: Iterable<E>, accumulator: Accumulator<E, A, [number]>, seed: A, selector: Selector<A, R>): R;
+export function reduce<E>(iterable: Iterable<E>, reducer: Reducer<E, E, [number]>): E;
+export function reduce<E, A>(iterable: Iterable<E>, reducer: Reducer<E, A, [number]>, seed: A): A;
+export function reduce<E, A, R>(iterable: Iterable<E>, reducer: Reducer<E, A, [number]>, seed: A, selector: Selector<A, R>): R;
 
 /**
  * @inheritDoc
+ * TODO: Add index optimization.
  */
-export function reduce(iterable: Iterable<any>, accumulator: Accumulator<unknown, unknown, [number]>, ...args: unknown[]): unknown {
+export function reduce(iterable: Iterable<any>, reducer: Reducer<unknown, unknown, [number]>, ...args: unknown[]): unknown {
   const iterator = iterable[Symbol.iterator]();
 
   let index = 0;
   let result = iterator.next();
 
-  let accumulate: unknown;
+  let current: unknown;
 
   if (args.length < 1) {
     if (result.done) {
@@ -21,16 +22,16 @@ export function reduce(iterable: Iterable<any>, accumulator: Accumulator<unknown
       throw new RangeError('The iterable is empty.');
     }
 
-    accumulate = result.value;
+    current = result.value;
 
     result = iterator.next();
     index++;
   } else {
-    accumulate = args[0];
+    current = args[0];
   }
 
   while (!result.done) {
-    accumulate = accumulator(accumulate, result.value, index);
+    current = reducer(current, result.value, index);
 
     result = iterator.next();
     index++;
@@ -39,26 +40,26 @@ export function reduce(iterable: Iterable<any>, accumulator: Accumulator<unknown
   if (args.length > 1) {
     const selector = args[1] as Selector<unknown>;
 
-    return selector(accumulate);
+    return selector(current);
   }
 
-  return accumulate;
+  return current;
 }
 
-export function reduceAsync<E>(iterable: AsyncIterable<E>, accumulator: AsyncAccumulator<E, E, [number]>): Promise<E>;
-export function reduceAsync<E, A>(iterable: AsyncIterable<E>, accumulator: AsyncAccumulator<E, A, [number]>, seed: A): Promise<A>;
-export function reduceAsync<E, A, R>(iterable: AsyncIterable<E>, accumulator: AsyncAccumulator<E, A, [number]>, seed: A, selector: AsyncSelector<A, R>): Promise<R>;
+export function reduceAsync<E>(iterable: AsyncIterable<E>, reducer: AsyncReducer<E, E, [number]>): Promise<E>;
+export function reduceAsync<E, A>(iterable: AsyncIterable<E>, reducer: AsyncReducer<E, A, [number]>, seed: A): Promise<A>;
+export function reduceAsync<E, A, R>(iterable: AsyncIterable<E>, reducer: AsyncReducer<E, A, [number]>, seed: A, selector: AsyncSelector<A, R>): Promise<R>;
 
 /**
  * @inheritDoc
  */
-export async function reduceAsync(iterable: AsyncIterable<unknown>, accumulator: AsyncAccumulator<unknown, unknown, [number]>, ...args: unknown[]): Promise<unknown> {
+export async function reduceAsync(iterable: AsyncIterable<unknown>, reducer: AsyncReducer<unknown, unknown, [number]>, ...args: unknown[]): Promise<unknown> {
   const iterator = iterable[Symbol.asyncIterator]();
 
   let index = 0;
   let result = await iterator.next();
 
-  let accumulate: unknown;
+  let current: unknown;
 
   if (arguments.length < 1) {
     if (result.done) {
@@ -66,16 +67,16 @@ export async function reduceAsync(iterable: AsyncIterable<unknown>, accumulator:
       throw new RangeError('The iterable is empty.');
     }
 
-    accumulate = result.value;
+    current = result.value;
 
     result = await iterator.next();
     index++;
   } else {
-    accumulate = args[0];
+    current = args[0];
   }
 
   while (!result.done) {
-    accumulate = await accumulator(accumulate, result.value, index);
+    current = await reducer(current, result.value, index);
 
     result = await iterator.next();
     index++;
@@ -84,8 +85,8 @@ export async function reduceAsync(iterable: AsyncIterable<unknown>, accumulator:
   if (arguments.length > 1) {
     const selector = args[1] as AsyncSelector<unknown>;
 
-    return selector(accumulate);
+    return selector(current);
   }
 
-  return accumulate;
+  return current;
 }

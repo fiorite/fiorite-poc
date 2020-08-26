@@ -19,10 +19,6 @@ export function *reverse<E>(iterable: Iterable<E>): Iterable<E> {
 }
 
 export async function *reverseAsync<E>(iterable: AsyncIterable<E>): AsyncIterable<E> {
-  if (Array.isArray(iterable)) {
-    return iterable.reverse();
-  }
-
   const iterator = iterable[Symbol.asyncIterator]();
   const buffer: E[] = [];
 

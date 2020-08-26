@@ -114,8 +114,11 @@ export type Selector<E, R = E, A extends unknown[] = never[]> = (element: E, ...
  */
 export type AsyncSelector<E, R = E, A extends unknown[] = never[]> = (element: E, ...args: A) => PromiseOr<R>;
 
-export type Accumulator<E, R = E, A extends unknown[] = never[]> = (accumulate: R, next: E, ...args: A) => R;
-export type AsyncAccumulator<E, R = E, A extends unknown[] = never[]> = (accumulate: R, next: E, ...args: A) => PromiseOr<R>;
+export type Reducer<E, R = E, A extends unknown[] = never[]> = (current: R, next: E, ...args: A) => R;
+export type AsyncReducer<E, R = E, A extends unknown[] = never[]> = (current: R, next: E, ...args: A) => PromiseOr<R>;
+
+export type Operator<E = unknown, R = Iterable<E>> = (iterable: Iterable<E>) => R;
+export type AsyncOperator<E = unknown, R = AsyncIterable<E>> = (iterable: AsyncIterable<E>) => R;
 
 export interface Cloneable {
   [Symbol.clone](): unknown;

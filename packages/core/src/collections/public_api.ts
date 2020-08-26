@@ -4,5 +4,5 @@ export { HashMap, HashMapError } from './hash_map';
 export { HashSet, hashSet } from './hash_set';
 export { Stack } from './stack';
 export { Queue } from './queue';
-export { Subject } from './subject';
+export { CollectionSubject } from './collection_subject';
 

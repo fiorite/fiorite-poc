@@ -3,9 +3,10 @@ import { Callback, Closeable } from '../common';
 import { Queue } from './queue';
 import { forEach } from '../operators';
 import { Listener } from '../listener';
+import { NotImplementedError } from '../errors';
 
-export class Subject<E = unknown> extends AsyncCollection<E> implements Closeable {
-  private listeners: SubjectListener<E>[] = [];
+export class CollectionSubject<E = unknown> extends AsyncCollection<E> implements Closeable {
+  private listeners: CollectionSubjectListener<E>[] = [];
 
   constructor() {
     super();
@@ -41,7 +42,7 @@ export class Subject<E = unknown> extends AsyncCollection<E> implements Closeabl
   }
 
   [Symbol.asyncIterator](): AsyncIterator<E> {
-    const listener = new SubjectListener<E>();
+    const listener = new CollectionSubjectListener<E>();
 
     listener.then(() => {
       const index = this.listeners.findIndex(x => x === listener);
@@ -68,7 +69,7 @@ interface Message {
   value: unknown;
 }
 
-export class SubjectListener<E> extends Listener implements AsyncIterator<E>, Closeable {
+export class CollectionSubjectListener<E> extends Listener implements AsyncIterator<E>, Closeable {
   messages = new Queue<Message>();
   listeners = new Queue<Callback<Message>>();
 

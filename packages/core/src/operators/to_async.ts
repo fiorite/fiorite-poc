@@ -1,3 +1,7 @@
+/**
+ * TODO: Describe.
+ * @param iterable
+ */
 export async function *toAsync<E>(iterable: Iterable<E>): AsyncIterable<E extends Promise<infer I> ? I : E> {
   const iterator = iterable[Symbol.iterator]();
 

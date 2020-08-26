@@ -1,82 +1,22 @@
-import { createServer } from 'http';
-import { AsyncCollection, Injector, Module, ProviderCollection, Subject, } from '@fiorite/core';
-import { HttpContext, HttpServer, NodeHttpAdapter } from '@fiorite/http';
-import { createWebApp, Endpoint, Route } from '@fiorite/web';
-
+import { collect } from '@fiorite/core';
+import { tap } from '@fiorite/core/operators';
 
 (async () => {
-  // Case study how build RxJS like code.
+  const array = [1, 2, 3];
 
-  const subject = new Subject<number>();
+  const collection = collect(array).concat([2,3 ]); // [Collection [1, 2, 3]]
 
-  subject
-    .filter(x => x % 2 === 0)
-    .tap(x => console.log('tap: ' + x))
-    .listen(x => console.log('listen: ' + x))
-    .then(() => console.log('stop listen!'));
+  collection.tap((x) => console.log(x)); // Run tap on collection
 
-  let i = 0;
+  tap(array, (x) => console.log(x)); // Run tap on array.
 
-  setInterval(() => {
-    let limit = i + 100;
+  tap(collection, (x) => console.log(x)); // Run tap on collection.
 
-    for (; i < limit; i++) { // Add (n) elements.
-      subject.add(i);
-    }
-  }, 1000);
+  const operator = tap(x => console.log(x)); // Create operator.
 
-  setTimeout(() => {
-    subject.close();
-  }, 5000);
+  operator(array); // Run tap on collection
 
-  // await numbers.close();
+  collection.pipe(operator); // Run tap on collection.
 
-  // operate(numbers).then(() => console.log('Operation done!'));
-
-  async function operate(numbers: AsyncCollection<number>) {
-    numbers.first(x => x === 20)
-      .then(x => console.log('first: "' + x + '"'))
-      .catch(error => console.error('first: ' + error));
-
-    numbers.count()
-      .then(count => console.log('count: ' + count));
-
-    for await (const string of numbers) {
-      console.log('for await ... of: ' + string);
-    }
-  }
+  operator(collection); // Run tap on collection
 })();
-
-class FileDescriptor {
-  readonly path = __dirname + '/image.jpeg';
-  readonly type = 'image/jpeg';
-}
-
-@Route('**')
-class FileEndpoint extends Endpoint {
-  handle(context: HttpContext) {
-    const description = context.getFeature(Injector).get(FileDescriptor);
-    return this.file(description.path, description.type);
-  }
-}
-
-class Test implements Module {
-  configure(providers: ProviderCollection) {
-    providers
-      .add(FileDescriptor)
-      .useCors({ origin: ['*'], methods: ['*'], headers: ['*'] })
-      .useWebSockets()
-      .useResponseCache()
-      .addRoute('**', FileEndpoint);
-  }
-}
-
-createWebApp([Test]).run(5000);
-
-new HttpServer(NodeHttpAdapter.default).serve(context => {
-  context.response.end();
-}, 5001);
-
-createServer((req, res) => {
-  res.end();
-}).listen(5002);

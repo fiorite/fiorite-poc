@@ -6,15 +6,17 @@ import { AsyncSelector, Selector } from '../common';
  * @param iterable
  * @param selector
  */
-export function map<E, R>(iterable: Iterable<E>, selector: Selector<E, R, [number]>): Iterable<R> {
-  if (Array.isArray(iterable)) {
-    return iterable.map(selector);
-  }
-
+export function *map<E, R>(iterable: Iterable<E>, selector: Selector<E, R, [number]>): Iterable<R> {
   const iterator = iterable[Symbol.iterator]();
 
-  return function*() {
-    let result = iterator.next();
+  let result = iterator.next();
+
+  if (selector.length < 3) { // If client don't request index.
+    while (!result.done) {
+      yield (selector as Selector<E, R>)(result.value);
+      result = iterator.next();
+    }
+  } else {
     let index = 0;
 
     while (!result.done) {
@@ -22,7 +24,7 @@ export function map<E, R>(iterable: Iterable<E>, selector: Selector<E, R, [numbe
       result = iterator.next();
       index++;
     }
-  }()
+  }
 }
 
 /**
@@ -35,12 +37,21 @@ export async function *mapAsync<E, R>(iterable: AsyncIterable<E>, selector: Asyn
   const iterator = iterable[Symbol.asyncIterator]();
 
   let result = await iterator.next();
-  let index = 0;
 
-  while (!result.done) {
-    yield await selector(result.value, index);
+  if (selector.length < 3) { // If client don't request index.
+    while (!result.done) {
+      yield await (selector as AsyncSelector<E, R>)(result.value);
 
-    result = await iterator.next();
-    index++;
+      result = await iterator.next();
+    }
+  } else {
+    let index = 0;
+
+    while (!result.done) {
+      yield await selector(result.value, index);
+
+      result = await iterator.next();
+      index++;
+    }
   }
 }
