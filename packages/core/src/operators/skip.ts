@@ -1,24 +1,32 @@
+import { combine } from './combine';
+
+export function skip(count: number) {
+  return combine(() => skipSync(count), () => skipAsync(count));
+}
+
 /**
  * TODO: Describe.
  *
- * @param iterable
  * @param count
  */
-export function *skip<E>(iterable: Iterable<E>, count: number): Iterable<E> {
-  const iterator = iterable[Symbol.iterator]();
+export function skipSync(count: number) {
+  return function *<E>(iterable: Iterable<E>): Iterable<E> {
+    const iterator = iterable[Symbol.iterator]();
 
-  let result = iterator.next();
+    let result = iterator.next();
+    let counter = count;
 
-  while (!result.done && count > 0) {
-    result = iterator.next();
+    while (!result.done && counter > 0) {
+      result = iterator.next();
 
-    count--;
-  }
+      counter--;
+    }
 
-  while (!result.done) {
-    yield result.value;
+    while (!result.done) {
+      yield result.value;
 
-    result = iterator.next();
+      result = iterator.next();
+    }
   }
 }
 
@@ -28,20 +36,23 @@ export function *skip<E>(iterable: Iterable<E>, count: number): Iterable<E> {
  * @param iterable
  * @param count
  */
-export async function *skipAsync<E>(iterable: AsyncIterable<E>, count: number): AsyncIterable<E> {
-  const iterator = iterable[Symbol.asyncIterator]();
+export function skipAsync(count: number) {
+  return async function *<E>(iterable: AsyncIterable<E>): AsyncIterable<E> {
+    const iterator = iterable[Symbol.asyncIterator]();
 
-  let result = await iterator.next();
+    let result = await iterator.next();
+    let counter = count;
 
-  while (!result.done && count > 0) {
-    result = await iterator.next();
+    while (!result.done && counter > 0) {
+      result = await iterator.next();
 
-    count--;
-  }
+      counter--;
+    }
 
-  while (!result.done) {
-    yield result.value;
+    while (!result.done) {
+      yield result.value;
 
-    result = await iterator.next();
-  }
+      result = await iterator.next();
+    }
+  };
 }

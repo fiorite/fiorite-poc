@@ -1,4 +1,4 @@
-import { Collection } from '@fiorite/core';
+import { Collection } from '../../src';
 import { InjectAll, injectRegistry } from '../../src/di/inject';
 
 // describe('@Inject()');

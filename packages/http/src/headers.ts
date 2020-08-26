@@ -1,5 +1,5 @@
 import { Disposable, HashMap } from '@fiorite/core';
-import { single } from '@fiorite/core/operators';
+import { singleSync } from '@fiorite/core/operators';
 
 export class HttpHeaders<K extends string = string> extends HashMap<K, string[]> implements Disposable {
   get [Symbol.toStringTag]() {
@@ -65,7 +65,7 @@ export class HttpHeaders<K extends string = string> extends HashMap<K, string[]>
   // region Single
 
   getSingle(key: K) {
-    return single(
+    return singleSync(
       this.get(key),
     );
   }

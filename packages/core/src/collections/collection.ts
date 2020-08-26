@@ -1,41 +1,40 @@
 import {
-  append,
-  concat,
-  count,
-  every,
-  filter,
-  first,
-  flat,
-  flatMap,
-  forEach,
-  includes,
-  listen,
-  map,
-  prepend,
-  reduce,
-  reverse,
-  single,
-  skip,
-  some,
-  take,
-  tap,
-  toArray,
+  appendSync,
+  concatSync,
+  countSync,
+  everySync,
+  filterSync,
+  firstSync,
+  flatMapSync,
+  flatSync,
+  forEachSync,
+  includesSync,
+  listenSync,
+  mapSync,
+  prependSync,
+  reduceSync,
+  reverseSync,
+  singleSync,
+  skipSync,
+  someSync,
+  takeSync,
+  tapSync,
+  toArraySync,
   toAsync,
-  toSync
+  toSync,
 } from '../operators';
 import {
-  AbstractType,
+  AbstractType, AsyncCallback,
   Callback,
   EqualityComparer,
   inspectSymbol,
-  isAsyncIterable,
-  isIterable,
   Operator,
   Predicate,
   Reducer,
   Selector
 } from '../common';
-import { ArgumentError, InvalidOperationError } from '../errors';
+import { isAsyncIterable, isIterable, } from '../internal';
+import { ArgumentError } from '../errors';
 import { AsyncCollection, AsyncCollectionStatic } from './async_collection';
 import { Listener } from '../listener';
 
@@ -88,22 +87,32 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param iterable
    * @protected
    */
-  protected with<R>(iterable: Iterable<R>): Collection<R> {
+  protected lift<R>(iterable: Iterable<R>): Collection<R> {
     return new (this.constructor as CollectionStatic<R>)[Symbol.species](iterable);
   }
 
   /**
-   * Appends element to the end of a new sequence.
+   * Provides a new collection of elements from current collection plus the specified elements appended at the end.
+   *
+   * @example ```typescript
+   * import { collect } from '@fiorite/core';
+   *
+   * const collection = collect([1, 2, 3]);
+   *
+   * collection.append(4, 5, 6); // [Collection [1, 2, 3, 4, 5, 6]]
+   * ```
+   *
+   * @param elements
    */
-  append(element: E): Collection<E> {
-    return this.pipe(append(element));
+  append(...elements: E[]): Collection<E> {
+    return this.lift(appendSync(...elements)(this));
   }
 
   /**
    * Concatenates provided sequences into a new sequence.
    */
-  concat(other: Iterable<E>): Collection<E> {
-    return this.pipe(concat(other));
+  concat(...others: Iterable<E>[]): Collection<E> {
+    return this.lift(concatSync(...others)(this));
   }
 
   /**
@@ -116,30 +125,20 @@ export abstract class Collection<E> implements Iterable<E> {
   /**
    * Counts the number of elements in a sequence.
    */
-  count(): number;
-
-  /**
-   * Counts the number of elements in a sequence.
-   */
-  count(predicate: Predicate<E, [number]>): number;
-
-  /**
-   * @internal
-   */
-  count(...args: [] | [Predicate<E, [number]>]): number;
+  count(predicate?: Predicate<E, [number]>): number;
 
   /**
    * @inheritDoc
    */
-  count(): number {
-    return count(this);
+  count(...args: [] | [Predicate<E, [number]>]): number {
+    return countSync(...args)(this);
   }
 
   /**
    * TODO: Describe
    */
   every(predicate: Predicate<E, [number]>): boolean {
-    return every(this, predicate);
+    return everySync(predicate)(this);
   }
 
   /**
@@ -148,23 +147,19 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param predicate
    */
   filter(predicate: Predicate<E, [number]>): Collection<E> {
-    return this.with(filter(this, predicate));
+    return this.lift(filterSync(predicate)(this));
   }
 
-  /**
-   * TODO: Describe
-   */
-  first(): E;
-  first(predicate: Predicate<E, [number]>): E;
-  first(predicate: Predicate<E, [number]> = () => true): E {
-    return first(this, predicate);
+  first(predicate?: Predicate<E, [number]>): E;
+  first(...args: [] | [Predicate<E, [number]>]): E {
+    return firstSync(...args)(this);
   }
 
   /**
    * TODO: Describe
    */
   flat(): Collection<E extends Iterable<infer I> ? I : E> {
-    return this.with(flat(this));
+    return this.lift(flatSync()(this));
   }
 
   /**
@@ -173,7 +168,7 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param selector
    */
   flatMap<R>(selector: Selector<E, R, [number]>): Collection<R> {
-    return this.with(flatMap(this, selector));
+    return this.lift(flatMapSync(selector)(this));
   }
 
   /**
@@ -182,7 +177,7 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param callback
    */
   forEach(callback: Callback<E, [number]>): void {
-    return forEach(this, callback);
+    return forEachSync(callback)(this);
   }
 
   /**
@@ -192,14 +187,14 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param comparer
    */
   includes(element: E, comparer = this[Symbol.comparer]): boolean {
-    return includes(this, element, comparer);
+    return includesSync(element, comparer)(this);
   }
 
   /**
    * TODO: Describe
    */
-  listen(callback: Callback<E, [number]>): Listener {
-    return listen(this, callback);
+  listen(callback: Callback<E, [number]> = () => { }): Listener {
+    return listenSync(callback)(this);
   }
 
   // /**
@@ -219,7 +214,7 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param selector
    */
   map<R>(selector: Selector<E, R, [number]>): Collection<R> {
-    return this.with(map(this, selector));
+    return this.lift(mapSync(selector)(this));
   }
 
   /**
@@ -227,14 +222,13 @@ export abstract class Collection<E> implements Iterable<E> {
    *
    * @param operator
    */
-  pipe<R>(operator: Operator<E, Iterable<R>>): Collection<R>;
+  pipe<R>(operator: Operator<E, R>): Collection<R>;
 
   /**
    * @inheritDoc
    */
   pipe(...operators: Operator<any>[]): Collection<any> {
-    console.log(operators);
-    return this.with(
+    return this.lift(
       operators.reduce((iterable, operator) => {
         return operator(iterable);
       }, this as Iterable<any>)
@@ -242,10 +236,21 @@ export abstract class Collection<E> implements Iterable<E> {
   }
 
   /**
-   * TODO: Describe.
+   * Provides a new collection of elements from current collection plus the specified elements prepended at the beginning.
+   *
+   * @example ```typescript
+   * import { collect } from '@fiorite/core';
+   * import { Readable } from 'stream';
+   *
+   * const collection = collect(Readable.from([1, 2, 3]));
+   *
+   * collection.prepend(4, 5, 6); // [Collection [4, 5, 6, 1, 2, 3]]
+   * ```
+   *
+   * @param elements
    */
-  prepend(element: E): Collection<E> {
-    return this.pipe(prepend(element));
+  prepend(...elements: E[]): Collection<E> {
+    return this.lift(prependSync(...elements)(this));
   }
 
   /**
@@ -255,33 +260,28 @@ export abstract class Collection<E> implements Iterable<E> {
   reduce<A>(reducer: Reducer<E, A, [number]>, seed: A): A;
   reduce<A, R>(reducer: Reducer<E, A, [number]>, seed: A, selector: Selector<A, R>): R;
   reduce(...args: any[]): unknown {
-    return (reduce as any)(this, ...args);
+    return (reduceSync as any)(this, ...args);
   }
 
   /**
    * TODO: Describe.
    */
   reverse(): Collection<E> {
-    return this.with(reverse(this));
+    return this.lift(reverseSync()(this));
   }
-
-  /**
-   * Returns the only element of a sequence, and throws an exception if there is not exactly one element in the sequence.
-   */
-  single(): E;
 
   /**
    * Returns the only element of a sequence that satisfies a specified condition, and throws an exception if more than one such element exists.
    *
    * @param predicate
    */
-  single(predicate: Predicate<E, [number]>): E;
+  single(predicate?: Predicate<E, [number]>): E;
 
   /**
    * @inheritDoc
    */
-  single(...args: any[]): E {
-    return single(this, ...args);
+  single(...args: [] | [Predicate<E, [number]>]): E {
+    return singleSync(...args)(this);
   }
 
   /**
@@ -290,55 +290,31 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param count
    */
   skip(count: number): Collection<E> {
-    return this.with(skip(this, count));
+    return this.lift(skipSync(count)(this));
   }
 
   /**
-   * Returns the only element of a sequence, or a default value if the sequence is empty; this method throws an exception if there is more than one element in the sequence.
-   */
-  trySingle(): E | null;
-
-  /**
-   * Returns the only element of a sequence that satisfies a specified condition or a default value if no such element exists; this method throws an exception if more than one element satisfies the condition.
+   * Determines whether any element of a sequence satisfies a condition.
    *
-   * @param predicate
+   * @example```typescript
+   * import { collect } from '@fiorite/core';
    *
-   * @throws InvalidOperationError
+   * collect([]).some(); // false
+   * collect([1, 2, 3]).some(); // true
+   *
+   * collect([1, 3]).some(x => x === 2); // false
+   * collect([1, 2, 3]).some(x => x === 2); // true
+   * ```
+   *
+   * @param predicate default = () => true.
    */
-  trySingle(predicate: Predicate<E, [number]>): E | null;
+  some(predicate?: Predicate<E, [number]>): boolean;
 
   /**
    * @inheritDoc
    */
-  trySingle(...args: any[]): E | null {
-    try {
-      return single(this, ...args);
-    } catch (error) {
-      if (error instanceof InvalidOperationError) {
-        return null;
-      }
-
-      throw error;
-    }
-  }
-
-  /**
-   * Determines whether a sequence contains any elements.
-   */
-  some(): boolean;
-
-  /**
-   * TODO: Describe.
-   *
-   * @param predicate
-   */
-  some(predicate: Predicate<E, [number]>): boolean;
-
-  /**
-   * @inheritDoc
-   */
-  some(...args: any[]): boolean {
-    return some(this, ...args);
+  some(...args: any[]) {
+    return someSync(...args)(this);
   }
 
   /**
@@ -347,28 +323,28 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param count
    */
   take(count: number): Collection<E> {
-    return this.with(take(this, count));
+    return this.lift(takeSync(count)(this));
   }
 
   /**
    * Performs callback on every emission and returns identical collection.
    */
   tap(callback: Callback<E, [number]>): Collection<E> {
-    return this.with(tap(this, callback));
+    return this.lift(tapSync(callback)(this));
   }
 
   /**
    * Converts a sequence to {@link Array}
    */
   toArray(): E[] {
-    return toArray(this);
+    return toArraySync<E>()(this);
   }
 
   /**
    * Converts a sequence to {@link AsyncCollection}.
    */
   toAsync(collectionType: AsyncCollectionStatic = AsyncCollection): AsyncCollection<E extends Promise<infer I> ? I : E> {
-    return new collectionType[Symbol.species](toAsync(this));
+    return new collectionType[Symbol.species](toAsync<E>()(this));
   }
 
   /**
@@ -457,5 +433,5 @@ declare module './async_collection' {
  * @inheritDoc
  */
 AsyncCollection.prototype.toSync = async function <E>(this: AsyncCollection<E>, collectionType: CollectionStatic<E> = Collection): Promise<Collection<E>> {
-  return new collectionType[Symbol.species](await toSync(this));
+  return new collectionType[Symbol.species](await toSync<E>()(this));
 }

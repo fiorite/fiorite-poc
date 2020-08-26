@@ -1,47 +1,54 @@
 import { EqualityComparer } from '../common';
+import { combine } from './combine';
 
-/**
- * TODO: Describe.
- *
- * @param iterable
- * @param element
- * @param comparer
- */
-export function includes<E>(iterable: Iterable<E>, element: E, comparer: EqualityComparer<E> = EqualityComparer.DEFAULT): boolean {
-  const iterator = iterable[Symbol.iterator]();
-
-  let result = iterator.next();
-
-  while (!result.done) {
-    if (comparer(element, result.value)) {
-      return true;
-    }
-
-    result = iterator.next();
-  }
-
-  return false;
+export function includes<E>(element: E, comparer: EqualityComparer<E> = EqualityComparer.DEFAULT) {
+  return combine(() => includesSync(element, comparer), () => includesAsync(element, comparer));
 }
 
 /**
  * TODO: Describe.
  *
- * @param iterable
  * @param element
  * @param comparer
  */
-export async function includesAsync<E>(iterable: AsyncIterable<E>, element: E, comparer: EqualityComparer<E> = EqualityComparer.DEFAULT): Promise<boolean> {
-  const iterator = iterable[Symbol.asyncIterator]();
+export function includesSync<E>(element: E, comparer: EqualityComparer<E> = EqualityComparer.DEFAULT) {
+  return function (iterable: Iterable<E>): boolean {
+    const iterator = iterable[Symbol.iterator]();
 
-  let result = await iterator.next();
+    let result = iterator.next();
 
-  while (!result.done) {
-    if (comparer(element, result.value)) {
-      return true;
+    while (!result.done) {
+      if (comparer(element, result.value)) {
+        return true;
+      }
+
+      result = iterator.next();
     }
 
-    result = await iterator.next();
-  }
+    return false;
+  };
+}
 
-  return false;
+/**
+ * TODO: Describe.
+ *
+ * @param element
+ * @param comparer
+ */
+export function includesAsync<E>(element: E, comparer: EqualityComparer<E> = EqualityComparer.DEFAULT) {
+  return async function (iterable: AsyncIterable<E>): Promise<boolean> {
+    const iterator = iterable[Symbol.asyncIterator]();
+
+    let result = await iterator.next();
+
+    while (!result.done) {
+      if (comparer(element, result.value)) {
+        return true;
+      }
+
+      result = await iterator.next();
+    }
+
+    return false;
+  };
 }

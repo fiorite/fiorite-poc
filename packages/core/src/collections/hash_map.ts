@@ -1,7 +1,7 @@
 import { Collection } from './collection';
 import { EqualityComparer, Selector } from '../common';
 import { InvalidOperationError } from '../errors';
-import { forEach } from '../operators';
+import { forEachSync } from '../operators';
 
 export class HashMapError<K> extends InvalidOperationError {
   constructor(message: string, readonly key: K) {
@@ -153,7 +153,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    * @throws HashMapError An entry with the same key already exists.
    */
   addAll(iterable: Iterable<[K, V]>): this {
-    forEach(iterable, ([key, value]) => this.add(key, value));
+    forEachSync<[K, V]>(([key, value]) => this.add(key, value))(iterable);
 
     return this;
   }
@@ -202,7 +202,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    * @param iterable
    */
   setAll(iterable: Iterable<[K, V]>): this {
-    forEach(iterable, ([key, value]) => this.set(key, value));
+    forEachSync<[K, V]>(([key, value]) => this.set(key, value))(iterable);
 
     return this;
   }

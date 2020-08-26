@@ -3,5 +3,7 @@
   "version": "0.0.0",
   "description": "Core interfaces that are useful across the framework",
   "author": "fiorite",
-  "license": "MIT"
+  "license": "MIT",
+  "main": "src/public-api.ts",
+  "types": "src/public-api.ts"
 }

@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import { Readable } from 'stream';
 
-import { flat, flatAsync, toArray, toArrayAsync } from '../../src/operators';
+import { flatSync, flatAsync, toArray, toArrayAsync } from '../../src/operators';
 
 describe('flat()', () => {
   it('should return [1, 2, 3] on Array [[1], [2], 3]', () => {
     const sequence = new Set([[1], [2], 3]);
     const expected = [1, 2, 3];
 
-    const result = toArray(flat(sequence));
+    const result = toArray(flatSync(sequence));
 
     expect(result).members(expected);
   });
@@ -17,7 +17,7 @@ describe('flat()', () => {
     const sequence = new Set([[1], [2], 3]);
     const expected = [1, 2, 3];
 
-    const result = toArray(flat(sequence));
+    const result = toArray(flatSync(sequence));
 
     expect(result).members(expected);
   });

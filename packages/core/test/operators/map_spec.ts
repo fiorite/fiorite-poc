@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { Readable } from 'stream';
 
-import { map, mapAsync, toArray, toArrayAsync } from '../../src/operators';
+import { mapSync, mapAsync, toArray, toArrayAsync } from '../../src/operators';
 
 describe('map()', () => {
   it('should map Array', () => {
@@ -11,7 +11,7 @@ describe('map()', () => {
     let indexing = 0;
 
     const array = toArray(
-      map(sequence, (element, index) => {
+      mapSync(sequence, (element, index) => {
         expect(index).equals(indexing);
         indexing++;
         return element + 1;
@@ -29,7 +29,7 @@ describe('map()', () => {
     let indexing = 0;
 
     const array = toArray(
-      map(set, (element, index) => {
+      mapSync(set, (element, index) => {
         expect(index).equals(indexing);
         indexing++;
         return element + 1;

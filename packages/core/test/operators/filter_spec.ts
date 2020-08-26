@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { Readable } from 'stream';
 
-import { filter, filterAsync, toArray, toArrayAsync } from '../../src/operators';
+import { filterSync, filterAsync, toArray, toArrayAsync } from '../../src/operators';
 
 describe('filter()', () => {
   it('should filter Array', () => {
@@ -11,7 +11,7 @@ describe('filter()', () => {
     let indexing = 0;
 
     const array = toArray(
-      filter(sequence, (element, index) => {
+      filterSync(sequence, (element, index) => {
         expect(index).equals(indexing);
         indexing++;
         return element > 1;
@@ -29,7 +29,7 @@ describe('filter()', () => {
     let indexing = 0;
 
     const array = toArray(
-      filter(set, (element, index) => {
+      filterSync(set, (element, index) => {
         expect(index).equals(indexing);
         indexing++;
         return element > 1;

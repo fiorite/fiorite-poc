@@ -1,83 +1,84 @@
+import { combine, CombinedOperator } from './combine';
 import { AsyncOperator, Operator } from '../common';
-import { ArgumentsLengthError } from '../errors';
-import { compose } from './compose';
 
-export function append<E>(element: E): Operator<E> & AsyncOperator<E>;
-export function append<E>(iterable: Iterable<E>, element: E): Iterable<E>;
-export function append<E>(iterable: AsyncIterable<E>, element: E): AsyncIterable<E>;
-export function append<E>(...args: unknown[]): unknown {
-  let element: E;
-
-  const operator = compose<E>(
-    iterable => appendSync(iterable, element),
-    iterable => appendAsync(iterable, element),
-  );
-
-  if (args.length === 1) {
-    [element] = args[0] as [E];
-
-    return operator;
-  } else if (args.length === 2) {
-    [, element] = args as [unknown, E];
-
-    return operator(args[0] as Iterable<E>); // or AsyncIterable<E>
-  }
-
-  throw new ArgumentsLengthError();
+/**
+ * Returns a combined operator that provides a new sequence of elements from iterable plus the specified elements appended at the end.
+ *
+ * @example ```typescript
+ * import { append } from '@fiorite/core/operators';
+ * import { Readable } from 'stream';
+ *
+ * const operator = append(4, 5, 6);
+ * operator([1, 2, 3]); // [Iterable [1, 2, 3, 4, 5, 6]]
+ * operator(Readable.from([1, 2, 3])); // [AsyncIterable [1, 2, 3, 4, 5, 6]]
+ *
+ * ```
+ *
+ * @param elements
+ */
+export function append<E>(...elements: E[]): CombinedOperator<E> {
+  return combine(() => appendSync(...elements), () => appendAsync(...elements));
 }
 
 /**
- * Appends elements to the end of a new sequence.
+ * Returns an operator that provides a new sequence of elements from iterable plus the specified elements appended at the end.
  *
- * @param iterable
+ * @example ```typescript
+ * import { appendSync } from '@fiorite/core/operators';
+ *
+ * const operator = appendSync(4, 5, 6);
+ * operator([1, 2, 3]); // [Iterable [1, 2, 3, 4, 5, 6]]
+ *
+ * ```
+ *
  * @param elements
  */
-function *appendSync<E>(iterable: Iterable<E>, ...elements: E[]): Iterable<E> {
-  const iterator1 = iterable[Symbol.iterator]();
+export function appendSync<E>(...elements: E[]): Operator<E> {
+  return function*(iterable: Iterable<E>) {
+    const iterator = iterable[Symbol.iterator]();
 
-  let result1 = iterator1.next();
+    let result = iterator.next();
 
-  while (!result1.done) {
-    yield result1.value;
+    while (!result.done) {
+      yield result.value;
 
-    result1 = iterator1.next();
-  }
+      result = iterator.next();
+    }
 
-  const iterator2 = elements[Symbol.iterator]();
-
-  let result2 = iterator2.next();
-
-  while (!result2.done) {
-    yield result2.value;
-
-    result2 = iterator2.next();
+    for (const element of elements) {
+      yield element;
+    }
   }
 }
 
 /**
- * Appends elements to the end of a new sequence.
+ * Returns an operator that provides a new sequence of elements from iterable plus the specified elements appended at the end.
  *
- * @param iterable
+ * @example ```typescript
+ * import { appendAsync } from '@fiorite/core/operators';
+ * import { Readable } from 'stream';
+ *
+ * const operator = appendAsync(4, 5, 6);
+ * operator(Readable.from([1, 2, 3])); // [AsyncIterable [1, 2, 3, 4, 5, 6]]
+ *
+ * ```
+ *
  * @param elements
  */
-async function *appendAsync<E>(iterable: AsyncIterable<E>, ...elements: E[]): AsyncIterable<E> {
-  const iterator1 = iterable[Symbol.asyncIterator]();
+export function appendAsync<E>(...elements: E[]): AsyncOperator<E> {
+  return async function*(iterable: AsyncIterable<E>) {
+    const iterator = iterable[Symbol.asyncIterator]();
 
-  let result1 = await iterator1.next();
+    let result = await iterator.next();
 
-  while (!result1.done) {
-    yield result1.value;
+    while (!result.done) {
+      yield result.value;
 
-    result1 = await iterator1.next();
-  }
+      result = await iterator.next();
+    }
 
-  const iterator2 = elements[Symbol.iterator]();
-
-  let result2 = iterator2.next();
-
-  while (!result2.done) {
-    yield result2.value;
-
-    result2 = iterator2.next();
+    for (const element of elements) {
+      yield element;
+    }
   }
 }

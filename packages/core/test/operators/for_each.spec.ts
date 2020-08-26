@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { Readable } from 'stream';
 
-import { forEach, forEachAsync } from '../../src/operators';
+import { forEachSync, forEachAsync } from '../../src/operators';
 
 describe('forEach()', () => {
   it('should iterate Array', () => {
@@ -9,7 +9,7 @@ describe('forEach()', () => {
 
     let count = 0;
 
-    forEach(sequence, (element, index) => {
+    forEachSync(sequence, (element, index) => {
       expect(element).equals(sequence[index]);
       count++;
     });
@@ -23,7 +23,7 @@ describe('forEach()', () => {
 
     let count = 0;
 
-    forEach(set, (element, index) => {
+    forEachSync(set, (element, index) => {
       expect(element).equals(sequence[index]);
       count++;
     });

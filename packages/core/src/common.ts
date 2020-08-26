@@ -35,12 +35,20 @@ export namespace PromiseOr {
   }
 }
 
+/**
+ * @deprecated use internal
+ * @param target
+ */
 export function isClass(target: unknown) {
   return typeof target === 'function' &&
     typeof target.prototype === 'object' &&
     target === target.prototype.constructor;
 }
 
+/**
+ * @deprecated use internal
+ * @param value
+ */
 export function isInstance(value: unknown) {
   return null !== value &&
     typeof value === 'object' &&
@@ -52,6 +60,8 @@ export function isInstance(value: unknown) {
  *
  * @param object
  * @param key
+ *
+ * @deprecated use internal
  */
 export function isMethod(object: unknown, key: string | symbol): boolean {
   return object != null && typeof (object as any)[key] === 'function';
@@ -61,6 +71,8 @@ export function isMethod(object: unknown, key: string | symbol): boolean {
  * Checks whether an object has {@link Symbol.iterator} method.
  *
  * @param object
+ *
+ * @deprecated use internal
  */
 export function isIterable(object: unknown) {
   return isMethod(object, Symbol.iterator);
@@ -70,6 +82,8 @@ export function isIterable(object: unknown) {
  * Checks whether an object has {@link Symbol.asyncIterator} method.
  *
  * @param object
+ *
+ * @deprecated use internal
  */
 export function isAsyncIterable(object: unknown) {
   return isMethod(object, Symbol.asyncIterator);
@@ -79,6 +93,8 @@ export function isAsyncIterable(object: unknown) {
  * Checks whether an object has {@link Symbol.asyncIterator} method.
  *
  * @param object
+ *
+ * @deprecated use internal
  */
 export function isPromise(object: unknown) {
   return object instanceof Promise;
@@ -92,7 +108,7 @@ export type Callback<E, A extends unknown[] = never[]> = (element: E, ...args: A
 /**
  * Action that performs on element and returns no result.
  */
-export type AsyncCallback<E, A extends unknown[] = never[]> = (element: E, ...args: A) => PromiseOr<void>;
+export type AsyncCallback<E, A extends unknown[] = never[]> = (element: E, ...args: A) => Promise<void>;
 
 /**
  * Action that performs on element and returns {@link Boolean} result.
@@ -102,7 +118,7 @@ export type Predicate<E, A extends unknown[] = never[]> = (element: E, ...args: 
 /**
  * Action that performs on element and returns {@link Boolean} result.
  */
-export type AsyncPredicate<E, A extends unknown[] = never[]> = (element: E, ...args: A) => PromiseOr<boolean>;
+export type AsyncPredicate<E, A extends unknown[] = never[]> = (element: E, ...args: A) => Promise<boolean>;
 
 /**
  * Action that performs on element and returns new result.
@@ -112,10 +128,10 @@ export type Selector<E, R = E, A extends unknown[] = never[]> = (element: E, ...
 /**
  * Action that performs on element and returns new result.
  */
-export type AsyncSelector<E, R = E, A extends unknown[] = never[]> = (element: E, ...args: A) => PromiseOr<R>;
+export type AsyncSelector<E, R = E, A extends unknown[] = never[]> = (element: E, ...args: A) => Promise<R>;
 
 export type Reducer<E, R = E, A extends unknown[] = never[]> = (current: R, next: E, ...args: A) => R;
-export type AsyncReducer<E, R = E, A extends unknown[] = never[]> = (current: R, next: E, ...args: A) => PromiseOr<R>;
+export type AsyncReducer<E, R = E, A extends unknown[] = never[]> = (current: R, next: E, ...args: A) => Promise<R>;
 
 export type Operator<E = unknown, R = Iterable<E>> = (iterable: Iterable<E>) => R;
 export type AsyncOperator<E = unknown, R = AsyncIterable<E>> = (iterable: AsyncIterable<E>) => R;
@@ -293,6 +309,10 @@ export interface Type<T = unknown> extends AbstractType<T> {
 export namespace Type {
   export type values = 'undefined' | 'null' | 'function' | 'class'| 'array' | 'iterable' | 'object';
 
+  /**
+   * @deprecated use internal
+   * @private
+   */
   const map: Record<values, (value: unknown) => boolean> = {
     undefined: x => undefined === x,
     null: x => null === x,

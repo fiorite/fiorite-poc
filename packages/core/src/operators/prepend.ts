@@ -1,83 +1,80 @@
-import { AsyncOperator, Operator } from '../common';
-import { compose } from './compose';
-import { ArgumentsLengthError } from '../errors';
+import { combine } from './combine';
 
-export function prepend<E>(element: E): Operator<E> & AsyncOperator<E>;
-export function prepend<E>(iterable: Iterable<E>, element: E): Iterable<E>;
-export function prepend<E>(iterable: AsyncIterable<E>, element: E): AsyncIterable<E>;
-export function prepend<E>(...args: unknown[]): unknown {
-  let element: E;
-
-  const operator = compose<E>(
-    iterable => prependSync(iterable, element),
-    iterable => prependAsync(iterable, element),
-  );
-
-  if (args.length === 1) {
-    [element] = args[0] as [E];
-
-    return operator;
-  } else if (args.length === 2) {
-    [, element] = args as [unknown, E];
-
-    return operator(args[0] as Iterable<E>); // or AsyncIterable<E>
-  }
-
-  throw new ArgumentsLengthError();
+/**
+ * Returns a combined operator that provides a new sequence of elements from iterable plus the specified elements prepended at the beginning.
+ *
+ * @example ```typescript
+ * import { prepend } from '@fiorite/core/operators';
+ * import { Readable } from 'stream';
+ *
+ * const operator = prepend(4, 5, 6);
+ * operator([1, 2, 3]); // [Iterable [4, 5, 6, 1, 2, 3]]
+ * operator(Readable.from([1, 2, 3])); // [AsyncIterable [4, 5, 6, 1, 2, 3]]
+ * ```
+ *
+ * @param elements
+ */
+export function prepend<E>(...elements: E[]) {
+  return combine<E>(() => prependSync(...elements), () => prependAsync(...elements));
 }
 
 /**
- * Prepends elements to the end of a new sequence.
+ * Returns an operator that provides a new sequence of elements from iterable plus the specified elements prepended at the beginning.
  *
- * @param iterable
+ * @example ```typescript
+ * import { prependSync } from '@fiorite/core/operators';
+ *
+ * const operator = prependSync(4, 5, 6);
+ * operator([1, 2, 3]); // [Iterable [4, 5, 6, 1, 2, 3]]
+ * ```
+ *
  * @param elements
  */
-function *prependSync<E>(iterable: Iterable<E>, ...elements: E[]): Iterable<E> {
-  const iterator2 = elements[Symbol.iterator]();
+export function prependSync<E>(...elements: E[]) {
+  return function *(iterable: Iterable<E>) {
+    for (const element of elements) {
+      yield element;
+    }
 
-  let result2 = iterator2.next();
+    const iterator = iterable[Symbol.iterator]();
 
-  while (!result2.done) {
-    yield result2.value;
+    let result = iterator.next();
 
-    result2 = iterator2.next();
-  }
+    while (!result.done) {
+      yield result.value;
 
-  const iterator1 = iterable[Symbol.iterator]();
-
-  let result1 = iterator1.next();
-
-  while (!result1.done) {
-    yield result1.value;
-
-    result1 = iterator1.next();
-  }
+      result = iterator.next();
+    }
+  };
 }
 
 /**
- * Prepends elements to the end of a new sequence.
+ * Returns an operator that provides a new sequence of elements from iterable plus the specified elements prepended at the beginning.
  *
- * @param iterable
+ * @example ```typescript
+ * import { prependAsync } from '@fiorite/core/operators';
+ * import { Readable } from 'stream';
+ *
+ * const operator = prependAsync(4, 5, 6);
+ * operator(Readable.from([1, 2, 3])); // [AsyncIterable [4, 5, 6, 1, 2, 3]]
+ * ```
+ *
  * @param elements
  */
-async function *prependAsync<E>(iterable: AsyncIterable<E>, ...elements: E[]): AsyncIterable<E> {
-  const iterator2 = elements[Symbol.iterator]();
+export function prependAsync<E>(...elements: E[]) {
+  return async function *(iterable: AsyncIterable<E>): AsyncIterable<E> {
+    for (const element of elements) {
+      yield element;
+    }
 
-  let result2 = iterator2.next();
+    const iterator = iterable[Symbol.asyncIterator]();
 
-  while (!result2.done) {
-    yield result2.value;
+    let result = await iterator.next();
 
-    result2 = iterator2.next();
-  }
+    while (!result.done) {
+      yield result.value;
 
-  const iterator1 = iterable[Symbol.asyncIterator]();
-
-  let result1 = await iterator1.next();
-
-  while (!result1.done) {
-    yield result1.value;
-
-    result1 = await iterator1.next();
+      result = await iterator.next();
+    }
   }
 }

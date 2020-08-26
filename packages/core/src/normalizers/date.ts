@@ -1,4 +1,4 @@
-import { Normalizer } from '@fiorite/core';
+import { Normalizer } from '../serializer';
 
 /**
  * TODO: Add date formats.

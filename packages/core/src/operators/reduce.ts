@@ -1,14 +1,14 @@
 import { Reducer, AsyncReducer, AsyncSelector, Selector } from '../common';
 
-export function reduce<E>(iterable: Iterable<E>, reducer: Reducer<E, E, [number]>): E;
-export function reduce<E, A>(iterable: Iterable<E>, reducer: Reducer<E, A, [number]>, seed: A): A;
-export function reduce<E, A, R>(iterable: Iterable<E>, reducer: Reducer<E, A, [number]>, seed: A, selector: Selector<A, R>): R;
+export function reduceSync<E>(iterable: Iterable<E>, reducer: Reducer<E, E, [number]>): E;
+export function reduceSync<E, A>(iterable: Iterable<E>, reducer: Reducer<E, A, [number]>, seed: A): A;
+export function reduceSync<E, A, R>(iterable: Iterable<E>, reducer: Reducer<E, A, [number]>, seed: A, selector: Selector<A, R>): R;
 
 /**
  * @inheritDoc
  * TODO: Add index optimization.
  */
-export function reduce(iterable: Iterable<any>, reducer: Reducer<unknown, unknown, [number]>, ...args: unknown[]): unknown {
+export function reduceSync(iterable: Iterable<any>, reducer: Reducer<unknown, unknown, [number]>, ...args: unknown[]): unknown {
   const iterator = iterable[Symbol.iterator]();
 
   let index = 0;

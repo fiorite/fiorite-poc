@@ -1,7 +1,7 @@
 import { AsyncCollection } from './async_collection';
 import { Callback, Closeable } from '../common';
 import { Queue } from './queue';
-import { forEach } from '../operators';
+import { forEachSync } from '../operators';
 import { Listener } from '../listener';
 import { NotImplementedError } from '../errors';
 
@@ -19,7 +19,7 @@ export class CollectionSubject<E = unknown> extends AsyncCollection<E> implement
   }
 
   addAll(iterable: Iterable<E>): this {
-    forEach(iterable, element => this.add(element));
+    forEachSync<E>(element => this.add(element))(iterable);
 
     return this;
   }

@@ -1,55 +1,65 @@
-/**
- * TODO: Describe.
- *
- * @param iterable
- * @param count
- */
-export function *take<E>(iterable: Iterable<E>, count: number): Iterable<E> {
-  const iterator = iterable[Symbol.iterator]();
+import { combine } from './combine';
 
-  let result = iterator.next();
-
-  while (!result.done) {
-    if (count < 1) {
-      // TODO: Test return importance
-
-      if (iterator.return) {
-        iterator.return();
-      }
-
-      return;
-    }
-
-    yield result.value;
-
-    result = iterator.next();
-    count--;
-  }
+export function take(count: number) {
+  return combine(() => takeSync(count), () => takeAsync(count));
 }
 
 /**
  * TODO: Describe.
  *
- * @param iterable
  * @param count
  */
-export async function *takeAsync<E>(iterable: AsyncIterable<E>, count: number): AsyncIterable<E> {
-  const iterator = iterable[Symbol.asyncIterator]();
+export function takeSync(count: number) {
+  return function *<E>(iterable: Iterable<E>): Iterable<E> {
+    const iterator = iterable[Symbol.iterator]();
 
-  let result = await iterator.next();
+    let result = iterator.next();
+    let counter = count;
 
-  while (!result.done) {
-    if (count < 1) {
-      if (iterator.return) {
-        await iterator.return();
+    while (!result.done) {
+      if (counter < 1) {
+        // TODO: Test return importance
+
+        if (iterator.return) {
+          iterator.return();
+        }
+
+        return;
       }
 
-      return;
+      yield result.value;
+
+      result = iterator.next();
+      counter--;
     }
+  };
+}
 
-    yield result.value;
+/**
+ * TODO: Describe.
+ *
+ * @param count
+ */
+export function takeAsync(count: number) {
+  return async function *<E>(iterable: AsyncIterable<E>): AsyncIterable<E> {
+    const iterator = iterable[Symbol.asyncIterator]();
 
-    result = await iterator.next();
-    count--;
-  }
+    let result = await iterator.next();
+    let counter = count;
+
+    while (!result.done) {
+      if (counter < 1) {
+        if (iterator.return) {
+          await iterator.return();
+        }
+
+        return;
+      }
+
+      yield result.value;
+
+      result = await iterator.next();
+      counter--;
+    }
+  };
 }

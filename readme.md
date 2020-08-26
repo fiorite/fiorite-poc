@@ -106,7 +106,8 @@ collect([1, 2, 3]).map(x => x + 1).filter(x => x % 2 === 0); // [Collection [2, 
 
 ## Requirements
 
-- ES2019
+- ES2019 (for private properties)
+- ES2017 (identify async function)
 - TypeScript 2.8
 
 ## TODO

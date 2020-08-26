@@ -1,0 +1,9 @@
+export { isAsyncFunction } from './is_async_function';
+export { isFunction } from './is_function';
+export { isObject } from './is_object';
+export { isMethod } from './is_method';
+export { isSyncMethod } from './is_sync_method';
+export { isAsyncMethod } from './is_async_method';
+export { isIterable } from './is_iterable';
+export { isSyncFunction } from './is_sync_function';
+export { isAsyncIterable } from './is_async_iterable';

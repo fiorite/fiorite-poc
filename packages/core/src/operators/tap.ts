@@ -1,14 +1,13 @@
-import { AsyncCallback, AsyncOperator, Callback, isAsyncIterable, isIterable, Operator } from '../common';
-import { ArgumentError, ArgumentsLengthError } from '../errors';
-import { switchIterable } from '../internal';
-import { compose } from './compose';
+import { AsyncCallback, AsyncOperator, Callback, Operator } from '../common';
+import { assert } from '../assert';
+import { combine, CombinedOperator } from './combine';
 
 /**
  * Returns operator with pre-defined callback.
  *
  * @param callback
  */
-export function tap<E>(callback: Callback<E, [number]>): Operator<E> & AsyncOperator<E>;
+export function tap<E>(callback: Callback<E, [number]>): CombinedOperator<E, AsyncIterable<E>>;
 
 /**
  * Returns operator with pre-defined callback.
@@ -18,101 +17,73 @@ export function tap<E>(callback: Callback<E, [number]>): Operator<E> & AsyncOper
 export function tap<E>(callback: AsyncCallback<E, [number]>): AsyncOperator<E>;
 
 /**
- * Performs callback on every emission and returns identical iterable.
- *
- * @param iterable
- * @param callback
- */
-export function tap<E>(iterable: Iterable<E>, callback: Callback<E, [number]>): Iterable<E>;
-
-/**
- * Performs callback on every emission and returns identical iterable.
- *
- * @param iterable
- * @param callback
- */
-export function tap<E>(iterable: AsyncIterable<E>, callback: AsyncCallback<E, [number]>): AsyncIterable<E>;
-
-/**
  * @inheritDoc
  */
-export function *tap<E>(...args: unknown[]): unknown {
-  let callback: Callback<E, [number]> | AsyncCallback<E, [number]>;
-
-  const operator = compose<E>(
-    iterable => tapSync(iterable, callback),
-      iterable => tapAsync(iterable, callback),
-  );
-
-  if (args.length === 1) {
-    [callback] = args[0] as [Callback<E, [number]>];
-
-    return operator;
-  } else if (args.length === 2) {
-    [, callback] = args as [unknown, Callback<E, [number]>];
-
-    return operator(args[0] as Iterable<E>);
-  }
-
-  throw new ArgumentsLengthError();
+export function tap<E>(callback: Callback<E, [number]> | AsyncCallback<E, [number]>): unknown {
+  return combine<E>(() => tapSync(callback), () => tapAsync(callback));
 }
 
 /**
  * @internal
  */
-function *tapSync<E>(iterable: Iterable<E>, callback: Callback<E, [number]>): Iterable<E> {
-  const iterator = iterable[Symbol.iterator]();
+export function tapSync<E>(callback: Callback<E, [number]>): Operator<E> {
+  return function *(iterable: Iterable<E>): Iterable<E> {
+    assert.notAsyncFunction(callback);
 
-  let result = iterator.next();
+    const iterator = iterable[Symbol.iterator]();
+    let result = iterator.next();
 
-  if (callback.length < 2) {
-    while (!result.done) {
-      (callback as Callback<E>)(result.value);
+    if (callback.length < 2) {
+      while (!result.done) {
+        (callback as Callback<E>)(result.value);
 
-      yield result.value;
+        yield result.value;
 
-      result = iterator.next();
+        result = iterator.next();
+      }
+    } else {
+      let index = 0;
+
+      while (!result.done) {
+        (callback as Callback<E, [number]>)(result.value, index);
+
+        yield result.value;
+
+        result = iterator.next();
+        index++;
+      }
     }
-  } else {
-    let index = 0;
-
-    while (!result.done) {
-      (callback as Callback<E, [number]>)(result.value, index);
-
-      yield result.value;
-
-      result = iterator.next();
-      index++;
-    }
-  }
+  };
 }
 
 /**
  * @internal
  */
-async function *tapAsync<E>(iterable: AsyncIterable<E>, callback: AsyncCallback<E, [number]>): AsyncIterable<E> {
-  const iterator = iterable[Symbol.asyncIterator]();
+export function tapAsync<E>(callback: Callback<E, [number]> | AsyncCallback<E, [number]>): AsyncOperator<E> {
+  return async function *(iterable: AsyncIterable<E>) {
+    const iterator = iterable[Symbol.asyncIterator]();
 
-  let result = await iterator.next();
+    let result = await iterator.next();
 
-  if (callback.length < 2) {
-    while (!result.done) {
-      await (callback as AsyncCallback<E>)(result.value);
+    if (callback.length < 2) {
+      while (!result.done) {
+        (callback as Callback<E>)(result.value);
 
-      yield result.value;
+        yield result.value;
 
-      result = await iterator.next();
-    }
-  } else {
-    let index = 0;
+        result = await iterator.next();
+      }
+    } else {
+      let index = 0;
 
-    while (!result.done) {
-      await (callback as AsyncCallback<E, [number]>)(result.value, index);
+      while (!result.done) {
+        (callback as Callback<E, [number]>)(result.value, index);
 
-      yield result.value;
+        yield result.value;
 
-      result = await iterator.next();
-      index++;
+        result = await iterator.next();
+        index++;
+      }
     }
   }
 }

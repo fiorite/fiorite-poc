@@ -1,58 +1,28 @@
-import { isAsyncIterable, isIterable } from '@fiorite/core';
-import { ArgumentError } from '../errors';
+import { combine, CombinedOperator } from './combine';
+import { AsyncOperator, Operator } from '../common';
 
-/**
- * Converts {@link Iterable} to {@link Array}.
- *
- * @param iterable
- */
-export function toArray<E>(iterable: Iterable<E>): E[];
-/**
- * Converts {@link Iterable} to {@link Array}.
- *
- * @param iterable
- */
-export function toArray<E>(iterable: AsyncIterable<E>): Promise<E[]>;
-/**
- * Converts {@link Iterable} to {@link Array}.
- *
- * @param iterable
- */
-export function toArray<E>(iterable: unknown): unknown {
-  // Implement iterable switch.
-  if (isIterable(iterable)) {
-    return toArraySync(iterable as Iterable<E>);
-  } else if (isAsyncIterable(iterable)) {
-    return toArrayAsync(iterable as AsyncIterable<E>);
-  }
-
-  throw new ArgumentError(); // TODO: Add better error.
+export function toArray<E>(): CombinedOperator<E, E[], Promise<E[]>> {
+  return combine(() => toArraySync(), () => toArrayAsync());
 }
 
-/**
- * Converts {@link Iterable} to {@link Array}.
- *
- * @param iterable
- */
-function toArraySync<E>(iterable: Iterable<E>): E[] {
-  return Array.from(iterable);
+export function toArraySync<E>(): Operator<E, E[]> {
+  return function (iterable: Iterable<E>) {
+    return Array.from(iterable);
+  };
 }
 
-/**
- * Converts {@link AsyncIterable} to {@link Array}.
- *
- * @param iterable
- */
-async function toArrayAsync<E>(iterable: AsyncIterable<E>): Promise<E[]> {
-  const iterator = iterable[Symbol.asyncIterator]();
+export function toArrayAsync<E>(): AsyncOperator<E, Promise<E[]>> {
+  return async function (iterable: AsyncIterable<E>) {
+    const iterator = iterable[Symbol.asyncIterator]();
 
-  const buffer: E[] = [];
-  let result = await iterator.next();
+    const buffer: E[] = [];
+    let result = await iterator.next();
 
-  while (!result.done) {
-    buffer.push(result.value);
-    result = await iterator.next();
+    while (!result.done) {
+      buffer.push(result.value);
+      result = await iterator.next();
+    }
+
+    return buffer;
   }
-
-  return buffer;
 }

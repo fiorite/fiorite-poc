@@ -1,4 +1,4 @@
-import { includes, includesAsync } from '../../src/operators';
+import { includesSync, includesAsync } from '../../src/operators';
 import { expect } from 'chai';
 import { Readable } from 'stream';
 
@@ -7,7 +7,7 @@ describe('includes()', () => {
     const sequence = [1, 2, 3];
     const set = new Set(sequence);
 
-    const result = includes(set, 2);
+    const result = includesSync(set, 2);
     expect(result).equals(true);
   });
 
@@ -15,12 +15,12 @@ describe('includes()', () => {
     const sequence = [1, 2, 3];
     const set = new Set(sequence);
 
-    const result = includes(set, 0);
+    const result = includesSync(set, 0);
     expect(result).equals(false);
   });
 
   it('should return true if element is not in a sequence and comparer ignores it', () => {
-    const result = includes([0], -1, () => true);
+    const result = includesSync([0], -1, () => true);
     expect(result).equals(true);
   });
 });

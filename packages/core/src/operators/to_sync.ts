@@ -1,18 +1,18 @@
-/**
- * TODO: Describe.
- * @param iterable
- */
-export async function toSync<E>(iterable: AsyncIterable<E>): Promise<Iterable<E>> {
-  const buffer: E[] = [];
+import { AsyncOperator } from '../common';
 
-  const iterator = iterable[Symbol.asyncIterator]();
+export function toSync<E>(): AsyncOperator<E, Promise<Iterable<E>>> {
+  return async function (iterable: AsyncIterable<E>) {
+    const buffer: E[] = [];
 
-  let result = await iterator.next();
+    const iterator = iterable[Symbol.asyncIterator]();
 
-  while (!result.done) {
-    buffer.push(result.value);
-    result = await iterator.next();
-  }
+    let result = await iterator.next();
 
-  return buffer;
+    while (!result.done) {
+      buffer.push(result.value);
+      result = await iterator.next();
+    }
+
+    return buffer;
+  };
 }
