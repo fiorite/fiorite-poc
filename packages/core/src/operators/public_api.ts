@@ -1,4 +1,5 @@
 export { append, appendAsync, appendSync } from './append';
+export { cast, castSync, castAsync } from './cast';
 export { combine, CombinedOperator } from './combine';
 export { concat, concatSync, concatAsync } from './concat';
 export { count, countSync, countAsync } from './count';
@@ -11,9 +12,11 @@ export { forEach, forEachSync, forEachAsync } from './for_each';
 export { includes, includesSync, includesAsync } from './includes';
 export { listen, listenSync, listenAsync } from './listen';
 export { map, mapSync, mapAsync } from './map';
+export { pipe } from './pipe';
 export { prepend, prependAsync, prependSync } from './prepend';
 export { reduceSync, reduceAsync } from './reduce';
 export { reverse, reverseSync, reverseAsync } from './reverse';
+export { sequenceEqual, sequenceEqualSync, sequenceEqualAsync } from './sequence_equal';
 export { single, singleSync, singleAsync } from './single';
 export { skip, skipSync, skipAsync } from './skip';
 export { some, someSync, someAsync } from './some';

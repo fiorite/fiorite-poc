@@ -14,6 +14,7 @@ import {
   prependAsync,
   reduceAsync,
   reverseAsync,
+  sequenceEqualAsync,
   singleAsync,
   skipAsync,
   someAsync,
@@ -24,13 +25,13 @@ import {
 import {
   AbstractType,
   AsyncCallback,
-  AsyncOperator,
   AsyncPredicate,
   AsyncReducer,
-  AsyncSelector, Callback,
+  AsyncSelector,
+  Callback,
   EqualityComparer,
-  inspectSymbol, Predicate,
-  Selector
+  inspectSymbol,
+  Predicate
 } from '../common';
 import { Listener } from '../listener';
 
@@ -106,7 +107,18 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
   }
 
   /**
-   * Concatenates provided sequences into a new sequence.
+   * Concatenates specified sequences.
+   *
+   * @example ```typescript
+   * import { collect } from '@fiorite/core';
+   * import { Readable } from 'stream';
+   *
+   * const collection = collect(Readable.from([1, 2, 3]));
+   * collection.concat([4, 5, 6], Readable.from([7, 8, 9])); // [AsyncCollection [1, 2, 3, 4, 5, 6, 7, 8, 9]]
+   *
+   * ```
+   *
+   * @param others
    */
   concat(...others: (Iterable<E> | AsyncIterable<E>)[]): AsyncCollection<E> {
     return this.lift(concatAsync(...others)(this));
@@ -203,24 +215,6 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
   }
 
   /**
-   * TODO: Describe.
-   *
-   * @param operator
-   */
-  pipe<R>(operator: AsyncOperator<E, R>): AsyncCollection<R>;
-
-  /**
-   * @inheritDoc
-   */
-  pipe(...operators: Selector<AsyncIterable<any>, AsyncIterable<any>>[]): AsyncCollection<any> {
-    return this.lift(
-      operators.reduce((iterable, operator) => {
-        return operator(iterable);
-      }, this as AsyncIterable<any>)
-    );
-  }
-
-  /**
    * Provides a new collection of elements from current collection plus the specified elements prepended at the beginning.
    *
    * @example ```typescript
@@ -273,10 +267,28 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
   }
 
   /**
-   * TODO: Describe.
+   * Inverts the order of the elements in a sequence.
+   *
+   * @example```typescript
+   * import { collect } from '@fiorite/core';
+   * import { Readable } from 'stream';
+   *
+   * const collection = collect(Readable.from([1, 2, 3]));
+   * collection.reverse(); // [AsyncCollection [3, 2, 1]]
+   *
+   * ```
    */
   reverse(): AsyncCollection<E> {
-    return this.lift(reverseAsync()(this));
+    return this.lift(reverseAsync<E>()(this));
+  }
+
+  /**
+   * TODO: Describe.
+   *
+   * @param other
+   */
+  sequenceEqual(other: Iterable<E> | AsyncIterable<E>): Promise<boolean> {
+    return sequenceEqualAsync(other)(this);
   }
 
   /**
