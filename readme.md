@@ -4,6 +4,27 @@ Fiorite is a development framework for building web applications using TypeScrip
 
 - ⚠️ Status: **In development**
 
+## Package structuring
+
+Available packages (3 at the moment):
+
+- `@fiorite/core` - modules, boot, app, di, injection
+    - `@fiorite/core/operators` - sync/async iterable operators
+    - `@fiorite/core/collections` - sync/async collections + structures
+    - `@fiorite/core/logging` - logging functionality
+    - `@fiorite/core/provider_collection` - provider collection for extension
+    - `@fiorite/core/injector` - injector for extension
+
+
+- `@fiorite/http` - server, client, context, middleware
+    - `@fiorite/http/middlewares` - built-in middlewares
+    - `@fiorite/http/responses` - built-in responses
+    - `@fiorite/http/routing` - routing feature, controller, endpoint etc.
+
+
+- `@fiorite/db` - db collection, context, and adapter (abstractions)
+    - `@fiorite/db/sqlite` - sqlite adapter and extensions
+
 ## Notes
 
 The main idea of the framework is to provide rich functionality to solve problems with different complexity using hybrid model of object-oriented and functional paradigms.

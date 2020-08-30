@@ -4,6 +4,6 @@
   "description": "Core interfaces that are useful across the framework",
   "author": "fiorite",
   "license": "MIT",
-  "main": "src/public-api.ts",
-  "types": "src/public-api.ts"
+  "main": "lib/public-api.ts",
+  "types": "lib/public-api.ts"
 }

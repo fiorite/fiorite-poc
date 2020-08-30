@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "esnext",
+    "target": "es2019",
     "strict": true,
     "lib": ["es2015", "esnext"],
     "moduleResolution": "node",
@@ -13,12 +13,13 @@
     "baseUrl": "./packages",
     "resolveJsonModule": true,
     "paths": {
-      "@fiorite/core": ["core/src"],
-      "@fiorite/core/operators": ["core/src/operators"],
-      "@fiorite/db": ["db/src"],
-      "@fiorite/http": ["http/src"],
-      "@fiorite/sqlite": ["sqlite/src"],
-      "@fiorite/web": ["web/src"]
+      "@fiorite/cli": ["cli/lib"],
+      "@fiorite/core": ["core/lib"],
+      "@fiorite/core/*": ["core/lib/*"],
+      "@fiorite/db": ["db/lib"],
+      "@fiorite/db/*": ["db/lib/*"],
+      "@fiorite/http": ["http/lib"],
+      "@fiorite/http/*": ["http/lib/*"]
     }
   },
   "include": [
@@ -26,6 +27,8 @@
   ],
   "exclude": [
     "node_modules",
-    "**/*.spec.ts"
+    "**/*_test.ts",
+    "**/*.spec.ts",
+    "**/*_spec.ts"
   ]
 }

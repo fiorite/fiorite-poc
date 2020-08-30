@@ -21,6 +21,12 @@ export type ProviderTuple = [Type | Instance] |
   [ServiceKey, Type | ServiceFactory, ServiceLifetime];
 
 /**
+ * Tuple signature for partial provider.
+ */
+export type PartialProviderTuple<T> = [Type<T> | ServiceFactory<T> | T] |
+  [Type<T> | ServiceFactory<T>, ServiceLifetime];
+
+/**
  * Tuple signature for singleton provider.
  */
 export type SingletonTuple = [Type | Instance] | [Type, unknown] | [ServiceKey, Type | ServiceFactory | unknown];
@@ -70,7 +76,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
    * Gets service instance.
    */
   get instance(): T | null {
-    return this.#instance;
+    return this._instance;
   }
 
   /**
@@ -80,12 +86,12 @@ export class Provider<T = unknown> implements Equatable, Disposable {
    */
   set instance(value: T | null) {
     if (this.lifetime.isSingleton) {
-      if (value !== this.#instance) {
-        if (null !== this.#instance) {
+      if (value !== this._instance) {
+        if (null !== this._instance) {
           throw new InvalidOperationError('Unable to set singleton instance twice.');
         }
 
-        this.#instance = value;
+        this._instance = value;
       }
 
       return;
@@ -99,7 +105,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
    *
    * @private
    */
-  #instance: T | null = null;
+  private _instance: T | null = null;
 
   /**
    * Stores internal function that creates service.
@@ -107,7 +113,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
    * @internal
    * @private
    */
-  readonly #provide: ServiceFactory<T> = () => {
+  private readonly _provide: ServiceFactory<T> = () => {
     throw new NotImplementedError();
   };
 
@@ -408,11 +414,11 @@ export class Provider<T = unknown> implements Equatable, Disposable {
         }
       }
 
-      this.#provide = injector => new this.type!(
-        parameters.map(parameter => injector.get(parameter)),
+      this._provide = injector => new this.type!(
+        ...parameters.map(parameter => injector.get(parameter)),
       );
     } else if (null !== this.factory) {
-      this.#provide = this.factory;
+      this._provide = this.factory;
     } else if (null !== this.instance) {
       // Do nothing.
     } else {
@@ -428,13 +434,13 @@ export class Provider<T = unknown> implements Equatable, Disposable {
   provide(injector: Injector): T {
     if (this.lifetime.isSingleton) {
       if (null === this.instance) {
-        this.instance = this.#provide(injector);
+        this.instance = this._provide(injector);
       }
 
       return this.instance!;
     }
 
-    return this.#provide(injector);
+    return this._provide(injector);
   }
 
   /**
@@ -442,7 +448,7 @@ export class Provider<T = unknown> implements Equatable, Disposable {
    */
   async [Symbol.dispose]() {
     await tryDispose(this.instance);
-    this.#instance = null;
+    this._instance = null;
   }
 
   /**
@@ -455,6 +461,6 @@ export class Provider<T = unknown> implements Equatable, Disposable {
       other.key === this.key &&
       other.type === this.type &&
       other.factory === this.factory &&
-      other.#instance === this.#instance;
+      other._instance === this._instance;
   }
 }

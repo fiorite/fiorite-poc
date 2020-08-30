@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { append, appendAsync, appendSync, pipe, sequenceEqual, toAsync } from '../../src/operators';
 import { collect } from '../../src';
 
-describe('appendSync(), appendAsync(), Collection#append(), AsyncCollection#append(), append()', () => {
+describe('appendSync(), Collection#append(), appendAsync(), AsyncCollection#append(), append()', () => {
   describe('appendSync()', () => {
     it('should append 0 elements', () => {
       expect(

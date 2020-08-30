@@ -12,6 +12,10 @@ export interface Pipe extends Function {
     operator: AsyncOperator<E, R>
   ): AsyncOperator<E, R>;
 
+  <E, S, A>(
+    operator: CombinedOperator<E, S, A>,
+  ): CombinedOperator<E, S, A>;
+
   // 2
 
   <E, A, R>(

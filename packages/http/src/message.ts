@@ -34,39 +34,39 @@ export abstract class HttpMessage implements Disposable {
     return 'HttpMessage';
   }
 
-  readonly #body: HttpMessageBody;
+  private readonly _body: HttpMessageBody;
 
   get body(): Readable {
-    return this.#body.stream;
+    return this._body.stream;
   }
 
   set body(value: Readable) {
-    this.#body.stream = value;
+    this._body.stream = value;
   }
 
   /**
    * Gets body writer whether it writable.
    */
   get writer() {
-    return this.#body.writer;
+    return this._body.writer;
   }
 
   /**
    * Gets whether body is writable.
    */
   get writable() {
-    return this.#body.writable;
+    return this._body.writable;
   }
 
   get readable() {
-    return this.#body.readable;
+    return this._body.readable;
   }
 
   protected constructor(
     readonly headers: HttpHeaders,
     body: HttpMessageBody
   ) {
-    this.#body = body;
+    this._body = body;
   }
 
   write(buffer: Uint8Array | string): Promise<void>;
@@ -74,7 +74,7 @@ export abstract class HttpMessage implements Disposable {
   write(str: string, encoding?: BufferEncoding): Promise<void>;
   write(...args: any[]): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      (this.#body.writer!.write as any)(...args, (error?: Error | null) => {
+      (this._body.writer!.write as any)(...args, (error?: Error | null) => {
         if (error) {
           reject(error);
         } else {
@@ -83,7 +83,7 @@ export abstract class HttpMessage implements Disposable {
       });
     });
 
-    // return (this.#body.destination!.write as any)(...args);
+    // return (this._body.destination!.write as any)(...args);
   }
 
   end(): Promise<void>;
@@ -91,7 +91,7 @@ export abstract class HttpMessage implements Disposable {
   end(str: string, encoding?: BufferEncoding): Promise<void>;
   end(...args: any[]): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      (this.#body.writer!.end as any)(...args, (error?: Error | null) => {
+      (this._body.writer!.end as any)(...args, (error?: Error | null) => {
         if (error) {
           reject(error);
         } else {
@@ -100,11 +100,11 @@ export abstract class HttpMessage implements Disposable {
       });
     });
 
-    // return this.#body.destination!.end(...args);
+    // return this._body.destination!.end(...args);
   }
 
   [Symbol.dispose]() {
-    return this.#body[Symbol.dispose]();
+    return this._body[Symbol.dispose]();
   }
 }
 

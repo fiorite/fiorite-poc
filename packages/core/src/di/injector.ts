@@ -2,18 +2,27 @@ import { inspectServiceKey, ServiceKey } from './service_key';
 import { Collection, HashMap, HashMapError, Stack } from '../collections';
 import { Provider } from './provider';
 import { InvalidOperationError } from '../errors';
-import { Disposable, tryDispose } from '../common';
+import { Callable, Disposable, tryDispose } from '../common';
 
-export class Injector {
+export interface Inject {
+  <T>(key: ServiceKey<T>): T;
+}
+
+export interface Injector {
+  <T>(key: ServiceKey<T>): T;
+}
+
+export class Injector extends Callable<Inject> {
   /**
    * Tracks key dependencies to prevent circular dependency.
    *
    * @protected
    */
-  #callStack: Stack<Provider>;
+  private _callStack: Stack<Provider>;
 
   constructor(readonly providers: Collection<Provider>) {
-    this.#callStack = new Stack<Provider>();
+    super(type => this.get(type));
+    this._callStack = new Stack<Provider>();
   }
 
   /**
@@ -21,14 +30,14 @@ export class Injector {
    * @param providerInjector uses as Provider#provide(Injector) argument.
    */
   resolve<T>(provider: Provider<T>, providerInjector: Injector = this): T {
-    if (this.#callStack.includes(provider)) {
+    if (this._callStack.includes(provider)) {
       // TODO: Add key to string.
-      const path = [...this.#callStack.append(provider).map(x => inspectServiceKey(x.key))].join(' > ');
+      const path = [...this._callStack.append(provider).map(x => inspectServiceKey(x.key))].join(' > ');
       throw new InvalidOperationError('Circular dependency detected: ' + path);
     }
 
-    if (!this.#callStack.empty) {
-      const previous = this.#callStack.peek();
+    if (!this._callStack.empty) {
+      const previous = this._callStack.peek();
 
       // TODO: Add #compare method.
       if (previous.lifetime.value < provider.lifetime.value) {
@@ -38,7 +47,7 @@ export class Injector {
     }
 
     try {
-      this.#callStack.push(provider);
+      this._callStack.push(provider);
 
       return provider.provide(providerInjector) as T;
     } catch (error) {
@@ -50,7 +59,7 @@ export class Injector {
 
       throw error;
     } finally {
-      this.#callStack.pop();
+      this._callStack.pop();
     }
   }
 
@@ -79,6 +88,19 @@ export class Injector {
   }
 
   /**
+   * Gets first service by specified key.
+   *
+   * @param key
+   *
+   * @throws InvalidOperationError service with a type is not bound or there is more than one service with the same key.
+   */
+  tryGet<T>(key: ServiceKey<T>): T | null {
+    return this.resolve(
+      this.providers.single(x => key === x.key) as Provider<T>,
+    );
+  }
+
+  /**
    * Checks whether key exists
    *
    * @param key
@@ -96,41 +118,41 @@ export class ScopedInjector extends Injector implements Disposable {
    *
    * @private
    */
-  #instances: HashMap<Provider, unknown>;
+  private _instances: HashMap<Provider, unknown>;
 
   /**
    * Stores original injector.
    *
    * @private
    */
-  readonly #injector: Injector;
+  private readonly _injector: Injector;
 
   constructor(injector: Injector) {
     super(injector.providers);
 
-    this.#injector = injector;
-    this.#instances = new HashMap<Provider, unknown>();
+    this._injector = injector;
+    this._instances = new HashMap<Provider, unknown>();
   }
 
   resolve<T>(provider: Provider<T>, providerInjector: Injector = this): T {
     if (provider.lifetime.isScoped) {
-      if (!this.#instances.has(provider)) {
-        const service = this.#injector.resolve(provider, providerInjector);
-        this.#instances.set(provider, service);
+      if (!this._instances.has(provider)) {
+        const service = this._injector.resolve(provider, providerInjector);
+        this._instances.set(provider, service);
       }
 
-      return this.#instances.get(provider) as T;
+      return this._instances.get(provider) as T;
     }
 
-    return this.#injector.resolve(provider, providerInjector);
+    return this._injector.resolve(provider, providerInjector);
   }
 
   async [Symbol.dispose]() {
     await Promise.all(
-      this.#instances.values
+      this._instances.values
         .map(instance => tryDispose(instance))
     );
 
-    this.#instances.clear();
+    this._instances.clear();
   }
 }

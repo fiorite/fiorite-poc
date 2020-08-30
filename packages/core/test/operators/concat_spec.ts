@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { concat, concatAsync, concatSync, pipe, sequenceEqual, toAsync } from '../../src/operators';
 import { collect } from '../../src';
 
-describe('concatSync(), concatAsync(), Collection#concat(), AsyncCollection#concat(), concat()', () => {
+describe('concatSync(), Collection#concat(), concatAsync(), AsyncCollection#concat(), concat()', () => {
   describe('concatSync()', () => {
     it('should concatenate with 0 sequences', () => {
       expect(

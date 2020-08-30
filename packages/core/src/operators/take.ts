@@ -1,7 +1,8 @@
 import { combine } from './combine';
+import { AsyncOperator, Operator } from '../common';
 
-export function take(count: number) {
-  return combine(() => takeSync(count), () => takeAsync(count));
+export function take<E>(count: number) {
+  return combine(() => takeSync<E>(count), () => takeAsync<E>(count));
 }
 
 /**
@@ -9,8 +10,8 @@ export function take(count: number) {
  *
  * @param count
  */
-export function takeSync(count: number) {
-  return function *<E>(iterable: Iterable<E>): Iterable<E> {
+export function takeSync<E>(count: number): Operator<E> {
+  return function *(iterable: Iterable<E>) {
     const iterator = iterable[Symbol.iterator]();
 
     let result = iterator.next();
@@ -40,8 +41,8 @@ export function takeSync(count: number) {
  *
  * @param count
  */
-export function takeAsync(count: number) {
-  return async function *<E>(iterable: AsyncIterable<E>): AsyncIterable<E> {
+export function takeAsync<E>(count: number): AsyncOperator<E> {
+  return async function *(iterable: AsyncIterable<E>): AsyncIterable<E> {
     const iterator = iterable[Symbol.asyncIterator]();
 
     let result = await iterator.next();

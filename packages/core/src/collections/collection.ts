@@ -1,5 +1,6 @@
 import {
   appendSync,
+  catchErrorSync,
   concatSync,
   countSync,
   everySync,
@@ -24,7 +25,17 @@ import {
   toAsync,
   toSync,
 } from '../operators';
-import { AbstractType, Callback, EqualityComparer, inspectSymbol, Predicate, Reducer, Selector } from '../common';
+import {
+  AbstractType,
+  Callback,
+  EqualityComparer,
+  inspectSymbol,
+  Operator,
+  Predicate,
+  Reducer,
+  Selector,
+  Type
+} from '../common';
 import { isAsyncIterable, isIterable, } from '../internal';
 import { ArgumentError } from '../errors';
 import { AsyncCollection, AsyncCollectionStatic } from './async_collection';
@@ -76,6 +87,23 @@ export abstract class Collection<E> implements Iterable<E> {
   /**
    * Creates a new {@link Collection} that applies provided sequence.
    *
+   * TODO: Revise issue: when operator calls on lift, sequence reuse the same generator.
+   *
+   * @protected
+   */
+  protected pipe<R>(operator: Operator<E, Iterable<R>>): Collection<R> {
+    const source = this;
+
+    return this.lift<R>({
+      [Symbol.iterator]() {
+        return operator(source)[Symbol.iterator]();
+      }
+    });
+  }
+
+  /**
+   * Creates a new {@link Collection} that applies provided sequence.
+   *
    * @param iterable
    * @protected
    */
@@ -97,7 +125,7 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param elements
    */
   append(...elements: E[]): Collection<E> {
-    return this.lift(appendSync(...elements)(this));
+    return this.pipe(appendSync(...elements));
   }
 
   /**
@@ -114,7 +142,7 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param others
    */
   concat(...others: Iterable<E>[]): Collection<E> {
-    return this.lift(concatSync(...others)(this));
+    return this.pipe(concatSync(...others));
   }
 
   /**
@@ -122,6 +150,17 @@ export abstract class Collection<E> implements Iterable<E> {
    */
   cast<R>(): Collection<R> {
     return this as unknown as Collection<R>;
+  }
+
+  catchError(selector: Selector<Error, E | Iterable<E>>): Collection<E>;
+  catchError<R extends Error>(errorType: Type<R>, selector: Selector<R, E | Iterable<E>>): Collection<E>;
+  catchError(...args: any[]): Collection<E> {
+    return this.pipe((catchErrorSync as any)(...args));
+  }
+
+  catch<R extends Error>(errorType: Type<R>, selector: Selector<R, E | Iterable<E>>): Collection<E>;
+  catch(...args: any[]): Collection<E> {
+    return this.pipe((catchErrorSync as any)(...args));
   }
 
   /**
@@ -149,7 +188,7 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param predicate
    */
   filter(predicate: Predicate<E, [number]>): Collection<E> {
-    return this.lift(filterSync(predicate)(this));
+    return this.pipe(filterSync(predicate));
   }
 
   first(predicate?: Predicate<E, [number]>): E;
@@ -161,7 +200,7 @@ export abstract class Collection<E> implements Iterable<E> {
    * TODO: Describe
    */
   flat(): Collection<E extends Iterable<infer I> ? I : E> {
-    return this.lift(flatSync()(this));
+    return this.pipe(flatSync());
   }
 
   /**
@@ -170,7 +209,7 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param selector
    */
   flatMap<R>(selector: Selector<E, R, [number]>): Collection<R> {
-    return this.lift(flatMapSync(selector)(this));
+    return this.pipe(flatMapSync(selector));
   }
 
   /**
@@ -216,7 +255,7 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param selector
    */
   map<R>(selector: Selector<E, R, [number]>): Collection<R> {
-    return this.lift(mapSync(selector)(this));
+    return this.pipe(mapSync(selector));
   }
 
   /**
@@ -234,7 +273,7 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param elements
    */
   prepend(...elements: E[]): Collection<E> {
-    return this.lift(prependSync(...elements)(this));
+    return this.pipe(prependSync(...elements));
   }
 
   /**
@@ -259,7 +298,7 @@ export abstract class Collection<E> implements Iterable<E> {
    * ```
    */
   reverse(): Collection<E> {
-    return this.lift(reverseSync<E>()(this));
+    return this.pipe(reverseSync<E>());
   }
 
   /**
@@ -291,7 +330,7 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param count
    */
   skip(count: number): Collection<E> {
-    return this.lift(skipSync(count)(this));
+    return this.pipe(skipSync<E>(count));
   }
 
   /**
@@ -324,14 +363,14 @@ export abstract class Collection<E> implements Iterable<E> {
    * @param count
    */
   take(count: number): Collection<E> {
-    return this.lift(takeSync(count)(this));
+    return this.pipe(takeSync<E>(count));
   }
 
   /**
    * Performs callback on every emission and returns identical collection.
    */
   tap(callback: Callback<E, [number]>): Collection<E> {
-    return this.lift(tapSync(callback)(this));
+    return this.pipe(tapSync(callback));
   }
 
   /**
@@ -345,7 +384,13 @@ export abstract class Collection<E> implements Iterable<E> {
    * Converts a sequence to {@link AsyncCollection}.
    */
   toAsync(collectionType: AsyncCollectionStatic = AsyncCollection): AsyncCollection<E> {
-    return new collectionType[Symbol.species](toAsync<E>()(this));
+    const source = this;
+
+    return new collectionType[Symbol.species]({
+      [Symbol.asyncIterator]() {
+        return toAsync<E>()(source)[Symbol.asyncIterator]();
+      }
+    });
   }
 
   /**

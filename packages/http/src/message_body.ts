@@ -37,7 +37,7 @@ export class HttpMessageBody implements Disposable {
    *
    * @private
    */
-  #writer: Writable;
+  private _writer: Writable;
 
   /**
    * Gets destination stream.
@@ -45,7 +45,7 @@ export class HttpMessageBody implements Disposable {
    * @private
    */
   get writer() {
-    return this.#writer;
+    return this._writer;
   }
 
   /**
@@ -54,14 +54,14 @@ export class HttpMessageBody implements Disposable {
    * @private
    */
   set writer(value: Writable) {
-    this.#writer = value;
+    this._writer = value;
   }
 
   /**
    * Checks whether body is writeable.
    */
   get writable() {
-    return this.#writer.writable;
+    return this._writer.writable;
   }
 
   /**
@@ -69,27 +69,27 @@ export class HttpMessageBody implements Disposable {
    *
    * @private
    */
-  #stream: Readable;
+  private _stream: Readable;
 
   /**
    * Gets source stream.
    */
   get stream() {
-    return this.#stream;
+    return this._stream;
   }
 
   /**
    * Sets source stream.
    */
   set stream(value: Readable) {
-    this.#stream = value;
+    this._stream = value;
   }
 
   /**
    * Checks whether body is readable.
    */
   get readable() {
-    return this.#stream.readable;
+    return this._stream.readable;
   }
 
   static of(source: Readable | Writable): HttpMessageBody {
@@ -123,12 +123,12 @@ export class HttpMessageBody implements Disposable {
   }
 
   constructor(writer: Writable | null = null, source: Readable | null = null) {
-    this.#writer = writer || new DefaultWriter();
-    this.#stream = source || new DefaultStream();
+    this._writer = writer || new DefaultWriter();
+    this._stream = source || new DefaultStream();
   }
 
   [Symbol.dispose]() {
-    this.#writer.destroy();
-    this.#stream.destroy();
+    this._writer.destroy();
+    this._stream.destroy();
   }
 }

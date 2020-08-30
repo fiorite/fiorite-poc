@@ -9,6 +9,10 @@ export class HashMapError<K> extends InvalidOperationError {
   }
 }
 
+function inspectKey(key: any) {
+  return typeof key === 'function' ? key.name : key;
+}
+
 export class HashMap<K, V> extends Collection<[K, V]> {
   /**
    * Provides string tag.
@@ -22,20 +26,20 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    *
    * @private
    */
-  #buffer: [K, V][] = [];
+  private _buffer: [K, V][] = [];
 
   /**
    * Gets internal buffer as readonly array.
    */
   get buffer(): readonly [K, V][] {
-    return this.#buffer;
+    return this._buffer;
   }
 
   /**
    * @inheritDoc
    */
   get empty() {
-    return this.#buffer.length < 1;
+    return this._buffer.length < 1;
   }
 
   /**
@@ -88,7 +92,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
   }
 
   /**
-   * Instantiates map, applies {@param keyComparer} and sets {@param source} as a {@link #buffer}.
+   * Instantiates map, applies {@param keyComparer} and sets {@param source} as a {@link _buffer}.
    *
    * @param source
    * @param keyComparer
@@ -96,7 +100,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
   static proxy<K, V>(source: [K, V][], keyComparer: EqualityComparer<K> = EqualityComparer.DEFAULT): HashMap<K, V> {
     const instance = new HashMap<K, V>([], keyComparer);
 
-    instance.#buffer = source;
+    instance._buffer = source;
 
     return instance;
   }
@@ -121,7 +125,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    */
   add(key: K, value: V): this {
     if (this.has(key)) {
-      throw new HashMapError('An entry with the same key already exists.', key);
+      throw new HashMapError('An entry with the same key "' + inspectKey(key) + '" already exists.', key);
     }
 
     this.set(key, value);
@@ -185,12 +189,12 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    * @param value
    */
   set(key: K, value: V): this {
-    const index = this.#buffer.findIndex(([x]) => this.keyComparer(key, x));
+    const index = this._buffer.findIndex(([x]) => this.keyComparer(key, x));
 
     if (index < 0) {
-      this.#buffer.push([key, value]);
+      this._buffer.push([key, value]);
     } else {
-      this.#buffer.splice(index, 1, [key, value]);
+      this._buffer.splice(index, 1, [key, value]);
     }
 
     return this;
@@ -213,7 +217,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    * @param key
    */
   has(key: K): boolean {
-    return this.#buffer.findIndex(([x]) => this.keyComparer(key, x)) > -1;
+    return this._buffer.findIndex(([x]) => this.keyComparer(key, x)) > -1;
   }
 
   /**
@@ -224,13 +228,13 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    * @throws
    */
   get(key: K): V {
-    const index = this.#buffer.findIndex(([x]) => this.keyComparer(key, x));
+    const index = this._buffer.findIndex(([x]) => this.keyComparer(key, x));
 
     if (index < 0) {
-      throw new HashMapError('An entry with key "' + key +  '" is not exist.', key);
+      throw new HashMapError('An entry with key "' + inspectKey(key) +  '" is not exist.', key);
     }
 
-    return this.#buffer[index][1];
+    return this._buffer[index][1];
   }
 
   /**
@@ -252,13 +256,13 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    * @inheritDoc
    */
   tryGet(key: K, _default: V | null = null): V | null {
-    const index = this.#buffer.findIndex(([x]) => this.keyComparer(key, x));
+    const index = this._buffer.findIndex(([x]) => this.keyComparer(key, x));
 
     if (index < 0) {
       return _default;
     }
 
-    return this.#buffer[index][1];
+    return this._buffer[index][1];
   }
 
   /**
@@ -267,10 +271,10 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    * @param key
    */
   delete(key: K): this {
-    const index = this.#buffer.findIndex(([x]) => this.keyComparer(key, x));
+    const index = this._buffer.findIndex(([x]) => this.keyComparer(key, x));
 
     if (index > -1) {
-      this.#buffer.splice(index, 1);
+      this._buffer.splice(index, 1);
     }
 
     return this;
@@ -280,7 +284,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    * Deletes all entries from the map.
    */
   clear(): this {
-    this.#buffer.splice(0, this.#buffer.length);
+    this._buffer.splice(0, this._buffer.length);
 
     return this;
   }
@@ -291,7 +295,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
   [Symbol.clone](): HashMap<K, V> {
     const clone = Object.create(this) as this;
 
-    clone.#buffer = this.#buffer.slice();
+    clone._buffer = this._buffer.slice();
     clone.keyComparer = this.keyComparer;
 
     return clone;
@@ -301,7 +305,7 @@ export class HashMap<K, V> extends Collection<[K, V]> {
    * @inheritDoc
    */
   [Symbol.iterator](): Iterator<[K, V]> {
-    return this.#buffer[Symbol.iterator]();
+    return this._buffer[Symbol.iterator]();
   }
 }
 

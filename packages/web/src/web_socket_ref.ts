@@ -2,10 +2,10 @@ import WebSocket from 'ws';
 import { InvalidOperationError } from '@fiorite/core';
 
 export class WebSocketContext {
-  #client: WebSocket | null = null;
+  _client: WebSocket | null = null;
 
   get client(): WebSocket {
-    const client = this.#client;
+    const client = this._client;
 
     if (null === client) {
       // TODO: Make it more informative.
@@ -16,6 +16,6 @@ export class WebSocketContext {
   }
 
   set client(client: WebSocket) {
-    this.#client = client;
+    this._client = client;
   }
 }

@@ -1,7 +1,8 @@
 import { combine } from './combine';
+import { AsyncOperator, Operator } from '../common';
 
-export function skip(count: number) {
-  return combine(() => skipSync(count), () => skipAsync(count));
+export function skip<E>(count: number) {
+  return combine(() => skipSync<E>(count), () => skipAsync<E>(count));
 }
 
 /**
@@ -9,8 +10,8 @@ export function skip(count: number) {
  *
  * @param count
  */
-export function skipSync(count: number) {
-  return function *<E>(iterable: Iterable<E>): Iterable<E> {
+export function skipSync<E>(count: number): Operator<E> {
+  return function *(iterable: Iterable<E>): Iterable<E> {
     const iterator = iterable[Symbol.iterator]();
 
     let result = iterator.next();
@@ -33,11 +34,10 @@ export function skipSync(count: number) {
 /**
  * TODO: Describe.
  *
- * @param iterable
  * @param count
  */
-export function skipAsync(count: number) {
-  return async function *<E>(iterable: AsyncIterable<E>): AsyncIterable<E> {
+export function skipAsync<E>(count: number): AsyncOperator<E> {
+  return async function *(iterable: AsyncIterable<E>) {
     const iterator = iterable[Symbol.asyncIterator]();
 
     let result = await iterator.next();

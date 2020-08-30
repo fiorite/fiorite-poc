@@ -1,4 +1,4 @@
-import { AbstractType, Disposable, Injector, Provider, ServiceKey } from '@fiorite/core';
+import { AbstractType, Disposable, tryDispose } from '@fiorite/core';
 
 import { Request } from './request';
 import { FeatureCollection } from './feature_collection';
@@ -41,6 +41,6 @@ export class HttpContext implements Disposable {
   }
 
   async [Symbol.dispose]() {
-    await Promise.all(this.features.values.map(Disposable.dispose));
+    await Promise.all(this.features.values.map(tryDispose));
   }
 }

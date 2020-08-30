@@ -1,5 +1,6 @@
 import {
   appendAsync,
+  catchErrorAsync,
   concatAsync,
   countAsync,
   everyAsync,
@@ -24,14 +25,18 @@ import {
 } from '../operators';
 import {
   AbstractType,
+  AnySelector,
   AsyncCallback,
+  AsyncOperator,
   AsyncPredicate,
   AsyncReducer,
   AsyncSelector,
   Callback,
   EqualityComparer,
-  inspectSymbol,
-  Predicate
+  equals,
+  Predicate,
+  Selector,
+  Type
 } from '../common';
 import { Listener } from '../listener';
 
@@ -74,8 +79,25 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
     return this.some().then(x => !x);
   }
 
-  protected constructor(comparer: EqualityComparer<E> = EqualityComparer.DEFAULT) {
+  protected constructor(comparer: EqualityComparer<E> = equals) {
     this[Symbol.comparer] = comparer;
+  }
+
+  /**
+   * Creates a new {@link Collection} that applies provided sequence.
+   *
+   * TODO: Revise issue: when operator calls on lift, sequence reuse the same generator.
+   *
+   * @protected
+   */
+  protected pipe<R>(operator: AsyncOperator<E, AsyncIterable<R>>): AsyncCollection<R> {
+    const source = this;
+
+    return new (this.constructor as AsyncCollectionStatic<R>)[Symbol.species]({
+      [Symbol.asyncIterator]() {
+        return operator(source)[Symbol.asyncIterator]();
+      }
+    });
   }
 
   /**
@@ -103,7 +125,7 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    * @param elements
    */
   append(...elements: E[]): AsyncCollection<E> {
-    return this.lift(appendAsync(...elements)(this));
+    return this.pipe(appendAsync(...elements));
   }
 
   /**
@@ -121,7 +143,7 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    * @param others
    */
   concat(...others: (Iterable<E> | AsyncIterable<E>)[]): AsyncCollection<E> {
-    return this.lift(concatAsync(...others)(this));
+    return this.pipe(concatAsync(...others));
   }
 
   /**
@@ -129,6 +151,12 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    */
   cast<R>(): AsyncCollection<R> {
     return this as unknown as AsyncCollection<R>;
+  }
+
+  catchError(selector: AnySelector<Error, E>): AsyncCollection<E>;
+  catchError<R extends Error>(errorType: Type<R>, selector: AnySelector<R, E>): AsyncCollection<E>;
+  catchError(...args: any[]): AsyncCollection<E> {
+    return this.pipe((catchErrorAsync as any)(...args));
   }
 
   /**
@@ -156,35 +184,20 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
   /**
    * TODO: Describe
    */
-  every(predicate: AsyncPredicate<E, [number]>): Promise<boolean> {
+  every(predicate: Predicate<E, [number]> | AsyncPredicate<E, [number]>): Promise<boolean> {
     return everyAsync(predicate)(this);
   }
 
-  /**
-   * TODO: Describe
-   */
-  first(): Promise<E>;
-  first(predicate: AsyncPredicate<E, [number]>): Promise<E>;
 
-  /**
-   * @internal
-   */
-  first(...args: [] | [AsyncPredicate<E, [number]>]): Promise<E>;
-
-  /**
-   * @inheritDoc
-   *
-   * @param args
-   */
-  first(...args: [] | [AsyncPredicate<E, [number]>]): Promise<E> {
-    return firstAsync(...args)(this);
+  first(predicate?: Predicate<E, [number]> | AsyncPredicate<E, [number]>): Promise<E> {
+    return (firstAsync as any)(...arguments)(this);
   }
 
   /**
    * TODO: Describe
    */
   flat(): AsyncCollection<E extends AsyncIterable<infer I> ? I : E> {
-    return this.lift(flatAsync()(this));
+    return this.pipe(flatAsync<E>());
   }
 
   /**
@@ -193,7 +206,7 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    * @param selector
    */
   flatMap<R>(selector: AsyncSelector<E, R | Iterable<R> | AsyncIterable<R>, [number]>): AsyncCollection<R> {
-    return this.lift(flatMapAsync(selector)(this));
+    return this.pipe(flatMapAsync(selector));
   }
 
   /**
@@ -201,8 +214,8 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    *
    * @param predicate
    */
-  filter(predicate: AsyncPredicate<E, [number]>): AsyncCollection<E> {
-    return this.lift(filterAsync(predicate)(this));
+  filter(predicate: Predicate<E, [number]> | AsyncPredicate<E, [number]>): AsyncCollection<E> {
+    return this.pipe(filterAsync(predicate));
   }
 
   /**
@@ -210,8 +223,8 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    *
    * @param selector
    */
-  map<R>(selector: AsyncSelector<E, R, [number]>): AsyncCollection<R> {
-    return this.lift(mapAsync(selector)(this));
+  map<R>(selector: Selector<E, R, [number]> | AsyncSelector<E, R, [number]>): AsyncCollection<R> {
+    return this.pipe(mapAsync(selector));
   }
 
   /**
@@ -229,7 +242,7 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    * @param elements
    */
   prepend(...elements: E[]): AsyncCollection<E> {
-    return this.lift(prependAsync(...elements)(this));
+    return this.pipe(prependAsync(...elements));
   }
 
   /**
@@ -279,7 +292,7 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    * ```
    */
   reverse(): AsyncCollection<E> {
-    return this.lift(reverseAsync<E>()(this));
+    return this.pipe(reverseAsync<E>());
   }
 
   /**
@@ -316,7 +329,7 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    * @param count
    */
   skip(count: number): AsyncCollection<E> {
-    return this.lift(skipAsync(count)(this));
+    return this.pipe(skipAsync<E>(count));
   }
 
   /**
@@ -350,21 +363,27 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    * @param count
    */
   take(count: number): AsyncCollection<E> {
-    return this.lift(takeAsync(count)(this));
+    return this.pipe(takeAsync<E>(count));
   }
 
   /**
    * Performs callback on every emission and returns identical collection.
    */
   tap(callback: Callback<E, [number]> | AsyncCallback<E, [number]>): AsyncCollection<E> {
-    return this.lift(tapAsync(callback)(this));
+    return this.pipe(tapAsync(callback));
   }
 
   /**
    * Converts a sequence to {@link Array}
    */
   toArray(): Promise<E[]> {
-    return toArrayAsync<E>()(this);
+    const source = this;
+
+    return toArrayAsync<E>()({
+      [Symbol.asyncIterator]() {
+        return source[Symbol.asyncIterator]();
+      }
+    });
   }
 
   /**
@@ -372,13 +391,6 @@ export abstract class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    */
   [Symbol.normalize](): Promise<E[]> {
     return this.toArray();
-  }
-
-  /**
-   * NodeJS inspect symbol.
-   */
-  async [inspectSymbol]() {
-    return [this[Symbol.toStringTag], await this[Symbol.normalize]()];
   }
 
   /**

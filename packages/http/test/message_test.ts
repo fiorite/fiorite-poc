@@ -3,17 +3,17 @@ import { Readable, Writable } from 'stream';
 import { expect } from 'chai';
 
 class BufferWriter extends Writable {
-  #value = Buffer.from([]);
+  private _value = Buffer.from([]);
 
   get value(): Buffer {
-    return this.#value;
+    return this._value;
   }
 
   constructor() {
     super({
       write: (chunk: Buffer, encoding: BufferEncoding, callback: (error?: Error | null) => void) => {
-        this.#value = Buffer.concat([
-          this.#value,
+        this._value = Buffer.concat([
+          this._value,
           chunk,
         ]);
 
@@ -23,7 +23,7 @@ class BufferWriter extends Writable {
   }
 
   toString() {
-    return this.#value.toString();
+    return this._value.toString();
   }
 }
 

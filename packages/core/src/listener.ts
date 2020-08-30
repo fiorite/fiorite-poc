@@ -18,19 +18,26 @@ import { Closeable } from './common';
  * listener.closed; // true
  * ```
  */
-export class Listener implements PromiseLike<void>, Closeable {
+export class Listener implements Closeable {
   /**
    * Stores closed state.
    *
    * @private
    */
-  #closed: boolean = false;
+  private _closed: boolean = false;
 
   /**
    * Gets closed state.
    */
   get closed() {
-    return this.#closed;
+    return this._closed;
+  }
+
+  /**
+   * Gets promise that resolves on close.
+   */
+  get closes() {
+    return this._promise;
   }
 
   /**
@@ -38,13 +45,13 @@ export class Listener implements PromiseLike<void>, Closeable {
    *
    * @private
    */
-  #promise: Promise<void>;
+  private readonly _promise: Promise<void>;
 
   // /**
   //  * Returns internal promise in order to prevent unclear await logic.
   //  */
   // get promise() {
-  //   return this.#promise;
+  //   return this._promise;
   // }
 
   /**
@@ -52,10 +59,10 @@ export class Listener implements PromiseLike<void>, Closeable {
    *
    * @private
    */
-  #resolve: () => void = () => void 0;
+  _resolve: () => void = () => void 0;
 
   constructor() {
-    this.#promise = new Promise(resolve => this.#resolve = resolve);
+    this._promise = new Promise(resolve => this._resolve = resolve);
   }
 
   /**
@@ -70,18 +77,8 @@ export class Listener implements PromiseLike<void>, Closeable {
    */
   [Symbol.close](): void {
     if (!this.closed) {
-      this.#closed = true;
-      this.#resolve();
+      this._closed = true;
+      this._resolve();
     }
-  }
-
-  /**
-   * Returns internal promise to identify whether state changes.
-   *
-   * @param onfulfilled
-   */
-  then<TResult1 = void, TResult2 = never>(onfulfilled?: ((value: void) => TResult1 | PromiseLike<TResult1>) | undefined | null): PromiseLike<TResult1 | TResult2>;
-  then(...args: any): any {
-    return this.#promise.then(...args);
   }
 }

@@ -37,4 +37,10 @@ export class NodeServerResponse extends Response {
       }
     })
   }
+
+  [Symbol.dispose]() {
+    // TODO: Investigate TypeError: (intermediate value)[Symbol.dispose] is not a function
+    // super[Symbol.dispose]();
+    this._response.destroy();
+  }
 }

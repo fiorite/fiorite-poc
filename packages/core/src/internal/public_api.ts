@@ -7,3 +7,4 @@ export { isAsyncMethod } from './is_async_method';
 export { isIterable } from './is_iterable';
 export { isSyncFunction } from './is_sync_function';
 export { isAsyncIterable } from './is_async_iterable';
+export { isClass } from './is_class';

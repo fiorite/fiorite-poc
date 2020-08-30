@@ -1,8 +1,7 @@
 import { createServer } from 'http';
-import { AsyncCollection, Injector, Module, ProviderCollection, CollectionSubject, collect, } from '@fiorite/core';
+import { AsyncCollection, collect, CollectionSubject, Injector, Module, ProviderCollection, } from '@fiorite/core';
 import { HttpContext, HttpServer, NodeHttpAdapter } from '@fiorite/http';
 import { createWebApp, Endpoint, Route } from '@fiorite/web';
-import { tap, tapAsync } from '../../packages/core/src/operators';
 
 (async () => {
   // Case study how build RxJS like code.
@@ -12,14 +11,14 @@ import { tap, tapAsync } from '../../packages/core/src/operators';
 
   numbers
     .filter(x => x % 2 === 0)
-    .pipe(
-      tap(x => console.log('tap: ' + x)),
-    )
+    // .pipe(
+    //   tap(x => console.log('tap: ' + x)),
+    // )
     .prepend(0)
     .take(10)
     .skip(20)
     .listen(x => console.log('listen: ' + x))
-    .then(() => console.log('stop listen!'));
+    .closes.then(() => console.log('stop listen!'));
 
   let i = 0;
 

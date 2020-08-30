@@ -30,6 +30,11 @@ export function sequenceEqualSync<E>(other: Iterable<E>, comparer: EqualityCompa
   };
 }
 
+/**
+ * BUG: Revise
+ * @param other
+ * @param comparer
+ */
 export function sequenceEqualAsync<E>(other: Iterable<E> | AsyncIterable<E>, comparer: EqualityComparer<E> = equals): AsyncOperator<E, Promise<boolean>> {
   return async function (iterable: AsyncIterable<E>) {
     const iterator1 = iterable[Symbol.asyncIterator]();

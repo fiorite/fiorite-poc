@@ -13,20 +13,20 @@ export class Stack<E> extends Collection<E> implements Cloneable {
   /**
    * TODO: Describe.
    */
-  #buffer: E[] = [];
+  private _buffer: E[] = [];
 
   /**
    * @inheritDoc
    */
   get empty() {
-    return this.#buffer.length < 1;
+    return this._buffer.length < 1;
   }
 
   /**
    * TODO: Describe.
    */
   get size() {
-    return this.#buffer.length;
+    return this._buffer.length;
   }
 
   /**
@@ -46,7 +46,7 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    * @param element
    */
   push(element: E): this {
-    this.#buffer.push(element);
+    this._buffer.push(element);
 
     return this;
   }
@@ -74,22 +74,22 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    * TODO: Describe.
    */
   peek(): E {
-    if (this.#buffer.length < 1) {
+    if (this._buffer.length < 1) {
       throw new InvalidOperationError('The stack is empty.');
     }
 
-    return this.#buffer[this.#buffer.length - 1];
+    return this._buffer[this._buffer.length - 1];
   }
 
   /**
    * TODO: Describe.
    */
   pop(): E {
-    if (this.#buffer.length < 1) {
+    if (this._buffer.length < 1) {
       throw new InvalidOperationError('The stack is empty.');
     }
 
-    return this.#buffer.pop()!;
+    return this._buffer.pop()!;
   }
 
   /**
@@ -98,14 +98,14 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    * @param element
    */
   has(element: E): boolean {
-    return this.#buffer.findIndex(x => this[Symbol.comparer](element, x)) > -1;
+    return this._buffer.findIndex(x => this[Symbol.comparer](element, x)) > -1;
   }
 
   /**
    * TODO: Describe.
    */
   clear(): this {
-    this.#buffer.splice(0, this.#buffer.length);
+    this._buffer.splice(0, this._buffer.length);
 
     return this;
   }
@@ -115,7 +115,7 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    */
   [Symbol.clone](): Stack<E> {
     const clone = Object.create(this) as this;
-    clone.#buffer = this.#buffer.slice();
+    clone._buffer = this._buffer.slice();
     clone[Symbol.comparer] = this[Symbol.comparer];
     return clone;
   }
@@ -124,6 +124,6 @@ export class Stack<E> extends Collection<E> implements Cloneable {
    * @inheritDoc
    */
   [Symbol.iterator](): Iterator<E> {
-    return this.#buffer[Symbol.iterator]();
+    return this._buffer[Symbol.iterator]();
   }
 }

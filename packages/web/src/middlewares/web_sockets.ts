@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 import { IncomingMessage } from 'http';
 
-import { HttpContext, RequestHandler, RequestHeader } from '@fiorite/http';
+import { HttpContext, RequestCallback, RequestHeader } from '@fiorite/http';
 import { Injector, InvalidOperationError } from '@fiorite/core';
 
 import { Middleware } from '../middleware';
@@ -10,7 +10,7 @@ import { WebSocketContext } from '../web_socket_ref';
 const EMPTY_HEAD = Buffer.from('');
 
 export class WebSocketsMiddleware extends Middleware {
-  async handle(context: HttpContext, handle: RequestHandler) {
+  async handle(context: HttpContext, handle: RequestCallback) {
     const { request } = context;
 
     if (

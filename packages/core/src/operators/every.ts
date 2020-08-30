@@ -1,8 +1,10 @@
-import { AsyncPredicate, Predicate } from '../common';
-import { combine } from './combine';
+import { AsyncOperator, AsyncPredicate, Operator, Predicate } from '../common';
+import { combine, CombinedOperator } from './combine';
 
-export function every<E>(predicate: Predicate<E, [number]>) {
-  return combine(() => everySync(predicate), () => everyAsync(predicate));
+export function every<E>(predicate: Predicate<E, [number]>): CombinedOperator<E, boolean, Promise<boolean>>;
+export function every<E>(predicate: AsyncPredicate<E, [number]>): AsyncOperator<E, Promise<boolean>>;
+export function every<E>(predicate: any): any {
+  return combine(() => everySync<E>(predicate), () => everyAsync<E>(predicate));
 }
 
 /**
@@ -10,7 +12,7 @@ export function every<E>(predicate: Predicate<E, [number]>) {
  *
  * @param predicate
  */
-export function everySync<E>(predicate: Predicate<E, [number]>) {
+export function everySync<E>(predicate: Predicate<E, [number]>): Operator<E, boolean> {
   return function(iterable: Iterable<E>): boolean {
     if (Array.isArray(iterable)) {
       return iterable.every(predicate);
@@ -58,8 +60,8 @@ export function everySync<E>(predicate: Predicate<E, [number]>) {
  *
  * @param predicate
  */
-export function everyAsync<E>(predicate: Predicate<E, [number]> | AsyncPredicate<E, [number]>) {
-  return async function(iterable: AsyncIterable<E>): Promise<boolean> {
+export function everyAsync<E>(predicate: Predicate<E, [number]> | AsyncPredicate<E, [number]>): AsyncOperator<E, Promise<boolean>> {
+  return async function(iterable: AsyncIterable<E>) {
     const iterator = iterable[Symbol.asyncIterator]();
 
     let result = await iterator.next();

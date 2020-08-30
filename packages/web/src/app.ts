@@ -10,7 +10,7 @@ import {
   Type,
   ScopedInjector
 } from '@fiorite/core';
-import { HttpServer, NodeHttpAdapter, RequestHandler, Response, ResponseHeader } from '@fiorite/http';
+import { HttpServer, NodeHttpAdapter, RequestCallback, Response, ResponseHeader } from '@fiorite/http';
 
 import { Middleware } from './middleware';
 import { RouteDescriptor } from './route';
@@ -35,7 +35,7 @@ export class WebApp {
     const callback = this.injector.providers.filter(x => x.key === Middleware)
       .cast<Provider<Middleware>>()
       .reverse()
-      .reduce<RequestHandler>((next, descriptor) => {
+      .reduce<RequestCallback>((next, descriptor) => {
         return context => context.getFeature(Injector)
           .resolve(descriptor).handle(context, next);
       }, async context => { // TODO: Add router.

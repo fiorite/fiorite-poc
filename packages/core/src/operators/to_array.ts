@@ -7,8 +7,18 @@ export function toArray<E>(): CombinedOperator<E, E[], Promise<E[]>> {
 
 export function toArraySync<E>(): Operator<E, E[]> {
   return function (iterable: Iterable<E>) {
-    return Array.from(iterable);
-  };
+    const iterator = iterable[Symbol.iterator]();
+
+    const buffer: E[] = [];
+    let result = iterator.next();
+
+    while (!result.done) {
+      buffer.push(result.value);
+      result = iterator.next();
+    }
+
+    return buffer;
+  }
 }
 
 export function toArrayAsync<E>(): AsyncOperator<E, Promise<E[]>> {

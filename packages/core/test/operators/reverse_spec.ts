@@ -1,10 +1,9 @@
 import { expect } from 'chai';
-import { Readable } from 'stream';
 
-import { pipe, reverse, reverseAsync, reverseSync, sequenceEqual, toArray, toAsync } from '../../src/operators';
-import { AsyncCollection, collect, Collection } from '../../src';
+import { pipe, reverse, reverseAsync, reverseSync, sequenceEqual, toAsync } from '../../src/operators';
+import { collect } from '../../src';
 
-describe('reverseSync(), reverseAsync(), Collection#reverse(), AsyncCollection#reverse(), reverse()', () => {
+describe('reverseSync(), Collection#reverse(), reverseAsync(), AsyncCollection#reverse(), reverse()', () => {
   describe('reverseSync()', () => {
     it('should inverse a sequence', () => {
       expect(
@@ -41,7 +40,7 @@ describe('reverseSync(), reverseAsync(), Collection#reverse(), AsyncCollection#r
   describe('AsyncCollection#reverse()', () => {
     it('should inverse a sequence', async () => {
       expect(
-        collect([1, 2, 3])
+        await collect([1, 2, 3])
           .toAsync()
           .reverse()
           .sequenceEqual([3, 2, 1]),
@@ -52,7 +51,7 @@ describe('reverseSync(), reverseAsync(), Collection#reverse(), AsyncCollection#r
   describe('reverse()', () => {
     it('should inverse a sequence', async () => {
       expect(
-        await pipe(
+        pipe(
           reverse<number>(),
           sequenceEqual([3, 2, 1]),
         )([1, 2, 3]),
@@ -60,6 +59,7 @@ describe('reverseSync(), reverseAsync(), Collection#reverse(), AsyncCollection#r
 
       expect(
         await pipe(
+          toAsync<number>(),
           reverse<number>(),
           sequenceEqual([3, 2, 1]),
         )([1, 2, 3]),

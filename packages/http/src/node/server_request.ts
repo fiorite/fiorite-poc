@@ -4,16 +4,16 @@ import { Request } from '../request';
 import { RequestHeaders } from '../request_headers';
 
 class NodeServerRequestHeaders extends RequestHeaders {
-  #request: IncomingMessage;
+  private _request: IncomingMessage;
 
   constructor(request: IncomingMessage) {
     super(Object.entries(request.headers) as [string, string[]][]); // TODO: Fix compatibility.
-    this.#request = request;
+    this._request = request;
   }
 }
 
 export class NodeServerRequest extends Request {
-  constructor(request: IncomingMessage) {
+  constructor(private request: IncomingMessage) {
     super(
       request.method!.toUpperCase(),
       new NodeServerRequestHeaders(request),
@@ -28,5 +28,11 @@ export class NodeServerRequest extends Request {
     //       const request = Request.build(x => {
     //         return x.method(incoming.method?.toLowerCase() || '').headers(Object.entries(incoming.headers) as any).url(url);
     //       });
+  }
+
+  [Symbol.dispose]() {
+    // TODO: Investigate TypeError: (intermediate value)[Symbol.dispose] is not a function
+    // super[Symbol.dispose]();
+    this.request.destroy();
   }
 }

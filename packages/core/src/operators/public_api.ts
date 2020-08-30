@@ -1,5 +1,6 @@
 export { append, appendAsync, appendSync } from './append';
 export { cast, castSync, castAsync } from './cast';
+export { catchError, catchErrorSync, catchErrorAsync } from './catch_error';
 export { combine, CombinedOperator } from './combine';
 export { concat, concatSync, concatAsync } from './concat';
 export { count, countSync, countAsync } from './count';

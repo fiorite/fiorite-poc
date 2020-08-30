@@ -57,6 +57,10 @@ export function listenSync<E>(callback: Callback<E, [number]> | AsyncCallback<E,
   };
 }
 
+/**
+ * TODO: Add sync strategy.
+ * @param callback
+ */
 export function listenAsync<E>(callback: Callback<E, [number]> | AsyncCallback<E, [number]> = () => { }) {
   return function (iterable: AsyncIterable<E>): Listener {
     const listener = new Listener();

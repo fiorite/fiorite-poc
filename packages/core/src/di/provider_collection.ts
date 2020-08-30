@@ -6,6 +6,7 @@ import { ServiceLifetime } from './service_lifetime';
 import { ServiceFactory } from './service_factory';
 import { InvalidOperationError } from '../errors';
 import {
+  PartialProviderTuple,
   Provider,
   ProviderTuple,
   ScopedTuple,
@@ -17,10 +18,10 @@ import {
  * Provider collection that encapsulates factory methods for the easiest provider configuration.
  */
 export class ProviderCollection extends Collection<Provider> implements Cloneable, Disposable {
-  #buffer: Provider[] = [];
+  private _buffer: Provider[] = [];
 
   get size(): number {
-    return this.#buffer.length;
+    return this._buffer.length;
   }
 
   constructor(iterable: Iterable<Provider> = []) {
@@ -54,7 +55,7 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
    *
    * @param type
    */
-  add(type: Instance): this;
+  add(type: object): this;
 
   /**
    * Creates provider with specified type, lifetime and adds it to collection.
@@ -64,6 +65,7 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
    */
   add(type: Type, lifetime: ServiceLifetime): this
 
+  add<T>(key: ServiceKey<T>, factory: ServiceFactory<T>): this;
   /**
    * Creates provider with specified type
    *
@@ -71,10 +73,11 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
    * @param type
    */
   add<T>(key: ServiceKey<T>, type: Type<T>): this;
-  add<T>(key: ServiceKey<T>, factory: ServiceFactory<T>): this;
   add<T extends object>(key: ServiceKey<T>, instance: T): this;
   add<T>(key: ServiceKey<T>, type: Type<T>, lifetime: ServiceLifetime): this;
+
   add<T>(key: ServiceKey<T>, factory: ServiceFactory<T>, lifetime: ServiceLifetime): this;
+  add<T>(key: ServiceKey<T>, ...partial: PartialProviderTuple<T>): this;
   add(...args: any[]): this {
     let provider: Provider;
 
@@ -90,12 +93,12 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
       throw new InvalidOperationError(); // TODO: Add readable message.
     }
 
-    this.#buffer.push(provider);
+    this._buffer.push(provider);
 
     return this;
   }
 
-  addAll(iterable: Iterable<Provider | ProviderTuple | Type | Instance>): this {
+  addAll(iterable: Iterable<Provider | ProviderTuple | Type | object>): this {
     forEachSync(element => this.add(element as any))(iterable);
 
     return this;
@@ -193,7 +196,7 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
   [Symbol.clone](): ProviderCollection {
     const instance = Object.create(this) as ProviderCollection;
 
-    instance.#buffer = this.#buffer.slice();
+    instance._buffer = this._buffer.slice();
 
     return instance;
   }
@@ -212,6 +215,6 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
    * Returns provider iterator.
    */
   [Symbol.iterator]() {
-    return this.#buffer[Symbol.iterator]();
+    return this._buffer.values();
   }
 }

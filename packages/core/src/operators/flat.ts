@@ -1,4 +1,5 @@
 import { combine } from './combine';
+import { isIterable } from '../internal';
 
 export function flat() {
   return combine(() => flatSync(), () => flatAsync());
@@ -43,9 +44,11 @@ export function flatSync() {
 /**
  * TODO: Describe.
  */
-export function flatAsync() {
-  return async function *<E>(iterable: AsyncIterable<E>): AsyncIterable<E extends AsyncIterable<infer I> ? I : E> {
-    const iterator = iterable[Symbol.asyncIterator]();
+export function flatAsync<E>() {
+  return async function *(iterable: Iterable<E> | AsyncIterable<E>): AsyncIterable<E extends AsyncIterable<infer I> ? I : E> {
+    const iterator = isIterable(iterable) ?
+      (iterable as Iterable<E>)[Symbol.iterator]() :
+      (iterable as AsyncIterable<E>)[Symbol.asyncIterator]();
 
     let result = await iterator.next();
 

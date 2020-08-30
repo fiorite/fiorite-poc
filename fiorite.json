@@ -1,0 +1,4 @@
+{
+  "main": "example/main.ts",
+  "outDir": "example"
+}

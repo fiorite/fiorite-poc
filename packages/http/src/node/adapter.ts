@@ -7,7 +7,7 @@ import { Request } from '../request';
 import { Response } from '../response';
 import { HttpContext } from '../context';
 import { HttpAdapter } from '../adapter';
-import { RequestHandler } from '../request_handler';
+import { RequestCallback } from '../request_callback';
 import { NodeServerResponse } from './server_response';
 import { NodeServerRequest } from './server_request';
 
@@ -65,7 +65,7 @@ export class NodeHttpAdapter extends HttpAdapter {
     //     });
   }
 
-  serve(callback: RequestHandler, port: number | string): Disposable {
+  serve(callback: RequestCallback, port: number | string): Disposable {
     const server = createServer((request, response) => {
       const context = HttpContext.from(
         new NodeServerRequest(request),

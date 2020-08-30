@@ -1,4 +1,4 @@
-import { HttpContext, HttpMethod, RequestHandler, RequestHeader, ResponseHeader } from '@fiorite/http';
+import { HttpContext, HttpMethod, RequestCallback, RequestHeader, ResponseHeader } from '@fiorite/http';
 
 import { Middleware } from '../middleware';
 
@@ -17,67 +17,67 @@ const DEFAULT_OPTIONS: CorsOptions = {
 };
 
 export class CorsMiddleware extends Middleware {
-  #origin: string[] = ['*'];
+  private _origin: string[] = ['*'];
 
   get origin() {
-    return this.#origin;
+    return this._origin;
   }
 
   set origin(value: string[]) {
-    this.#origin = value;
-    this.#originString = value.join(SEPARATOR);
+    this._origin = value;
+    this._originString = value.join(SEPARATOR);
   }
 
-  #originString: string = this.#origin.join(SEPARATOR);
+  private _originString: string = this._origin.join(SEPARATOR);
 
   get originString() {
-    return this.#originString;
+    return this._originString;
   }
 
-  #methods: string[] = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'];
+  private _methods: string[] = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'];
 
   get methods(): string[] {
-    return this.#methods;
+    return this._methods;
   }
 
   set methods(value: string[]) {
-    this.#methods = value;
-    this.#methodsString = value.join(SEPARATOR);
+    this._methods = value;
+    this._methodsString = value.join(SEPARATOR);
   }
 
-  #methodsString: string = this.#methods.join(SEPARATOR);
+  private _methodsString: string = this._methods.join(SEPARATOR);
 
   get methodsString() {
-    return this.#originString;
+    return this._originString;
   }
 
-  #headers: string[] = ['Origin', 'Content-Type', 'X-Auth-Token'];
+  private _headers: string[] = ['Origin', 'Content-Type', 'X-Auth-Token'];
 
   get headers(): string[] {
-    return this.#headers;
+    return this._headers;
   }
 
   set headers(value: string[]) {
-    this.#headers = value;
-    this.#headersString = value.join(SEPARATOR);
+    this._headers = value;
+    this._headersString = value.join(SEPARATOR);
   }
 
-  #headersString: string = this.#headers.join(SEPARATOR);
+  private _headersString: string = this._headers.join(SEPARATOR);
 
   get headersString() {
-    return this.#originString;
+    return this._originString;
   }
 
   constructor(options: Partial<CorsOptions> = {}) {
     super();
 
     const { origin, headers, methods } = { ...DEFAULT_OPTIONS, ...options };
-    this.#origin = origin;
-    this.#headers = headers;
-    this.#methods = methods;
+    this._origin = origin;
+    this._headers = headers;
+    this._methods = methods;
   }
 
-  async handle(context: HttpContext, next: RequestHandler) {
+  async handle(context: HttpContext, next: RequestCallback) {
     await next(context);
 
     context.response.headers.setAll([

@@ -1,10 +1,11 @@
 import 'reflect-metadata';
 
-import { Equatable, Selector } from '../common';
+import { AbstractType, Equatable, Selector, Type } from '../common';
 import { ServiceKey } from './service_key';
 import { Collection, HashMap } from '../collections';
 import { ServiceFactory } from './service_factory';
 import { InvalidOperationError } from '../errors';
+import { toArraySync } from '@fiorite/core/operators';
 
 // Identifier.
 
@@ -25,13 +26,20 @@ class ReflectKey implements Equatable {
 
 export const injectRegistry = new HashMap<ReflectKey, ServiceFactory>();
 
+export const wire: ClassDecorator = () => void 0;
+
 // export function Inject<T>(): PropertyDecorator;
-export function Inject<T>(key: ServiceKey<T>): ParameterDecorator;
-export function Inject<T>(key: ServiceKey<T>): PropertyDecorator;
-export function Inject<T, R>(key: ServiceKey<T>, selector: Selector<T, R>): ParameterDecorator;
-export function Inject<T, R>(key: ServiceKey<T>, selector: Selector<T, R>): PropertyDecorator;
-export function Inject<T>(key: ServiceKey): any {
+
+export function inject<T>(key: ServiceKey<T>): ParameterDecorator;
+export function inject<T>(key: ServiceKey<T>): PropertyDecorator;
+export function inject<T, R>(key: ServiceKey<T>, selector: Selector<T, R>): ParameterDecorator;
+export function inject<T, R>(key: ServiceKey<T>, selector: Selector<T, R>): PropertyDecorator;
+export function inject<T>(key: ServiceKey): any {
   return (target: Object, propertyKey?: string | symbol, parameterIndex?: number) => {
+    if (!propertyKey) {
+      return;
+    }
+
     let provide: ServiceFactory;
 
     if (arguments.length === 2) {
@@ -77,12 +85,13 @@ export function Inject<T>(key: ServiceKey): any {
 
     injectRegistry.add(reflectKey, provide);
   };
+
 }
 
-export function InjectAll<T>(key: ServiceKey<T>): PropertyDecorator & ParameterDecorator;
-export function InjectAll<T, R>(key: ServiceKey<T>, selector: Selector<Collection<T>, R>): ParameterDecorator;
-export function InjectAll<T, R>(key: ServiceKey<T>, selector: Selector<Collection<T>, R>): PropertyDecorator;
-export function InjectAll<T>(key: ServiceKey<T>): any {
+export function injectAll<T>(key: ServiceKey<T>): PropertyDecorator & ParameterDecorator;
+export function injectAll<T, R>(key: ServiceKey<T>, selector: Selector<Collection<T>, R>): ParameterDecorator;
+export function injectAll<T, R>(key: ServiceKey<T>, selector: Selector<Collection<T>, R>): PropertyDecorator;
+export function injectAll<T>(key: ServiceKey<T>): any {
   return function (target: Object, propertyKey?: string | symbol, parameterIndex?: number) {
     let provide: ServiceFactory;
 

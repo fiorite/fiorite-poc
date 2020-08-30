@@ -67,7 +67,7 @@ export function tapAsync<E>(callback: Callback<E, [number]> | AsyncCallback<E, [
 
     if (callback.length < 2) {
       while (!result.done) {
-        (callback as Callback<E>)(result.value);
+        await (callback as Callback<E>)(result.value);
 
         yield result.value;
 
@@ -77,7 +77,7 @@ export function tapAsync<E>(callback: Callback<E, [number]> | AsyncCallback<E, [
       let index = 0;
 
       while (!result.done) {
-        (callback as Callback<E, [number]>)(result.value, index);
+        await (callback as Callback<E, [number]>)(result.value, index);
 
         yield result.value;
 

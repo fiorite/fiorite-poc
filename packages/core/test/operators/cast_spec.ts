@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { cast, castAsync, castSync, pipe, sequenceEqual, toAsync } from '../../src/operators';
 import { collect } from '../../src';
 
-describe('castSync(), castAsync(), Collection#cast(), AsyncCollection#cast(), cast()', () => {
+describe('castSync(), Collection#cast(), castAsync(), AsyncCollection#cast(), cast()', () => {
   describe('castSync()', () => {
     it('should cast a sequence', () => {
       expect(

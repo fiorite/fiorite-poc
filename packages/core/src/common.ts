@@ -130,6 +130,10 @@ export type Selector<E, R = E, A extends unknown[] = never[]> = (element: E, ...
  */
 export type AsyncSelector<E, R = E, A extends unknown[] = never[]> = (element: E, ...args: A) => Promise<R>;
 
+export type AnyIterable<E> = Iterable<E> | AsyncIterable<E>;
+
+export type AnySelector<E, R = E, A extends unknown[] = never[]> = (element: E, ...args: A) => R | Promise<R>;
+
 export type Reducer<E, R = E, A extends unknown[] = never[]> = (current: R, next: E, ...args: A) => R;
 export type AsyncReducer<E, R = E, A extends unknown[] = never[]> = (current: R, next: E, ...args: A) => Promise<R>;
 
@@ -320,7 +324,7 @@ export interface AbstractType<T = unknown> extends Function {
 /**
  * Identifies constructable classes.
  */
-export interface Type<T = unknown> extends AbstractType<T> {
+export interface Type<T = any> extends AbstractType<T> {
   new (...args: any[]): T;
 }
 

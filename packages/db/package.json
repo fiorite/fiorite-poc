@@ -6,5 +6,8 @@
   "license": "MIT",
   "peerDependencies": {
     "@fiorite/core": "0.0.0"
+  },
+  "optionalDependencies": {
+    "sqlite3": "^5.0.0"
   }
 }

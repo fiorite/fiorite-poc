@@ -1,12 +1,12 @@
 import { Collection } from '../../src';
-import { InjectAll, injectRegistry } from '../../src/di/inject';
+import { injectAll, injectRegistry } from '../../src/di/inject';
 
 // describe('@Inject()');
 
 describe('InjectAll()', () => {
   it('should apply decorator for property', () => {
     class Case {
-      @InjectAll(Service)
+      @injectAll(Service)
       services!: Collection<Service>;
     }
 

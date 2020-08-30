@@ -8,6 +8,7 @@
   "scripts": {
     "ts": "node -r ts-node/register -r tsconfig-paths/register",
     "test": "mocha -r ts-node/register -r tsconfig-paths/register packages/**/*_spec.ts",
+    "cli": "node -r ts-node/register -r tsconfig-paths/register packages/cli/bin/cli.ts",
     "example:http": "npm run ts -- example/http/index.ts",
     "typedoc": "typedoc packages --json docs/output.json"
   },
@@ -23,17 +24,24 @@
     "@types/mocha": "^8.0.2",
     "@types/node": "^14.0.27",
     "@types/sqlite3": "^3.1.6",
+    "@types/webpack": "^4.41.21",
     "@types/ws": "^7.2.6",
     "chai": "^4.2.0",
     "mocha": "^8.1.1",
+    "nodemon-webpack-plugin": "^4.3.2",
+    "ts-loader": "^8.0.3",
     "ts-node": "^8.10.2",
     "tsconfig-paths": "^3.9.0",
+    "tsconfig-paths-webpack-plugin": "^3.3.0",
     "typedoc": "^0.18.0",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.7",
+    "webpack-node-externals": "^2.5.2"
   },
   "dependencies": {
+    "express": "^4.17.1",
     "reflect-metadata": "^0.1.13",
     "sqlite3": "^5.0.0",
+    "webpack": "^4.44.1",
     "ws": "^7.3.1"
   }
 }

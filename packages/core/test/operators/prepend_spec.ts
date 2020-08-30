@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { prepend, prependAsync, prependSync, pipe, sequenceEqual, toAsync } from '../../src/operators';
 import { collect } from '../../src';
 
-describe('prependSync(), prependAsync(), Collection#prepend(), AsyncCollection#prepend(), prepend()', () => {
+describe('prependSync(), Collection#prepend(), prependAsync(), AsyncCollection#prepend(), prepend()', () => {
   describe('prependSync()', () => {
     it('should prepend 0 elements', () => {
       expect(
