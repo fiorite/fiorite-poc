@@ -14,8 +14,8 @@
     "resolveJsonModule": true,
     "paths": {
       "@fiorite/cli": ["cli/lib"],
-      "@fiorite/core": ["core/lib"],
-      "@fiorite/core/*": ["core/lib/*"],
+      "@fiorite/core": ["core"],
+      "@fiorite/core/*": ["core/*"],
       "@fiorite/db": ["db/lib"],
       "@fiorite/db/*": ["db/lib/*"],
       "@fiorite/http": ["http/lib"],

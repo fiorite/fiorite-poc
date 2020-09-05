@@ -1,9 +1,9 @@
 {
   "name": "@fiorite/core",
   "version": "0.0.0",
-  "description": "Core interfaces that are useful across the framework",
+  "description": "Core functionality of the framework",
   "author": "fiorite",
   "license": "MIT",
-  "main": "lib/public-api.ts",
-  "types": "lib/public-api.ts"
+  "main": "index.ts",
+  "types": "index.ts"
 }

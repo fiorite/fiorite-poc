@@ -7,7 +7,7 @@
   "homepage": "https://fiorite.dev",
   "scripts": {
     "ts": "node -r ts-node/register -r tsconfig-paths/register",
-    "test": "mocha -r ts-node/register -r tsconfig-paths/register packages/**/*_spec.ts",
+    "test": "mocha -r ts-node/register -r tsconfig-paths/register test/**/*_spec.ts",
     "cli": "node -r ts-node/register -r tsconfig-paths/register packages/cli/bin/cli.ts",
     "example:http": "npm run ts -- example/http/index.ts",
     "typedoc": "typedoc packages --json docs/output.json"

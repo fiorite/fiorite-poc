@@ -1,4 +1,4 @@
-import { HashMap } from '@fiorite/core';
+import { HashMap } from '@fiorite/core/collections';
 
 import { RouteCallback } from './route_callback';
 

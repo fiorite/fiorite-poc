@@ -1,10 +1,8 @@
 import {
-  collect,
   Disposable,
   Injector,
   InvalidOperationError,
   Module,
-  provideModule,
   ProviderCollection,
   Provider,
   Type,
@@ -69,14 +67,4 @@ export class WebApp {
       callback(context);
     }, port);
   }
-}
-
-export function createWebApp(modules: Iterable<Type<Module>>): WebApp {
-  const providers = new ProviderCollection();
-
-  collect(modules).forEach(module => provideModule(module, providers));
-
-  const server = new HttpServer(NodeHttpAdapter.default);
-
-  return new WebApp(new Injector(providers), server);
 }

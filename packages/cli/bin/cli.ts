@@ -145,7 +145,7 @@ const config = JSON.parse(
         if (err) {
           console.error(err);
         } else {
-          console.log(stats);
+          console.log(stats.compilation.errors);
         }
       });
 

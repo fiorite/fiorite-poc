@@ -1,7 +1,6 @@
 import { AsyncPredicate, Predicate } from '../common';
 import { combine } from './combine';
 
-
 export function count<E>(...args: [] | [Predicate<E, [number]>]) {
   return combine(() => countSync(...args), () => countAsync(...args));
 }
