@@ -1,9 +1,8 @@
 import { expect } from 'chai';
 
-import { every, everyAsync, everySync, pipe, toAsync } from '../../../packages/core/operators';
-import { collect } from '../../../packages/core/collections';
+import { every, everyAsync, everySync, pipe, toAsync } from '@fiorite/core/operators';
 
-describe('everySync(), Collection#every(), everyAsync(), AsyncCollection#every(), every()', () => {
+describe('everySync(), everyAsync(), every()', () => {
   describe('everySync()', () => {
     it('should return true on 0 elements', () => {
       expect(
@@ -26,29 +25,6 @@ describe('everySync(), Collection#every(), everyAsync(), AsyncCollection#every()
         pipe(
           everySync(x => x === 2),
         )([1, 2, 3]),
-      ).equals(false);
-    });
-  });
-
-  describe('Collection#every()', () => {
-    it('should return true on 0 elements', () => {
-      expect(
-        collect([])
-          .every(() => false),
-      ).equals(true);
-    });
-
-    it('should true when predicate is positive', () => {
-      expect(
-        collect<unknown>([1, 2, 3])
-          .every(x => typeof x === 'number'),
-      ).equals(true);
-    });
-
-    it('should false when predicate is negative', () => {
-      expect(
-        collect<unknown>([1, 2, 3])
-          .every(x => x === 2),
       ).equals(false);
     });
   });
@@ -78,32 +54,6 @@ describe('everySync(), Collection#every(), everyAsync(), AsyncCollection#every()
           toAsync(),
           everyAsync(async x => x === 2),
         )([1, 2, 3]),
-      ).equals(false);
-    });
-  });
-
-  describe('AsyncCollection#every()', () => {
-    it('should return true on 0 elements', async () => {
-      expect(
-        await collect([])
-          .toAsync()
-          .every(async () => false),
-      ).equals(true);
-    });
-
-    it('should true when predicate is positive', async () => {
-      expect(
-        await collect<unknown>([1, 2, 3])
-          .toAsync()
-          .every(async x => typeof x === 'number'),
-      ).equals(true);
-    });
-
-    it('should false when predicate is negative', async () => {
-      expect(
-        await collect<unknown>([1, 2, 3])
-          .toAsync()
-          .every(async x => x === 2),
       ).equals(false);
     });
   });

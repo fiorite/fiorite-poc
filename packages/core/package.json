@@ -1,7 +1,7 @@
 {
   "name": "@fiorite/core",
   "version": "0.0.0",
-  "description": "Core functionality of the framework",
+  "description": "Core framework functionality",
   "author": "fiorite",
   "license": "MIT",
   "main": "index.ts",

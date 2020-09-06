@@ -1,5 +1,5 @@
 import { AnyCallback } from '../types';
-import { Listener } from '../listener';
+import { Listener } from '../listening';
 import { combine, CombinedOperator } from './combine';
 
 export function listen<E>(callback: AnyCallback<[E]> = () => { }, sync = false): CombinedOperator<E, Listener, Listener> {

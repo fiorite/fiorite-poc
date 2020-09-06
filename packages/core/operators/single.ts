@@ -1,32 +1,35 @@
-import { AsyncPredicate, Predicate, InvalidOperationError } from '../types';
+import { AnyPredicate, Predicate } from '../types';
+import { InvalidOperationError } from '../errors';
 import { combine } from './combine';
 
-export function single<E>(...args: [] | [Predicate<E, [number]>]) {
+/**
+ * Returns a single, specific element of a sequence or only element that specifies a predicate.
+ *
+ * @param args
+ */
+export function single<E>(...args: [] | [Predicate<[E]>]) {
   return combine(() => singleSync(...args), () => singleAsync(...args) as any);
 }
 
 /**
- * TODO: Describe.
- * TODO: Add index optimization.
+ * Returns a single, specific element of a sequence or only element that specifies a predicate.
  *
- * @param args
+ * @param predicate
  *
  * @throws InvalidOperationError
  */
-export function singleSync<E>(...args: [] | [Predicate<E, [number]>]) {
+export function singleSync<E>(predicate: Predicate<[E]> = () => true) {
   let predicated = arguments.length > 0;
-  const predicate = args[0] || (() => true);
 
   return function (iterable: Iterable<E>): E {
     const iterator = iterable[Symbol.iterator]();
 
     let result = iterator.next();
-    let index = 0;
     let element: E;
     let found = false;
 
     while (!result.done) {
-      if (predicate(result.value, index)) {
+      if (predicate(result.value)) {
         if (found) {
           if (iterator.return) {
             iterator.return();
@@ -40,7 +43,6 @@ export function singleSync<E>(...args: [] | [Predicate<E, [number]>]) {
       }
 
       result = iterator.next();
-      index++;
     }
 
     if (!found) {
@@ -54,26 +56,24 @@ export function singleSync<E>(...args: [] | [Predicate<E, [number]>]) {
 }
 
 /**
- * TODO: Describe.
+ * Returns a single, specific element of a sequence or only element that specifies a predicate.
  *
- * @param args
+ * @param predicate
  *
  * @throws InvalidOperationError
  */
-export function singleAsync<E>(...args: [] | [Predicate<E, [number]> | AsyncPredicate<E, [number]>]) {
+export function singleAsync<E>(predicate: AnyPredicate<[E]> = () => true) {
   const predicated = arguments.length > 0;
-  const predicate = args[0] || (() => true);
 
   return async function (iterable: AsyncIterable<E>): Promise<E> {
     const iterator = iterable[Symbol.asyncIterator]();
 
     let result = await iterator.next();
-    let index = 0;
     let element: E;
     let found = false;
 
     while (!result.done) {
-      if (await predicate(result.value, index)) {
+      if (await predicate(result.value)) {
         if (found) {
           if (iterator.return) {
             await iterator.return();
@@ -87,7 +87,6 @@ export function singleAsync<E>(...args: [] | [Predicate<E, [number]> | AsyncPred
       }
 
       result = await iterator.next();
-      index++;
     }
 
     if (!found) {

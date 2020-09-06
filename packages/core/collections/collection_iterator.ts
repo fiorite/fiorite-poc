@@ -1,11 +1,14 @@
-import { Queue } from './queue';
-import { Callback, Closeable, InvalidOperationError, Listener, tryDispose } from '../types';
+import { Queue } from './index';
+import { Callback } from '../types';
+import { InvalidOperationError } from '../errors';
+import { tryDispose } from '../disposition'
 import { mapSync } from '../operators';
+import { Listener } from '../listening';
 
-type PromiseExecutorTuple<E> = [Callback<IteratorResult<E>>, Callback<Error>];
+type PromiseExecutorTuple<E> = [Callback<[IteratorResult<E>]>, Callback<[Error]>];
 
-export class CollectionIterator<E> extends Listener implements AsyncIterator<E>, Closeable {
-  private _elements = new Queue<[E, Callback<void>]>();
+export class CollectionIterator<E> extends Listener implements AsyncIterator<E> {
+  private _elements = new Queue<[E, Callback]>();
   private _listeners = new Queue<PromiseExecutorTuple<E>>();
 
   /**

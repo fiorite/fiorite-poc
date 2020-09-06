@@ -1,6 +1,6 @@
-import { EqualityComparer, equals, InvalidOperationError } from '../types';
+import { EqualityComparer, equals } from '../equality';
 import { CollectionBuffer } from './collection_buffer';
-import { forEachSync } from '../operators';
+import { forEachSync, InvalidOperationError } from '../operators';
 
 export class Stack<E> extends CollectionBuffer<E> {
   /**
@@ -27,7 +27,7 @@ export class Stack<E> extends CollectionBuffer<E> {
    * @param element
    */
   push(element: E): this {
-    this._buffer.push(element);
+    this.buffer.push(element);
 
     return this;
   }
@@ -47,22 +47,22 @@ export class Stack<E> extends CollectionBuffer<E> {
    * TODO: Describe.
    */
   peek(): E {
-    if (this._buffer.length < 1) {
+    if (this.buffer.length < 1) {
       throw new InvalidOperationError('The stack is empty.');
     }
 
-    return this._buffer[this._buffer.length - 1];
+    return this.buffer[this.buffer.length - 1];
   }
 
   /**
    * TODO: Describe.
    */
   pop(): E {
-    if (this._buffer.length < 1) {
+    if (this.buffer.length < 1) {
       throw new InvalidOperationError('The stack is empty.');
     }
 
-    return this._buffer.pop()!;
+    return this.buffer.pop()!;
   }
 
   /**
@@ -71,6 +71,6 @@ export class Stack<E> extends CollectionBuffer<E> {
    * @param element
    */
   has(element: E): boolean {
-    return this._buffer.findIndex(x => this[Symbol.comparer](element, x)) > -1;
+    return this.buffer.findIndex(x => this.comparer(element, x)) > -1;
   }
 }

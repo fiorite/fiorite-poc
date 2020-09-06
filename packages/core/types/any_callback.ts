@@ -2,7 +2,7 @@ import { Callback } from './callback';
 import { AsyncCallback } from './async_callback';
 
 /**
- * Functional type that consumes specified argument and returns no result or {@link Promise} of it.
+ * Functional type that consumes specified arguments and returns no result or {@link Promise} of it.
  *
  * @example ```typescript
  * import { AnyCallback } from '@fiorite/core';
@@ -11,4 +11,4 @@ import { AsyncCallback } from './async_callback';
  * const callback2: AnyCallback<[string]> = async (word: string) => { };
  * ```
  */
-export type AnyCallback<T extends unknown[] = []> = Callback<T> | AsyncCallback<T>;
+export type AnyCallback<P extends unknown[] = []> = Callback<P> | AsyncCallback<P>;

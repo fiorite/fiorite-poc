@@ -1,9 +1,8 @@
 import { expect } from 'chai';
 
-import { cast, castAsync, castSync, pipe, sequenceEqual, toAsync } from '../../../packages/core/operators';
-import { collect } from '../../../packages/core/collections';
+import { cast, castAsync, castSync, pipe, sequenceEqual, toAsync } from '@fiorite/core/operators';
 
-describe('castSync(), Collection#cast(), castAsync(), AsyncCollection#cast(), cast()', () => {
+describe('castSync(), castAsync(), cast()', () => {
   describe('castSync()', () => {
     it('should cast a sequence', () => {
       expect(
@@ -11,16 +10,6 @@ describe('castSync(), Collection#cast(), castAsync(), AsyncCollection#cast(), ca
           castSync<number>(),
           sequenceEqual([1, 2, 3]),
         )([1, 2, 3] as Iterable<1 | 2 | 3>)
-      ).equals(true);
-    });
-  });
-
-  describe('Collection#cast()', () => {
-    it('should cast a sequence', () => {
-      expect(
-        collect<1 | 2 | 3>([1, 2, 3])
-          .cast<number>()
-          .sequenceEqual([1, 2, 3])
       ).equals(true);
     });
   });
@@ -33,17 +22,6 @@ describe('castSync(), Collection#cast(), castAsync(), AsyncCollection#cast(), ca
           castAsync<number>(),
           sequenceEqual([1, 2, 3]),
         )([1, 2, 3])
-      ).equals(true);
-    });
-  });
-
-  describe('AsyncCollection#cast()', () => {
-    it('should cast a sequence', async () => {
-      expect(
-        await collect<1 | 2 | 3>([1, 2, 3])
-          .toAsync()
-          .cast<number>()
-          .sequenceEqual([1, 2, 3])
       ).equals(true);
     });
   });

@@ -1,4 +1,4 @@
-import { EqualityComparer, equals } from '../types';
+import { EqualityComparer, equals } from '../equality';
 import { CollectionBuffer } from './collection_buffer';
 
 export class HashSet<E> extends CollectionBuffer<E> {
@@ -18,7 +18,7 @@ export class HashSet<E> extends CollectionBuffer<E> {
   static proxy<E>(buffer: E[], comparer: EqualityComparer<E> = equals): HashSet<E> {
     const instance = new HashSet<E>([], comparer);
 
-    instance._buffer = buffer;
+    instance.buffer = buffer;
 
     return instance;
   }
@@ -38,10 +38,10 @@ export class HashSet<E> extends CollectionBuffer<E> {
    * @param element
    */
   add(element: E): this {
-    const index = this._buffer.findIndex(x => this[Symbol.comparer](element, x));
+    const index = this.buffer.findIndex(x => this.comparer(element, x));
 
     if (index < 0) {
-      this._buffer.push(element);
+      this.buffer.push(element);
     }
 
     return this;
@@ -70,7 +70,7 @@ export class HashSet<E> extends CollectionBuffer<E> {
    * @param element
    */
   has(element: E): boolean {
-    return this._buffer.findIndex(x => this[Symbol.comparer](element, x)) > -1;
+    return this.buffer.findIndex(x => this.comparer(element, x)) > -1;
   }
 
   /**
@@ -79,10 +79,10 @@ export class HashSet<E> extends CollectionBuffer<E> {
    * @param element
    */
   delete(element: E): this {
-    const index = this._buffer.findIndex(x => this[Symbol.comparer](element, x));
+    const index = this.buffer.findIndex(x => this.comparer(element, x));
 
     if (index > -1) {
-      this._buffer.splice(index, 1);
+      this.buffer.splice(index, 1);
     }
 
     return this;
@@ -106,7 +106,7 @@ export class HashSet<E> extends CollectionBuffer<E> {
 /**
  * {@link HashSet}
  */
-export function hashSet<E>(iterable: Iterable<E> = [], comparer: EqualityComparer<E> = EqualityComparer.DEFAULT): HashSet<E> {
+export function hashSet<E>(iterable: Iterable<E> = [], comparer: EqualityComparer<E> = equals): HashSet<E> {
   return new HashSet<E>(iterable, comparer);
 }
 
@@ -114,7 +114,7 @@ export namespace hashSet {
   /**
    * {@link HashSet.proxy}
    */
-  export function proxy<E>(buffer: E[], comparer = EqualityComparer.DEFAULT): HashSet<E> {
+  export function proxy<E>(buffer: E[], comparer = equals): HashSet<E> {
     return HashSet.proxy(buffer, comparer);
   }
 }

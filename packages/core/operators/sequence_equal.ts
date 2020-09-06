@@ -1,4 +1,6 @@
-import { AsyncOperator, EqualityComparer, equals, Operator, isIterable } from '../types';
+import { AsyncOperator, Operator } from './operator';
+import { isIterable } from '../util';
+import { EqualityComparer, equals } from '../equality';
 import { combine, CombinedOperator } from './combine';
 
 export function sequenceEqual<E>(other: Iterable<E>, comparer?: EqualityComparer<E>): CombinedOperator<E, boolean, Promise<boolean>>;

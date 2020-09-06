@@ -1,3 +1,4 @@
+export { getAnyIterator } from './get_any_iterator';
 export { getAsyncIterator } from './get_async_iterator';
 export { getIterator } from './get_iterator';
 export { isAsyncIterable } from './is_async_iterable';
@@ -11,3 +12,7 @@ export { isNullOrUndefined } from './is_null_or_undefined';
 export { isObject } from './is_object';
 export { isPromise } from './is_promise';
 export { isUndefined } from './is_undefined';
+export { AsyncIterableProxy, proxyAsyncIterable } from './async_iterable_proxy';
+export { IterableProxy, proxyIterable } from './iterable_proxy';
+export { PromiseOr } from './promise_or';
+export { PromiseQueue } from './promise_queue';

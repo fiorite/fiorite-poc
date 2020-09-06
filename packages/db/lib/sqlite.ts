@@ -1,1 +1,1 @@
-export * from '../src/sqlite';
+export * from '../sqlite';

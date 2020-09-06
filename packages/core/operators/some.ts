@@ -1,5 +1,7 @@
-import { AsyncOperator, AsyncPredicate, Operator, Predicate } from '../types';
+import { AnyPredicate, AsyncPredicate, Predicate } from '../types';
+import { AsyncOperator, Operator } from './operator';
 import { combine, CombinedOperator } from './combine';
+import { getAsyncIterator, getIterator } from '../util';
 
 /**
  * Returns a combined operator that determines whether any element of a sequence satisfies a condition.
@@ -27,7 +29,7 @@ import { combine, CombinedOperator } from './combine';
  *
  * @param predicate default = () => true.
  */
-export function some<E>(predicate?: Predicate<E, [number]>): CombinedOperator<E, boolean, Promise<boolean>>;
+export function some<E>(predicate?: Predicate<[E]>): CombinedOperator<E, boolean, Promise<boolean>>;
 
 /**
  * Returns a combined operator that determines whether any element of an async sequence satisfies a condition.
@@ -42,7 +44,7 @@ export function some<E>(predicate?: Predicate<E, [number]>): CombinedOperator<E,
  *
  * @param predicate
  */
-export function some<E>(predicate: AsyncPredicate<E, [number]>): AsyncOperator<E, Promise<boolean>>;
+export function some<E>(predicate: AsyncPredicate<[E]>): AsyncOperator<E, Promise<boolean>>;
 
 /**
  * @inheritDoc
@@ -70,43 +72,26 @@ export function some<E>(...args: any[]) {
  *
  * @param predicate default = () => true.
  */
-export function someSync<E>(predicate: Predicate<E, [number]> = () => true): Operator<E, boolean> {
+export function someSync<E>(predicate: Predicate<[E]> = () => true): Operator<E, boolean> {
   return function (iterable: Iterable<E>) {
     if (Array.isArray(iterable)) {
       return iterable.some(predicate);
     }
 
-    const iterator = iterable[Symbol.iterator]();
+    const iterator = getIterator(iterable);
 
     let result = iterator.next();
 
-    if (predicate.length < 2) {
-      while (!result.done) {
-        if ((predicate as Predicate<E>)(result.value)) {
-          if (iterator.return) {
-            iterator.return();
-          }
-
-          return true;
+    while (!result.done) {
+      if (predicate(result.value)) {
+        if (iterator.return) {
+          iterator.return();
         }
 
-        result = iterator.next();
+        return true;
       }
-    } else {
-      let index = 0;
 
-      while (!result.done) {
-        if (predicate(result.value, index)) {
-          if (iterator.return) {
-            iterator.return();
-          }
-
-          return true;
-        }
-
-        result = iterator.next();
-        index++;
-      }
+      result = iterator.next();
     }
 
     return false;
@@ -133,15 +118,14 @@ export function someSync<E>(predicate: Predicate<E, [number]> = () => true): Ope
  *
  * @param predicate default = () => true.
  */
-export function someAsync<E>(predicate: Predicate<E, [number]> | AsyncPredicate<E, [number]> = () => true): AsyncOperator<E, Promise<boolean>> {
+export function someAsync<E>(predicate: AnyPredicate<[E]> = () => true): AsyncOperator<E, Promise<boolean>> {
   return async function (iterable: AsyncIterable<E>) {
-    const iterator = iterable[Symbol.asyncIterator]();
+    const iterator = getAsyncIterator(iterable);
 
     let result = await iterator.next();
-    let index = 0;
 
     while (!result.done) {
-      if (await predicate(result.value, index)) {
+      if (await predicate(result.value)) {
         if (iterator.return) {
           await iterator.return();
         }
@@ -150,7 +134,6 @@ export function someAsync<E>(predicate: Predicate<E, [number]> | AsyncPredicate<
       }
 
       result = await iterator.next();
-      index++;
     }
 
     return false;

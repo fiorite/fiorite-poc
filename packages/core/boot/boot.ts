@@ -1,5 +1,6 @@
-import { isClass, isFunction, PromiseOr, Type } from '../types';
-import { Injector, ProviderCollection, ProviderTuple } from '../di';
+import { Type } from '../types';
+import { isClass, isFunction, PromiseOr } from '../util';
+import { Injector, ProviderCollection, ProviderTuple } from '../injector';
 import { Startup } from './startup';
 import { bootManager } from './boot_manager';
 import { defaultLogger, Logger } from '../logger';

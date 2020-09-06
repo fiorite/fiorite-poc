@@ -1,9 +1,8 @@
 import { expect } from 'chai';
 
-import { pipe, sequenceEqual, take, takeAsync, takeSync, toAsync } from '../../../packages/core/operators';
-import { collect } from '../../../packages/core/collections';
+import { pipe, sequenceEqual, take, takeAsync, takeSync, toAsync } from '@fiorite/core/operators';
 
-describe('takeSync(), Collection#take(), takeAsync(), AsyncCollection#take(), take()', () => {
+describe('takeSync(), takeAsync(), take()', () => {
   describe('takeSync()', () => {
     it('should take 2 elements', () => {
       expect(
@@ -11,16 +10,6 @@ describe('takeSync(), Collection#take(), takeAsync(), AsyncCollection#take(), ta
           takeSync<number>(2),
           sequenceEqual([1, 2]),
         )([1, 2, 3]),
-      ).equals(true);
-    });
-  });
-
-  describe('Collection#take()', () => {
-    it('should take 2 elements', () => {
-      expect(
-        collect([1, 2, 3])
-          .take(2)
-          .sequenceEqual([1, 2]),
       ).equals(true);
     });
   });
@@ -37,19 +26,8 @@ describe('takeSync(), Collection#take(), takeAsync(), AsyncCollection#take(), ta
     });
   });
 
-  describe('AsyncCollection#take()', () => {
-    it('should take 2 elements', async () => {
-      expect(
-        await collect([1, 2, 3])
-          .toAsync()
-          .take(2)
-          .sequenceEqual([1, 2]),
-      ).equals(true);
-    });
-  });
-
   describe('take()', () => {
-    it('should inverse a sequence', async () => {
+    it('should take 2 elements', async () => {
       expect(
         pipe(
           take<number>(2),

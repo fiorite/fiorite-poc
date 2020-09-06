@@ -2,7 +2,7 @@ import { AsyncOperator, Operator } from './operator';
 import { combine, CombinedOperator } from './combine';
 
 /**
- * Returns a combined operator that casts sequence to the specified type.
+ * Casts sequence to the specified type.
  *
  * @example ```typescript
  * import { cast, toAsync } from '@fiorite/core/operators';
@@ -20,7 +20,7 @@ export function cast<R>(): CombinedOperator<unknown, Iterable<R>, AsyncIterable<
 }
 
 /**
- * Returns an operator that casts sequence to the specified type.
+ * Casts sequence to the specified type.
  *
  * @example ```typescript
  * import { castSync } from '@fiorite/core/operators';
@@ -36,7 +36,7 @@ export function castSync<R>(): Operator<unknown, Iterable<R>> {
 }
 
 /**
- * Returns an operator that casts sequence to the specified type.
+ * Casts sequence to the specified type.
  *
  * @example ```typescript
  * import { castAsync } from '@fiorite/core/operators';

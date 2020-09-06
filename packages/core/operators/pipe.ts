@@ -1,4 +1,4 @@
-import { AsyncOperator, Operator } from '../types';
+import { AsyncOperator, Operator } from './operator';
 import { CombinedOperator } from './combine';
 
 export interface Pipe extends Function {

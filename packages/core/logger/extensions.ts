@@ -1,10 +1,9 @@
-import { ProviderCollection, Injector } from '@fiorite/core/extension_api';
+import { Injector, ProviderCollection } from '@fiorite/core/injector';
 
 import { NotImplementedError } from '../errors';
 import { Logger } from './logger';
-import defineProperty = Reflect.defineProperty;
 
-declare module '@fiorite/core/extension_api' {
+declare module '@fiorite/core/injector' {
   interface ProviderCollection {
     addLogger(): this;
   }
@@ -14,7 +13,7 @@ ProviderCollection.prototype.addLogger = function(this: ProviderCollection) {
   throw new NotImplementedError();
 }
 
-declare module '@fiorite/core/extension_api' {
+declare module '@fiorite/core/injector' {
   interface Injector {
     readonly logger: Logger;
 
@@ -22,7 +21,7 @@ declare module '@fiorite/core/extension_api' {
   }
 }
 
-defineProperty(Injector.prototype, 'logger', {
+Object.defineProperty(Injector.prototype, 'logger', {
   get(this: Injector) {
     return this.getLogger();
   }

@@ -1,4 +1,5 @@
-import { AsyncSelector, Selector, isAsyncIterable, isIterable } from '../types';
+import { AsyncSelector, Selector } from '../types';
+import { isAsyncIterable, isIterable } from '../util';
 import { combine } from './combine';
 
 export function flatMap<E, R>(selector: Selector<E, R | Iterable<R>, [number]>) {

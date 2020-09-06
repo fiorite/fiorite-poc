@@ -1,4 +1,5 @@
 import { combine } from './combine';
+import { getIterator } from '@fiorite/core/util';
 
 /**
  * Returns a combined operator that provides a new sequence of elements from iterable plus the specified elements prepended at the beginning.
@@ -36,7 +37,7 @@ export function prependSync<E>(...elements: E[]) {
       yield element;
     }
 
-    const iterator = iterable[Symbol.iterator]();
+    const iterator = getIterator(iterable);
 
     let result = iterator.next();
 

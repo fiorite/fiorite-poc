@@ -1,8 +1,8 @@
 import { AsyncCollection } from './async_collection';
-import { Closeable } from '../types';
+import { Closeable } from '../listening';
 import { forEachSync } from '../operators';
+import { proxyAsyncIterable } from '../util';
 import { CollectionIterator } from './collection_iterator';
-import { proxyAsyncIterable } from './async_iterable_proxy';
 
 export class CollectionSubject<E = unknown> extends AsyncCollection<E> implements Closeable {
   private _listeners: CollectionIterator<E>[] = [];
@@ -49,6 +49,7 @@ export class CollectionSubject<E = unknown> extends AsyncCollection<E> implement
     this._listeners.forEach(iterator => iterator.throw(error));
   }
 
+  // TODO: Make final.
   close() {
     return this[Symbol.close]();
   }
@@ -57,6 +58,7 @@ export class CollectionSubject<E = unknown> extends AsyncCollection<E> implement
     // TODO: Mind about concurrency.
     const subs = this._listeners.slice();
 
+    // TODO: Add PromiseQueue.
     await Promise.all(
       subs.map(sub => sub[Symbol.close]())
     );

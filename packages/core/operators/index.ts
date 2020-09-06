@@ -5,7 +5,7 @@ export { combine, CombinedOperator } from './combine';
 export { concat, concatSync, concatAsync } from './concat';
 export { count, countSync, countAsync } from './count';
 export { countBigInt, countBigIntAsync, countBigIntSync } from './count_bigint';
-export { elementAtSync } from './element_at';
+export { elementAtSync, elementAtAsync, elementAt } from './element_at';
 export { every, everySync, everyAsync } from './every';
 export { filter, filterSync, filterAsync } from './filter';
 export { first, firstAsync, firstSync } from './first';
@@ -34,5 +34,4 @@ export { toArray, toArrayAsync, toArraySync } from './to_array';
 export { toAsync } from './to_async';
 export { toSync } from './to_sync';
 export { Operator, AsyncOperator } from './operator';
-
-
+export { InvalidOperationError } from './errors';

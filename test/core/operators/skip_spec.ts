@@ -1,9 +1,8 @@
 import { expect } from 'chai';
 
-import { pipe, sequenceEqual, skip, skipAsync, skipSync, toAsync } from '../../../packages/core/operators';
-import { collect } from '../../../packages/core/collections';
+import { pipe, sequenceEqual, skip, skipAsync, skipSync, toAsync } from '@fiorite/core/operators';
 
-describe('skipSync(), Collection#skip(), skipAsync(), AsyncCollection#skip(), skip()', () => {
+describe('skipSync(), skipAsync(), skip()', () => {
   describe('skipSync()', () => {
     it('should skip 2 elements', () => {
       expect(
@@ -11,16 +10,6 @@ describe('skipSync(), Collection#skip(), skipAsync(), AsyncCollection#skip(), sk
           skipSync<number>(2),
           sequenceEqual([3]),
         )([1, 2, 3]),
-      ).equals(true);
-    });
-  });
-
-  describe('Collection#skip()', () => {
-    it('should skip 2 elements', () => {
-      expect(
-        collect([1, 2, 3])
-          .skip(2)
-          .sequenceEqual([3]),
       ).equals(true);
     });
   });
@@ -37,19 +26,8 @@ describe('skipSync(), Collection#skip(), skipAsync(), AsyncCollection#skip(), sk
     });
   });
 
-  describe('AsyncCollection#skip()', () => {
-    it('should skip 2 elements', async () => {
-      expect(
-        await collect([1, 2, 3])
-          .toAsync()
-          .skip(2)
-          .sequenceEqual([3]),
-      ).equals(true);
-    });
-  });
-
   describe('skip()', () => {
-    it('should inverse a sequence', async () => {
+    it('should skip 2 elements', async () => {
       expect(
         pipe(
           skip<number>(2),

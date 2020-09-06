@@ -1,4 +1,5 @@
-import { EqualityComparer, equals, Operator } from '../types';
+import { Operator } from '../operators';
+import { EqualityComparer, equals } from '../equality';
 
 export function lastIndexOfSync<E>(element: E, comparer: EqualityComparer<E> = equals): Operator<E, number> {
   return function (iterable: Iterable<E>) {

@@ -1,44 +1,44 @@
 import { Collection } from './collection';
-import { Cloneable, Disposable, EqualityComparer, equals, Equatable } from '../types';
-import { proxyIterable } from './iterable_proxy';
+import { Cloneable } from '../cloning';
+import { EqualityComparer, equals, Equatable } from '../equality';
+import { proxyIterable } from '../util';
 
-export class CollectionBuffer<E> extends Collection<E> implements Equatable, Cloneable, Disposable {
-  protected _buffer: E[] = [];
-
-  get buffer(): readonly E[] {
-    return this._buffer;
-  }
+export class CollectionBuffer<E> extends Collection<E> implements Equatable, Cloneable {
+  protected buffer: E[] = [];
 
   get size() {
-    return this._buffer.length;
+    return this.buffer.length;
   }
 
   get empty(): boolean {
-    return this._buffer.length < 1;
+    return this.buffer.length < 1;
   }
 
   constructor(comparer: EqualityComparer<E> = equals) {
-    super(proxyIterable(() => this._buffer), comparer);
+    super(proxyIterable(() => this.buffer), comparer);
   }
 
+  /**
+   * Clears local buffer.
+   */
   clear(): this {
-    this._buffer.splice(0, this._buffer.length);
+    this.buffer.splice(0, this.buffer.length);
 
     return this;
   }
 
-  toCollection(): Collection<E> {
-    return new Collection<E>(this, this[Symbol.comparer]);
+  [Symbol.clone](): this {
+    return Object.assign(
+      Object.create(this),
+      { ...this, buffer: this.buffer.slice() },
+    );
   }
 
-  [Symbol.clone](): CollectionBuffer<E> {
-    return Object.assign(Object.create(this), { ...this, _buffer: this._buffer.slice() });
-  }
-
-  [Symbol.dispose]() {
-    this.clear();
-  }
-
+  /**
+   * Checks whether provided argument has the same constructor and sequence.
+   *
+   * @param other
+   */
   [Symbol.equals](other: unknown): boolean {
     return other instanceof this.constructor &&
       this.sequenceEqual(other as Iterable<E>);

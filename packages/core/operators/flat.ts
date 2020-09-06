@@ -1,5 +1,5 @@
 import { combine } from './combine';
-import { isIterable } from '../types';
+import { isIterable } from '../util';
 
 export function flat() {
   return combine(() => flatSync(), () => flatAsync());

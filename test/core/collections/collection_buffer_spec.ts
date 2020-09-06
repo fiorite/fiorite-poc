@@ -1,18 +1,11 @@
 import { expect } from 'chai';
 
-import { CollectionBuffer } from '../../../packages/core/collections';
-import { toArraySync } from '../../../packages/core/operators';
+import { CollectionBuffer } from '@fiorite/core/collections';
 
 describe('CollectionBuffer', () => {
   let collection: TestStructure;
 
   beforeEach(() => collection = new TestStructure());
-
-  describe('#buffer', () => {
-    it('should test cloned buffer', () => {
-      expect(collection.buffer).equals((collection as any)._buffer);
-    });
-  });
 
   describe('#size', () => {
     it('should return buffer length', () => {
@@ -41,23 +34,23 @@ describe('CollectionBuffer', () => {
       const clone = collection[Symbol.clone]();
 
       expect(clone).not.equals(collection);
-      expect(clone.buffer).not.equals(collection.buffer);
+      expect((clone as any).buffer).not.equals((collection as any).buffer);
       expect(clone.sequenceEqual(collection)).equals(true);
     });
   });
 
-  describe('#[Symbol.dispose]()', () => {
-    it('should call clear', () => {
-      collection.add(1)[Symbol.dispose]();
-      expect(collection.empty).equals(true);
-    });
-  });
+  // describe('#[Symbol.dispose]()', () => {
+  //   it('should call clear', () => {
+  //     collection.add(1)[Symbol.dispose]();
+  //     expect(collection.empty).equals(true);
+  //   });
+  // });
 
   describe('#[Symbol.iterator]()', () => {
     it('should return buffer iterator', () => {
       expect(
         collection.sequenceEqual(
-          toArraySync<number>()(collection.add(1))
+          collection.add(1),
         ),
       ).equals(true);
     });
@@ -70,7 +63,7 @@ class TestStructure extends CollectionBuffer<number> {
   }
 
   add(element: number) {
-    this._buffer.push(element);
+    this.buffer.push(element);
 
     return this;
   }

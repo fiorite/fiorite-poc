@@ -1,12 +1,12 @@
 import { Operator } from './operator';
+import { getIterator } from '../util';
 
 /**
- * TODO: Describe.
- * @param iterable
+ * Converts sync sequence to async.
  */
 export function toAsync<E>(): Operator<E, AsyncIterable<E>> {
   return async function *(iterable: Iterable<E>) {
-    const iterator = iterable[Symbol.iterator]();
+    const iterator = getIterator(iterable);
 
     let result = iterator.next();
 

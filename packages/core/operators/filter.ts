@@ -1,74 +1,67 @@
-import { AsyncPredicate, Predicate } from '../types';
-import { combine } from './combine';
+import { AnyPredicate, AsyncPredicate, Predicate } from '../types';
+import { combine, CombinedOperator } from './combine';
+import { getAsyncIterator, getIterator } from '../util';
+import { AsyncOperator } from './operator';
 
-export function filter<E>(predicate: Predicate<E, [number]>) {
+/**
+ * Filters sequence based on predicate.
+ *
+ * @param predicate
+ */
+export function filter<E>(predicate: Predicate<[E]>): CombinedOperator<E>;
+
+/**
+ * Filters sequence based on predicate.
+ *
+ * @param predicate
+ */
+export function filter<E>(predicate: AsyncPredicate<[E]>): AsyncOperator<E>;
+
+/**
+ * @inheritDoc
+ */
+export function filter<E>(predicate: any) {
   return combine(() => filterSync(predicate), () => filterAsync(predicate));
 }
 
 /**
- * Filters sequence using predicate.
+ * Filters sequence based on predicate.
  *
  * @param predicate
  */
-export function filterSync<E>(predicate: Predicate<E, [number]>) {
+export function filterSync<E>(predicate: Predicate<[E]>) {
   return function *(iterable: Iterable<E>): Iterable<E> {
-    const iterator = iterable[Symbol.iterator]();
+    const iterator = getIterator(iterable);
 
     let result = iterator.next();
 
-    if (predicate.length < 2) { // If client don't request index.
-      while (!result.done) {
-        if ((predicate as Predicate<E>)(result.value)) {
-          yield result.value;
-        }
-
-        result = iterator.next();
+    while (!result.done) {
+      if (predicate(result.value)) {
+        yield result.value;
       }
-    } else {
-      let index = 0;
 
-      while (!result.done) {
-        if (predicate(result.value, index)) {
-          yield result.value;
-        }
-
-        result = iterator.next();
-        index++;
-      }
+      result = iterator.next();
     }
   };
 }
 
 /**
- * Filters sequence using predicate.
+ * Filters sequence based on predicate.
  *
  * @param predicate
  */
-export function filterAsync<E>(predicate: Predicate<E, [number]> | AsyncPredicate<E, [number]>) {
-  return async function *(iterable: AsyncIterable<E>): AsyncIterable<E> {
-    const iterator = iterable[Symbol.asyncIterator]();
+export function filterAsync<E>(predicate: AnyPredicate<[E]>): AsyncOperator<E> {
+  return async function *(iterable: AsyncIterable<E>) {
+    const iterator = getAsyncIterator(iterable);
 
     let result = await iterator.next();
 
-    if (predicate.length < 2) { // If client don't request index.
-      while (!result.done) {
-        if (await (predicate as AsyncPredicate<E>)(result.value)) {
-          yield result.value;
-        }
-
-        result = await iterator.next();
+    while (!result.done) {
+      if (await predicate(result.value)) {
+        yield result.value;
       }
-    } else {
-      let index = 0;
 
-      while (!result.done) {
-        if (await predicate(result.value, index)) {
-          yield result.value;
-        }
-
-        result = await iterator.next();
-        index++;
-      }
+      result = await iterator.next();
     }
   };
 }

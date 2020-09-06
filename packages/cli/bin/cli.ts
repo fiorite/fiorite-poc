@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { readFileSync } from 'fs';
 
-import { bootManager } from '@fiorite/core';
+import { bootManager } from '@fiorite/core/boot';
 import webpack from 'webpack';
 import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
 import { ChildProcess, exec } from 'child_process';

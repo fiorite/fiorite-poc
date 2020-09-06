@@ -5,6 +5,6 @@ import { Callable } from './callable';
  *
  * @param object
  */
-export function isCallable(object: any) {
+export function isCallable(object: unknown) {
   return object instanceof Callable;
 }

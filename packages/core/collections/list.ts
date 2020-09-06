@@ -1,6 +1,6 @@
 import { CollectionBuffer } from './collection_buffer';
 import { forEachSync } from '../operators';
-import { EqualityComparer, equals, Equatable } from '../types';
+import { EqualityComparer, equals, Equatable } from '../equality';
 
 export class List<E> extends CollectionBuffer<E> implements Equatable {
   constructor(iterable: Iterable<E> = [], comparer: EqualityComparer<E> = equals) {
@@ -9,7 +9,7 @@ export class List<E> extends CollectionBuffer<E> implements Equatable {
   }
 
   add(element: E): this {
-    this._buffer.push(element);
+    this.buffer.push(element);
 
     return this;
   }
@@ -21,7 +21,7 @@ export class List<E> extends CollectionBuffer<E> implements Equatable {
   }
 
   insert(index: number, element: E): this {
-    this._buffer.splice(index, 0, element);
+    this.buffer.splice(index, 0, element);
 
     return this;
   }
@@ -33,34 +33,34 @@ export class List<E> extends CollectionBuffer<E> implements Equatable {
   }
 
   replaceAt(index: number, element: E): this {
-    this._buffer.splice(index, 1, element);
+    this.buffer.splice(index, 1, element);
 
     return this;
   }
 
   replaceRange(index: number, count: number, iterable: Iterable<E>): this {
-    this._buffer.splice(index, count, ...iterable);
+    this.buffer.splice(index, count, ...iterable);
 
     return this;
   }
 
   reverse(): this {
-    this._buffer.reverse();
+    this.buffer.reverse();
 
     return this;
   }
 
   sort(): this {
-    this._buffer.sort();
+    this.buffer.sort();
 
     return this;
   }
 
   delete(element: E): this {
-    const index = this._buffer.findIndex(x => this[Symbol.comparer](element, x));
+    const index = this.buffer.findIndex(x => this.comparer(element, x));
 
     if (index > -1) {
-      this._buffer.splice(index, 1);
+      this.buffer.splice(index, 1);
     }
 
     return this;
@@ -74,14 +74,14 @@ export class List<E> extends CollectionBuffer<E> implements Equatable {
 
   deleteAt(index: number): this {
     // TODO: Error out of range
-    this._buffer.splice(index, 1);
+    this.buffer.splice(index, 1);
 
     return this;
   }
 
   deleteRange(index: number, count: number): this {
     // TODO: Error out of range
-    this._buffer.splice(index, count);
+    this.buffer.splice(index, count);
 
     return this;
   }

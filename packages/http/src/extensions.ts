@@ -1,7 +1,7 @@
-import { Injector } from '@fiorite/core/extension_api';
-import { ProviderCollection } from '@fiorite/core/extension_api';
+import { Injector, ProviderCollection } from '@fiorite/core/injector';
+import { ProviderCollection } from '@fiorite/core/injector';
 
-import { PartialProviderTuple, Provider, ScopedInjector } from '@fiorite/core';
+import { PartialProviderTuple, Provider, ScopedInjector } from '@fiorite/core/injector';
 import { Logger } from '@fiorite/core/logger';
 
 import { Middleware } from './middleware';
@@ -9,7 +9,7 @@ import { NextHttpServer as HttpServer } from './server_next';
 import { RequestCallback } from './request_callback';
 import { ResponseHeader } from './response_header';
 
-declare module '@fiorite/core/extension_api' {
+declare module '@fiorite/core/injector' {
   interface ProviderCollection {
     addHttpServer(port: number | string): this;
     addMiddleware(...provider: PartialProviderTuple<Middleware>): this;
@@ -49,7 +49,7 @@ ProviderCollection.prototype.addMiddleware = function (this: ProviderCollection,
   return this.add(Middleware, ...provider);
 }
 
-declare module '@fiorite/core/extension_api' {
+declare module '@fiorite/core/injector' {
   interface Injector {
     getHttpServer(): HttpServer;
   }

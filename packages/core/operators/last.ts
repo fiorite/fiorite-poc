@@ -1,11 +1,12 @@
-import { AsyncPredicate, InvalidOperationError, Predicate } from '../types';
+import { AnyPredicate, AsyncPredicate, Predicate } from '../types';
+import { InvalidOperationError } from './errors';
 import { combine } from './combine';
 
-export function last<E>(predicate: Predicate<E> = () => true) {
+export function last<E>(predicate: Predicate<[E]> = () => true) {
   return combine(() => lastSync(predicate), () => lastAsync(predicate));
 }
 
-export function lastSync<E>(predicate: Predicate<E> = () => true) {
+export function lastSync<E>(predicate: Predicate<[E]> = () => true) {
   return function(iterable: Iterable<E>): E {
     const iterator = iterable[Symbol.iterator]();
 
@@ -35,7 +36,7 @@ export function lastSync<E>(predicate: Predicate<E> = () => true) {
   };
 }
 
-export function lastAsync<E>(predicate: Predicate<E> | AsyncPredicate<E> = () => true) {
+export function lastAsync<E>(predicate: AnyPredicate<[E]> = () => true) {
   return async function (iterable: AsyncIterable<E>): Promise<E> {
     const iterator = iterable[Symbol.asyncIterator]();
 

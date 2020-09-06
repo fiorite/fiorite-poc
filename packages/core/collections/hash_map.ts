@@ -1,5 +1,7 @@
 import { Collection } from './collection';
-import { EqualityComparer, InvalidOperationError, Selector } from '../types';
+import { Selector } from '../types';
+import { InvalidOperationError } from '../errors';
+import { EqualityComparer } from '../equality';
 import { forEachSync } from '../operators';
 import { CollectionBuffer } from './collection_buffer';
 
@@ -72,7 +74,7 @@ export class HashMap<K, V> extends CollectionBuffer<[K, V]> {
   static proxy<K, V>(source: [K, V][], keyComparer: EqualityComparer<K> = EqualityComparer.DEFAULT): HashMap<K, V> {
     const instance = new HashMap<K, V>([], keyComparer);
 
-    instance._buffer = source;
+    instance.buffer = source;
 
     return instance;
   }
@@ -161,12 +163,12 @@ export class HashMap<K, V> extends CollectionBuffer<[K, V]> {
    * @param value
    */
   set(key: K, value: V): this {
-    const index = this._buffer.findIndex(([x]) => this.keyComparer(key, x));
+    const index = this.buffer.findIndex(([x]) => this.keyComparer(key, x));
 
     if (index < 0) {
-      this._buffer.push([key, value]);
+      this.buffer.push([key, value]);
     } else {
-      this._buffer.splice(index, 1, [key, value]);
+      this.buffer.splice(index, 1, [key, value]);
     }
 
     return this;
@@ -189,7 +191,7 @@ export class HashMap<K, V> extends CollectionBuffer<[K, V]> {
    * @param key
    */
   has(key: K): boolean {
-    return this._buffer.findIndex(([x]) => this.keyComparer(key, x)) > -1;
+    return this.buffer.findIndex(([x]) => this.keyComparer(key, x)) > -1;
   }
 
   /**
@@ -200,13 +202,13 @@ export class HashMap<K, V> extends CollectionBuffer<[K, V]> {
    * @throws
    */
   get(key: K): V {
-    const index = this._buffer.findIndex(([x]) => this.keyComparer(key, x));
+    const index = this.buffer.findIndex(([x]) => this.keyComparer(key, x));
 
     if (index < 0) {
       throw new HashMapError('An entry with key "' + inspectKey(key) +  '" is not exist.', key);
     }
 
-    return this._buffer[index][1];
+    return this.buffer[index][1];
   }
 
   /**
@@ -228,13 +230,13 @@ export class HashMap<K, V> extends CollectionBuffer<[K, V]> {
    * @inheritDoc
    */
   tryGet(key: K, _default: V | null = null): V | null {
-    const index = this._buffer.findIndex(([x]) => this.keyComparer(key, x));
+    const index = this.buffer.findIndex(([x]) => this.keyComparer(key, x));
 
     if (index < 0) {
       return _default;
     }
 
-    return this._buffer[index][1];
+    return this.buffer[index][1];
   }
 
   /**
@@ -243,10 +245,10 @@ export class HashMap<K, V> extends CollectionBuffer<[K, V]> {
    * @param key
    */
   delete(key: K): this {
-    const index = this._buffer.findIndex(([x]) => this.keyComparer(key, x));
+    const index = this.buffer.findIndex(([x]) => this.keyComparer(key, x));
 
     if (index > -1) {
-      this._buffer.splice(index, 1);
+      this.buffer.splice(index, 1);
     }
 
     return this;
@@ -258,7 +260,7 @@ export class HashMap<K, V> extends CollectionBuffer<[K, V]> {
   [Symbol.clone](): HashMap<K, V> {
     const clone = Object.create(this) as this;
 
-    clone._buffer = this._buffer.slice();
+    clone.buffer = this.buffer.slice();
     clone.keyComparer = this.keyComparer;
 
     return clone;

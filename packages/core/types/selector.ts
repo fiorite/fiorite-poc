@@ -1,12 +1,10 @@
 /**
- * Action that performs on element and returns new result.
+ * Functional type that consumes specified argument and returns projection of it.
+ *
+ * @example ```typescript
+ * import { Selector } from '@fiorite/core';
+ *
+ * const selector: Selector<number, string> => (object: number) => object.toString();
+ * ```
  */
-export type Selector<T, R = T, A extends unknown[] = []> = (element: T, ...args: A) => R;
-
-/**
- * Action that performs on element and returns new result.
- */
-export type AsyncSelector<T, R = T, A extends unknown[] = []> = (element: T, ...args: A) => Promise<R>;
-
-
-export type AnySelector<T, R = T, A extends unknown[] = []> = Selector<T, R, A> | AsyncSelector<T, R, A>;
+export type Selector<T, R = T, P extends unknown[] = []> = (object: T, ...args: P) => R;

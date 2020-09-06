@@ -1,5 +1,6 @@
 import {
   appendAsync,
+  AsyncOperator,
   catchErrorAsync,
   concatAsync,
   countAsync,
@@ -29,26 +30,23 @@ import {
 import {
   AbstractType,
   AnyCallback,
+  AnyIterable,
   AnyPredicate,
   AnySelector,
-  AsyncOperator,
   AsyncPredicate,
   AsyncReducer,
   AsyncSelector,
-  EqualityComparer,
-  equals,
-  Listener,
-  NotImplementedError,
-  Predicate,
   Selector,
   Type,
 } from '../types';
+import { getAsyncIterator, proxyAsyncIterable } from '../util';
+import { EqualityComparer, equals } from '../equality';
+import { NotImplementedError } from '../errors';
+import { Listener } from '../listening';
 
-const defaultAsyncIterable: AsyncIterable<never> = {
-  [Symbol.asyncIterator](): AsyncIterator<never> {
-    throw new NotImplementedError();
-  }
-};
+const notImplementedIterable = proxyAsyncIterable<never>(() => {
+  throw new NotImplementedError();
+});
 
 /**
  * Describes abstract type of {@link AsyncCollection}.
@@ -63,8 +61,6 @@ export interface AsyncCollectionType<E = unknown> extends AbstractType<AsyncColl
 export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
   /**
    * Returns function that is used to create a new {@link AsyncCollection}.
-   *
-   * @default {@link AsyncIterableCollection}.
    */
   static get [Symbol.species](): new <E>(iterable: AsyncIterable<E>) => AsyncCollection<E> {
     return AsyncCollection;
@@ -82,7 +78,7 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
   /**
    * Stores {@link EqualityComparer}.
    */
-  [Symbol.comparer]: EqualityComparer<E>;
+  comparer: EqualityComparer<E>;
 
   /**
    * Returns whether a sequence is empty.
@@ -91,13 +87,13 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
     return this.some().then(x => !x);
   }
 
-  constructor(iterable: AsyncIterable<E> = defaultAsyncIterable, comparer: EqualityComparer<E> = equals) {
+  constructor(iterable: AsyncIterable<E> = notImplementedIterable, comparer: EqualityComparer<E> = equals) {
     if (this === iterable) {
       throw new Error('Circular dependency detected.');
     }
 
     this.iterable = iterable;
-    this[Symbol.comparer] = comparer;
+    this.comparer = comparer;
   }
 
   /**
@@ -108,23 +104,9 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    * @protected
    */
   protected pipe<R>(operator: AsyncOperator<E, AsyncIterable<R>>): AsyncCollection<R> {
-    const source = this;
+    const type = this.constructor as AsyncCollectionType;
 
-    return new (this.constructor as AsyncCollectionType<R>)[Symbol.species]({
-      [Symbol.asyncIterator]() {
-        return operator(source)[Symbol.asyncIterator]();
-      }
-    });
-  }
-
-  /**
-   * Creates a new {@link Collection} that applies provided sequence.
-   *
-   * @param sequence
-   * @protected
-   */
-  protected lift<R>(sequence: AsyncIterable<R>): AsyncCollection<R> {
-    return new (this.constructor as AsyncCollectionType<R>)[Symbol.species](sequence);
+    return new type[Symbol.species](proxyAsyncIterable(() => operator(this)));
   }
 
   /**
@@ -171,13 +153,13 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
   }
 
   catchError(selector: AnySelector<Error, E>): AsyncCollection<E>;
-  catchError<R extends Error>(errorType: Type<R>, selector: AnySelector<R, E>): AsyncCollection<E>;
+  catchError<R extends Error>(type: Type<R>, selector: AnySelector<R, E>): AsyncCollection<E>;
   catchError(...args: any[]): AsyncCollection<E> {
     return this.pipe((catchErrorAsync as any)(...args));
   }
 
   /**
-   * Counts the number of elements in a sequence.
+   * Counts the number of elements in a sequence or elements that satisfy the predicate.
    */
   count(predicate?: AnyPredicate<[E]>): Promise<number>;
 
@@ -189,15 +171,33 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
   }
 
   /**
-   * TODO: Describe
+   * Determines whether all elements of a sequence satisfy a condition.
    */
-  every(predicate: Predicate<E, [number]> | AsyncPredicate<E, [number]>): Promise<boolean> {
+  every(predicate: AnyPredicate<[E]>): Promise<boolean> {
     return everyAsync(predicate)(this);
   }
 
+  /**
+   * Filters sequence based on predicate.
+   *
+   * @param predicate
+   */
+  filter(predicate: AnyPredicate<[E]>): AsyncCollection<E> {
+    return this.pipe(filterAsync(predicate));
+  }
 
-  first(predicate?: Predicate<E, [number]> | AsyncPredicate<E, [number]>): Promise<E> {
-    return (firstAsync as any)(...arguments)(this);
+  /**
+   * Returns the first element of a sequence or element that satisfies the predicate.
+   *
+   * @param predicate
+   */
+  first(predicate?: AnyPredicate<[E]>): Promise<E>;
+
+  /**
+   * @inheritDoc
+   */
+  first(...args: any[]) {
+    return firstAsync(...args)(this);
   }
 
   /**
@@ -212,17 +212,8 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    *
    * @param selector
    */
-  flatMap<R>(selector: AsyncSelector<E, R | Iterable<R> | AsyncIterable<R>, [number]>): AsyncCollection<R> {
+  flatMap<R>(selector: AsyncSelector<E, R | AnyIterable<R>, [number]>): AsyncCollection<R> {
     return this.pipe(flatMapAsync(selector));
-  }
-
-  /**
-   * Filters sequence using predicate.
-   *
-   * @param predicate
-   */
-  filter(predicate: Predicate<E, [number]> | AsyncPredicate<E, [number]>): AsyncCollection<E> {
-    return this.pipe(filterAsync(predicate));
   }
 
   /**
@@ -266,7 +257,6 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    * Performs the specified {@param callback} for each element in an sequence.
    *
    * @param callback
-   * @param sync
    */
   forEachSync(callback: AnyCallback<[E]>): Promise<void> {
     return this.forEach(callback, true);
@@ -278,7 +268,7 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    * @param element
    * @param comparer
    */
-  includes(element: E, comparer: EqualityComparer<E> = this[Symbol.comparer]): Promise<boolean> {
+  includes(element: E, comparer: EqualityComparer<E> = this.comparer): Promise<boolean> {
     return includesAsync(element, comparer)(this);
   }
 
@@ -290,9 +280,9 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
     return this.pipe(indexBigIntAsync<E>());
   }
 
-  last(predicate?: Predicate<E> | AsyncPredicate<E>): Promise<E>;
-  last(...args: [] | [Predicate<E> | AsyncPredicate<E>]): Promise<E> {
-    return lastAsync(...args)(this);
+  last(predicate?: AnyPredicate<[E]>): Promise<E>;
+  last(...args: any[]) {
+    return lastAsync<E>(...args)(this);
   }
 
   /**
@@ -337,31 +327,33 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    *
    * @param other
    */
-  sequenceEqual(other: Iterable<E> | AsyncIterable<E>): Promise<boolean> {
+  sequenceEqual(other: AnyIterable<E>): Promise<boolean> {
     return sequenceEqualAsync(other)(this);
   }
 
   /**
-   * TODO: Add doc.
-   */
-  single(): Promise<E>;
-
-  /**
-   * TODO: Add doc.
+   * Returns a single, specific element of a sequence or only element that specifies a predicate.
    *
    * @param predicate
    */
-  single(predicate: AsyncPredicate<E, [number]>): Promise<E>;
+  single(predicate?: AsyncPredicate<[E]>): Promise<E>;
 
   /**
    * @inheritDoc
    */
-  single(...args: [] | [AsyncPredicate<E, [number]>]): Promise<E> {
-    return singleAsync(...args)(this);
+  single(...args: any[]): Promise<E> {
+    return singleAsync<E>(...args)(this);
   }
 
   /**
-   * TODO: Describe.
+   * Bypasses a specified number of elements in a sequence and then returns the remaining elements.
+   *
+   * @example ```typescript
+   * import { collect } from '@fiorite/core/collections';
+   * import { Readable } from 'stream';
+   *
+   * collect(Readable.from([1, 2, 3])).skip(2); // [AsyncCollection [3]]
+   * ```
    *
    * @param count
    */
@@ -385,7 +377,7 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    *
    * @param predicate default = () => true.
    */
-  some(predicate?: Predicate<E, [number]> | AsyncPredicate<E, [number]>): Promise<boolean>;
+  some(predicate?: AnyPredicate<[E]>): Promise<boolean>;
 
   /**
    * @inheritDoc
@@ -395,7 +387,14 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
   }
 
   /**
-   * TODO: Describe.
+   * Returns a specified number of contiguous elements from the start of a sequence.
+   *
+   * @example ```typescript
+   * import { collect } from '@fiorite/core/collections';
+   * import { Readable } from 'stream';
+   *
+   * collect(Readable.from([1, 2, 3])).take(2); // [AsyncCollection [1, 2]]
+   * ```
    *
    * @param count
    */
@@ -418,26 +417,13 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    * Converts a sequence to {@link Array}
    */
   toArray(): Promise<E[]> {
-    const source = this;
-
-    return toArrayAsync<E>()({
-      [Symbol.asyncIterator]() {
-        return source[Symbol.asyncIterator]();
-      }
-    });
-  }
-
-  /**
-   * Normalizes a sequence as an array.
-   */
-  [Symbol.normalize](): AsyncIterable<E> {
-    return this.iterable;
+    return toArrayAsync<E>()(this);
   }
 
   /**
    * @inheritDoc
    */
   [Symbol.asyncIterator](): AsyncIterator<E> {
-    return this.iterable[Symbol.asyncIterator]();
+    return getAsyncIterator(this.iterable);
   }
 }

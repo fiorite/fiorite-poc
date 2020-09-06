@@ -1,5 +1,6 @@
 import { AsyncCollection } from './async_collection';
-import { ArgumentError, isAsyncIterable, isIterable } from '../types';
+import { isAsyncIterable, isIterable } from '../util';
+import { ArgumentError } from '../errors';
 import { Collection } from './collection';
 
 /**

@@ -16,8 +16,8 @@
       "@fiorite/cli": ["cli/lib"],
       "@fiorite/core": ["core"],
       "@fiorite/core/*": ["core/*"],
-      "@fiorite/db": ["db/lib"],
-      "@fiorite/db/*": ["db/lib/*"],
+      "@fiorite/db": ["db"],
+      "@fiorite/db/*": ["db/*"],
       "@fiorite/http": ["http/lib"],
       "@fiorite/http/*": ["http/lib/*"]
     }
