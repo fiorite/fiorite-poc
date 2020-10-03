@@ -1,4 +1,4 @@
 export { defaultAsyncIterable } from './default_async_iterable';
-export { IterableProxy, proxyIterable } from './iterable_proxy';
-export { AsyncIterableProxy, proxyAsyncIterable } from './async_iterable_proxy';
+export { AsyncIteratorProxy, proxyAsyncIterator, AsyncIteratorGetter } from './async_iterator_proxy';
+export { IteratorProxy, proxyIterator, IteratorGetter } from './iterator_proxy';
 export { defaultIterable } from './default_iterable';

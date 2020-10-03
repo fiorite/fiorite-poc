@@ -1,34 +1,34 @@
 import { AsyncCollection } from './async_collection';
 import { Closeable } from '../listening';
 import { forEach } from '../operators';
-import { proxyAsyncIterable } from './utilities';
+import { proxyAsyncIterator } from './utilities';
 import { CollectionIterator } from './collection_iterator';
 
 export class CollectionSubject<E = unknown> extends AsyncCollection<E> implements Closeable {
   private _listeners: CollectionIterator<E>[] = [];
 
+  get listeners(): readonly CollectionIterator<E>[] {
+    return this._listeners;
+  }
+
   constructor() {
     super(
-      proxyAsyncIterable(() => {
+      proxyAsyncIterator(() => {
         const listeners = this._listeners;
 
-        return {
-          [Symbol.asyncIterator]() {
-            const listener = new CollectionIterator<E>();
+        const iterator = new CollectionIterator<E>();
 
-            listener.closes.then(() => {
-              const index = listeners.findIndex(x => x === listener);
+        iterator.closes.then(() => {
+          const index = listeners.findIndex(x => x === iterator);
 
-              if (index > -1) {
-                listeners.splice(index, 1);
-              }
-            });
-
-            listeners.push(listener);
-
-            return listener;
+          if (index > -1) {
+            listeners.splice(index, 1);
           }
-        };
+        });
+
+        listeners.push(iterator);
+
+        return iterator;
       })
     );
   }

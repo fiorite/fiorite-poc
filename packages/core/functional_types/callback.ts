@@ -23,4 +23,4 @@ export type AsyncCallback<P extends unknown[] = []> = (...args: P) => Promise<vo
  * const callback: Callback<string> = (word: string) => { };
  * ```
  */
-export type AnyCallback<P extends unknown[] = []> = (...args: P) => unknown | Promise<unknown>;
+export type AnyCallback<P extends unknown[] = []> = (...args: P) => void | Promise<void>;

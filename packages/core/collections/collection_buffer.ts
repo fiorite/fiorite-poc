@@ -1,7 +1,7 @@
 import { Collection } from './collection';
 import { Cloneable } from '../cloning';
 import { EqualityComparer, equals, Equatable } from '../equality';
-import { proxyIterable } from '../utilities';
+import { getIterator } from '../operators';
 
 export class CollectionBuffer<E> extends Collection<E> implements Equatable, Cloneable {
   protected buffer: E[] = [];
@@ -15,7 +15,7 @@ export class CollectionBuffer<E> extends Collection<E> implements Equatable, Clo
   }
 
   constructor(comparer: EqualityComparer<E> = equals) {
-    super(proxyIterable(() => this.buffer), comparer);
+    super(() => getIterator(this.buffer), comparer);
   }
 
   /**

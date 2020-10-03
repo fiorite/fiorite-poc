@@ -9,7 +9,7 @@ import { EqualityComparer } from './equality_comparer';
  * @param x
  * @param y
  */
-export const equals: EqualityComparer = (x: unknown, y: unknown): boolean => {
+export const equals: EqualityComparer = function equals(x: unknown, y: unknown): boolean {
   if (isEquatable(x)) {
     return (x as Equatable)[Symbol.equals](y);
   }

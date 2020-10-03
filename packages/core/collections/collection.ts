@@ -14,6 +14,7 @@ import {
   flat,
   flatMap,
   forEach,
+  getAsyncIterator,
   getIterator,
   includes,
   indexOf,
@@ -53,7 +54,7 @@ import {
 } from '../operators';
 import { AbstractType, AnyCallback, Callback, Type, } from '../functional_types';
 import { AsyncCollection, AsyncCollectionType } from './async_collection';
-import { defaultIterable, proxyAsyncIterable, proxyIterable } from './utilities';
+import { defaultIterable, IteratorGetter, proxyIterator } from './utilities';
 import { EqualityComparer, equals } from '../equality';
 import { Listener } from '../listening';
 
@@ -63,6 +64,8 @@ import { Listener } from '../listening';
 export interface CollectionType extends AbstractType<Collection<unknown>> {
   /**
    * Returns function that is used to create a new {@link Collection}.
+   *
+   * @deprecated #pipe() prototypes instance without additional info.
    */
   readonly [Symbol.species]: CollectionType;
 
@@ -74,6 +77,8 @@ export class Collection<E> implements Iterable<E> {
    * Returns function that is used to create a new {@link Collection}.
    *
    * @default {@link Collection}.
+   *
+   * @deprecated #pipe() prototypes instance without additional info.
    */
   static get [Symbol.species](): CollectionType {
     return Collection;
@@ -86,7 +91,16 @@ export class Collection<E> implements Iterable<E> {
     return 'Collection';
   }
 
-  readonly iterable: Iterable<E>;
+  protected operators: Operator<any>[] = [];
+
+  /**
+   * @deprecated experimental
+   */
+  get pure() {
+    return this.operators.length < 1;
+  }
+
+  readonly source: Iterable<E>;
 
   /**
    * Stores {@link EqualityComparer}.
@@ -100,13 +114,20 @@ export class Collection<E> implements Iterable<E> {
     return !this.some();
   }
 
-  constructor(iterable: Iterable<E> = defaultIterable, comparer: EqualityComparer<E> = equals) {
-    if (this === iterable) {
+  constructor(source: Iterable<E> | IteratorGetter<E> = defaultIterable, comparer: EqualityComparer<E> = equals) {
+    if (this === source) {
       throw new Error('Circular dependency detected.');
     }
 
-    this.iterable = iterable;
+    this.source = typeof source === 'function' ? proxyIterator(source) : source;
     this.comparer = comparer;
+  }
+
+  protected clone<R = E>(): Collection<R> {
+    return Object.assign(
+      Object.create(this),
+      { ...this, operators: this.operators.slice() }
+    );
   }
 
   /**
@@ -115,9 +136,15 @@ export class Collection<E> implements Iterable<E> {
    * @protected
    */
   protected pipe<R>(operator: Operator<E, Iterable<R>>): Collection<R> {
-    const type = this.constructor as CollectionType;
+    const proto = this.clone<R>();
 
-    return new type[Symbol.species](proxyIterable(() => operator(this)), this.comparer as EqualityComparer);
+    proto.operators.push(operator);
+
+    return proto;
+    //
+    // const type = this.constructor as CollectionType;
+    //
+    // return new type[Symbol.species](proxyIterable(() => operator(this)), this.comparer as EqualityComparer);
   }
 
   /**
@@ -535,14 +562,14 @@ export class Collection<E> implements Iterable<E> {
    * Converts a sequence to {@link AsyncCollection}.
    */
   toAsync(type: AsyncCollectionType = AsyncCollection, comparer = this.comparer): AsyncCollection<E> {
-    return new type[Symbol.species](proxyAsyncIterable(() => toAsync<E>()(this)), comparer);
+    return new type(() => getAsyncIterator(toAsync<E>()(this)), comparer);
   }
 
   /**
    * @inheritDoc
    */
   [Symbol.iterator](): Iterator<E> {
-    return getIterator(this.iterable);
+    return getIterator(this.source);
   }
 }
 
@@ -573,5 +600,5 @@ declare module './async_collection' {
  * @inheritDoc
  */
 AsyncCollection.prototype.toSync = async function <E>(this: AsyncCollection<E>, type: CollectionType = Collection): Promise<Collection<E>> {
-  return new type[Symbol.species](await toSync<E>()(this));
+  return new type(await toSync<E>()(this));
 }

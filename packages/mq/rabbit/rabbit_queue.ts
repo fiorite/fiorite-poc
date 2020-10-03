@@ -1,51 +1,44 @@
-import { Channel, Connection } from 'amqplib';
-import { Replies } from 'amqplib/properties';
-import {
-  AsyncCollection,
-  CollectionIterator,
-  CollectionSubject,
-  NotImplementedError,
-  proxyAsyncIterable
-} from '@fiorite/core';
-import { HttpContext } from '../../http/src';
+import { Channel } from 'amqplib';
+import { AsyncCollection, CollectionIterator } from '@fiorite/core';
+import { Message } from '../message';
 
-export class RabbitQueue<M> extends AsyncCollection<M> {
-  private _consumer: Promise<Replies.Consume>;
+// todo: add operator auto-close that should encapsulate logic.
+export class RabbitQueue extends AsyncCollection<Message<Buffer>> {
+  // todo: add serializer
+  constructor(private _channel: Channel, private _queue = '') {
+    super(() => {
+      const iterator = new RabbitQueueIterator<Buffer>();
 
-  constructor(private _channel: Channel, private _queue: string) {
-    super();
+      (async () => {
+        const consumer = await this._channel.consume(this._queue, message => {
+          if (null !== message) {
+            const wrapped = new Message(
+              message.content,
+              () => this._channel.ack(message), // todo: if auto acknowledge
+              () => this._channel.nack(message), // todo: if auto acknowledge
+            );
 
-    // _channel.
+            iterator.add(wrapped); // todo: use this._channel.nack() whether listener closes
+          }
+        });
 
-    // _channel.sendToQueue();
-    // this._consumer = _channel.consume(_queue, message => {
-    //   _channel.ack();
-    // });
+        await iterator.closes;
+        await this._channel.cancel(consumer.consumerTag); // disable listening
+      })();
+
+      return iterator;
+    });
   }
 
-  enqueue(message: M) {
-    this._channel
-    this._channel.sendToQueue(
-      this._queue, Buffer.from(message),
-    );
+  enqueue(content: Buffer) {
+    this._channel.sendToQueue(this._queue, content);
 
     return this;
   }
 
-  [Symbol.asyncIterator]() {
-    const iterator = new RabbitQueueIterator();
-
-    (async () => {
-      const consumer = await this._channel.consume(this._queue, message => {
-        iterator.add(message);
-      });
-
-      await iterator.closes;
-      await this._channel.cancel(consumer.consumerTag); // disable listening
-    })();
-
-    return iterator;
+  dequeue() {
+    return this.first();
   }
 }
 
-class RabbitQueueIterator<M> extends CollectionIterator<M> { }
+class RabbitQueueIterator<TContent> extends CollectionIterator<Message<TContent>> { }

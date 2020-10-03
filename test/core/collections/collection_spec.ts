@@ -30,13 +30,13 @@ describe('Collection<E>', () => {
   describe('#iterable', () => {
     it('should be defaultIterable', function () {
       const collection = new Collection();
-      expect(collection.iterable).equals(defaultIterable);
+      expect(collection.source).equals(defaultIterable);
     });
 
     it('should be provided iterable', function () {
       const iterable: Iterable<unknown> = [];
       const collection = new Collection(iterable);
-      expect(collection.iterable).equals(iterable);
+      expect(collection.source).equals(iterable);
     });
   });
 

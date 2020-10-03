@@ -6,7 +6,7 @@ Fiorite is a development framework for building web applications using TypeScrip
 
 ## TODO
 
-- [ ] Bigint polyfill
+- [ ] Function expression (wrapper to get control over function syntax)
 
 ## Package structuring
 

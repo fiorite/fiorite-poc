@@ -1,6 +1,6 @@
 import { NotImplementedError } from '../../errors';
-import { proxyIterable } from './iterable_proxy';
+import { proxyIterator } from './iterator_proxy';
 
-export const defaultIterable: Iterable<never> = proxyIterable<never>(() => {
+export const defaultIterable: Iterable<never> = proxyIterator<never>(() => {
   throw new NotImplementedError();
 });

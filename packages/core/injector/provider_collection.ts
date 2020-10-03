@@ -1,6 +1,7 @@
-import { Cloneable, Disposable, Instance, InvalidOperationError, tryDispose, Type } from '../functional_types';
+import { Cloneable, Disposable, Instance, InvalidOperationError, Type } from '../functional_types';
+import { tryDispose } from '../disposition';
 import { forEach } from '../operators';
-import { Collection, proxyIterable } from '../collections';
+import { CollectionBuffer } from '../collections';
 import { ServiceKey } from './service_key';
 import { ServiceLifetime } from './service_lifetime';
 import { ServiceFactory } from './service_factory';
@@ -9,15 +10,9 @@ import { PartialProviderTuple, Provider, ProviderTuple, ScopedTuple, SingletonTu
 /**
  * Provider collection that encapsulates factory methods for the easiest provider configuration.
  */
-export class ProviderCollection extends Collection<Provider> implements Cloneable, Disposable {
-  private _buffer: Provider[] = [];
-
-  get size(): number {
-    return this._buffer.length;
-  }
-
+export class ProviderCollection extends CollectionBuffer<Provider> implements Cloneable, Disposable {
   constructor(iterable: Iterable<Provider> = []) {
-    super(proxyIterable(() => this._buffer));
+    super();
 
     this.addAll(iterable);
   }
@@ -86,7 +81,7 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
       throw new InvalidOperationError(); // TODO: Add readable message.
     }
 
-    this._buffer.push(provider);
+    this.buffer.push(provider);
 
     return this;
   }
@@ -184,23 +179,11 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
   }
 
   /**
-   * Clones provider collection.
-   */
-  [Symbol.clone](): ProviderCollection {
-    const instance = Object.create(this) as ProviderCollection;
-
-    instance._buffer = this._buffer.slice();
-
-    return instance;
-  }
-
-  /**
    * Disposes all singleton providers.
    */
   async [Symbol.dispose]() {
     await Promise.all(
-      this.filter(provider => null !== provider.instance)
-        .map(provider => tryDispose(provider.instance)),
+      this.map(provider => tryDispose(provider.instance)),
     );
   }
 
@@ -208,6 +191,6 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
    * Returns provider iterator.
    */
   [Symbol.iterator]() {
-    return this._buffer.values();
+    return this.buffer.values();
   }
 }

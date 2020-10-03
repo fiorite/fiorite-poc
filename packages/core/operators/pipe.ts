@@ -66,6 +66,8 @@ export interface AsyncPipe extends Function {
     operator4: AsyncOperator<C, AsyncIterable<D>>,
     operator5: AsyncOperator<D, R>,
   ): AsyncOperator<E, R>;
+
+  <R>(...operators: AsyncOperator[]): AsyncOperator<unknown, R>;
 }
 
 export const pipeAsync: AsyncPipe = function pipe(...operators: any[]): any {

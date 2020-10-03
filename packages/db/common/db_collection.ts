@@ -1,5 +1,4 @@
-import { AsyncCollection } from '@fiorite/core/collections/async_collection';
-import { AnyPredicate,  } from '@fiorite/core/functional_types';
+import { AnyPredicate, AsyncCollection } from '@fiorite/core';
 
 import { DbAdapter } from './db_adapter';
 import { DbQuery } from './db_query';
@@ -27,7 +26,7 @@ export class DbCollection<E> extends AsyncCollection<E> {
    * @param name Collection name
    */
   constructor(readonly adapter: DbAdapter, readonly name: string) {
-    super();
+    super(() => this.adapter.query(this.query));
   }
 
   insert(object: E) {
@@ -124,12 +123,5 @@ export class DbCollection<E> extends AsyncCollection<E> {
     this._take = count;
 
     return this;
-  }
-
-  /**
-   * @inheritDoc
-   */
-  [Symbol.asyncIterator](): AsyncIterator<E> {
-    return this.adapter.query(this.query);
   }
 }
