@@ -1,4 +1,4 @@
-import { Reducer, AsyncReducer, AsyncSelector, Selector } from '../types';
+import { AsyncReducer, AsyncSelector, Reducer, Selector } from './functional_types';
 
 export function reduceSync<E>(iterable: Iterable<E>, reducer: Reducer<E, E, [number]>): E;
 export function reduceSync<E, A>(iterable: Iterable<E>, reducer: Reducer<E, A, [number]>, seed: A): A;

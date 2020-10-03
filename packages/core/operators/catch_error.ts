@@ -1,24 +1,27 @@
-import { AnyIterable, AnySelector, AsyncSelector, Selector, Type } from '../types';
-import { AsyncOperator, Operator } from './operator';
-import { combine, CombinedOperator } from './combine';
-import { flatAsync, flatSync } from './flat';
+import { Type } from '../functional_types';
+import { AnyIterable, AnySelector, AsyncOperator, Operator, Selector } from './functional_types';
+import { flat, flatAsync } from './flat';
+import { isClass } from '../util';
 
-export function catchError<E>(selector: Selector<Error, E>): CombinedOperator<E, Iterable<E>, AsyncIterable<E>>;
-export function catchError<E>(selector: AsyncSelector<Error, E>): AsyncOperator<E, AsyncIterable<E>>;
-export function catchError<E, R extends Error>(errorType: Type<R>, selector: Selector<R, E>): CombinedOperator<E, Iterable<E>, AsyncIterable<E>>;
-export function catchError<E, R extends Error>(errorType: Type<R>, selector: AsyncSelector<Error, E>): AsyncOperator<E, AsyncIterable<E>>;
-export function catchError(...args: any): any {
-  return combine(() => (catchErrorSync as any)(...args), () => (catchErrorAsync as any)(...args));
-}
-
-
-export function catchErrorSync<E>(selector: Selector<Error, E | Iterable<E>>): Operator<E, Iterable<E>>;
-export function catchErrorSync<E, R extends Error>(errorType: Type<R>, selector: Selector<R, E | Iterable<E>>): Operator<E, Iterable<E>>;
-export function catchErrorSync<E>(...args: any[]) {
+export function catchError<E>(selector?: Selector<Error, E | Iterable<E>>): Operator<E, Iterable<E>>;
+export function catchError<E, TError = Error>(errorType: Type<TError>, selector?: Selector<TError, E | Iterable<E>>): Operator<E, Iterable<E>>;
+export function catchError<E>(...args: any[]) {
   let selector: Selector<Error, E | Iterable<E>>;
 
-  if (args.length === 1) {
-    selector = args[0];
+  if (args.length === 0) {
+    selector = () => [];
+  } else if (args.length === 1) {
+    if (isClass(args[0])) {
+      selector = error => {
+        if (error instanceof args[0]) {
+          return [];
+        }
+
+        throw error;
+      };
+    } else {
+      selector = args[0];
+    }
   } else if (args.length === 2) {
     selector = error => {
       if (error instanceof args[0]) {
@@ -43,19 +46,19 @@ export function catchErrorSync<E>(...args: any[]) {
         try {
           result = iterator.next();
         } catch(error) {
-          yield *flatSync()([selector(error)]);
+          yield *flat()([selector(error)]);
         }
       }
 
     } catch(error) {
-      yield *flatSync()([selector(error)]);
+      yield *flat()([selector(error)]);
     }
   };
 }
 
-export function catchErrorAsync<E>(selector: AnySelector<Error, E | AnyIterable<E>>): AsyncOperator<E, AsyncIterable<E>>;
+export function catchErrorAsync<E>(selector?: AnySelector<Error, E | AnyIterable<E>>): AsyncOperator<E, AsyncIterable<E>>;
 
-export function catchErrorAsync<E, R extends Error>(errorType: Type<R>, selector: AnySelector<R, E | AnyIterable<E>>): AsyncOperator<E, AsyncIterable<E>>;
+export function catchErrorAsync<E, R extends Error>(errorType: Type<R>, selector?: AnySelector<R, E | AnyIterable<E>>): AsyncOperator<E, AsyncIterable<E>>;
 
 export function catchErrorAsync<E>(...args: any[]) {
   let selector: AnySelector<Error, E | AnyIterable<E>>;

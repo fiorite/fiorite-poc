@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { isIterable } from '../../../packages/core/types';
+import { isIterable } from '../../../packages/core/functional_types';
 
 describe('isIterable()', () => {
   it('should test different values', () => {

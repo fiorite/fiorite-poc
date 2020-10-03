@@ -1,36 +1,26 @@
-import { combine } from './combine';
-import { isIterable } from '../util';
-
-export function flat() {
-  return combine(() => flatSync(), () => flatAsync());
-}
+import { getAnyIterator, getIterator, isAsyncIterable, isIterable } from './utilities';
+import { AnyIterable, AsyncOperator, Operator } from './functional_types';
 
 /**
  * TODO: Describe.
  *
  */
-export function flatSync() {
-  return function *<E>(iterable: Iterable<E>): Iterable<E extends Iterable<infer I> ? I : E> {
-    if (Array.isArray(iterable)) {
-      return iterable.flat();
-    }
-
-    const iterator = iterable[Symbol.iterator]();
+export function flat<E>(): Operator<E, Iterable<E extends Iterable<infer P> ? P : E>> {
+  return function* (iterable: Iterable<E>) {
+    const iterator = getIterator(iterable);
 
     let result = iterator.next();
 
     while (!result.done) {
-      const element = result.value as unknown as Iterable<unknown>;
+      const element = result.value;
 
-      if (null !== element && typeof element[Symbol.iterator] === 'function') {
-        const iterator2 = element[Symbol.iterator]();
-
+      if (isIterable(element)) {
+        const iterator2 = getIterator(element as any);
         let result2 = iterator2.next();
 
         while (!result2.done) {
           yield result2.value as any;
-
-          result2 = iterator2.next();
+          result2 = iterator2.next()
         }
       } else {
         yield result.value as any;
@@ -44,39 +34,25 @@ export function flatSync() {
 /**
  * TODO: Describe.
  */
-export function flatAsync<E>() {
-  return async function *(iterable: Iterable<E> | AsyncIterable<E>): AsyncIterable<E extends AsyncIterable<infer I> ? I : E> {
-    const iterator = isIterable(iterable) ?
-      (iterable as Iterable<E>)[Symbol.iterator]() :
-      (iterable as AsyncIterable<E>)[Symbol.asyncIterator]();
+export function flatAsync<E>(): AsyncOperator<E, AsyncIterable<E extends AnyIterable<infer P> ? P : E>> {
+  return async function* (iterable: AnyIterable<E>) {
+    const iterator = getAnyIterator(iterable);
 
     let result = await iterator.next();
 
     while (!result.done) {
-      const element = result.value as unknown;
+      const element = result.value;
 
-      if (null !== element && typeof (element as Iterable<unknown>)[Symbol.iterator] === 'function') {
-        const iterator2 = (element as Iterable<unknown>)[Symbol.iterator]();
-
-        let result2 = iterator2.next();
-
-        while (!result2.done) {
-          yield result2.value as any;
-
-          result2 = await iterator2.next();
-        }
-      } else if (null !== element && typeof (element as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function') {
-        const iterator2 = (element as AsyncIterable<unknown>)[Symbol.asyncIterator]();
-
+      if (isIterable(element) || isAsyncIterable(element)) {
+        const iterator2 = getAnyIterator(element as any);
         let result2 = await iterator2.next();
 
         while (!result2.done) {
           yield result2.value as any;
-
-          result2 = await iterator2.next();
+          result2 = await iterator2.next()
         }
       } else {
-        yield result.value as any;
+        yield result.value as E;
       }
 
       result = await iterator.next();

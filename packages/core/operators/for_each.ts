@@ -1,11 +1,6 @@
-import { AnyCallback, Callback } from '../types';
-import { combine } from './combine';
+import { AnyCallback, Callback } from '../functional_types';
 
 export function forEach<E>(callback: Callback<[E]>) {
-  return combine(() => forEachSync(callback), () => forEachAsync(callback));
-}
-
-export function forEachSync<E>(callback: Callback<[E]>) {
   return function(iterable: Iterable<E>): void {
     if (Array.isArray(iterable)) {
       return iterable.forEach(callback);
@@ -27,8 +22,10 @@ export function forEachAsync<E>(callback: AnyCallback<[E]>, sync = false) {
     const iterator = iterable[Symbol.asyncIterator]();
 
     if (!sync) {
+      const scoped = callback;
+
       callback = (element: E) => {
-        callback(element);
+        scoped(element);
       };
     }
 

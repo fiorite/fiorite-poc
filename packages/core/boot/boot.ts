@@ -1,4 +1,4 @@
-import { Type } from '../types';
+import { Type } from '../functional_types';
 import { isClass, isFunction, PromiseOr } from '../util';
 import { Injector, ProviderCollection, ProviderTuple } from '../injector';
 import { Startup } from './startup';

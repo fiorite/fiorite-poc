@@ -1,8 +1,8 @@
-import { Queue } from './index';
-import { Callback } from '../types';
+import { Queue } from './queue';
+import { Callback } from '../functional_types';
 import { InvalidOperationError } from '../errors';
 import { tryDispose } from '../disposition'
-import { mapSync } from '../operators';
+import { map } from '../operators';
 import { Listener } from '../listening';
 
 type PromiseExecutorTuple<E> = [Callback<[IteratorResult<E>]>, Callback<[Error]>];
@@ -33,7 +33,7 @@ export class CollectionIterator<E> extends Listener implements AsyncIterator<E> 
 
   async addAll(iterable: Iterable<E>): Promise<void> {
     await Promise.all(
-      mapSync<E, Promise<void>>(element => this.add(element))(iterable),
+      map<E, Promise<void>>(element => this.add(element))(iterable),
     );
   }
 

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { isAsyncIterable } from '../../../packages/core/types';
+import { isAsyncIterable } from '../../../packages/core/functional_types';
 
 describe('isAsyncIterable()', () => {
   it('should test different values', () => {

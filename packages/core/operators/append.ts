@@ -1,40 +1,20 @@
-import { combine, CombinedOperator } from './combine';
-import { AsyncOperator, Operator } from './operator';
-import { getAsyncIterator, getIterator } from '../util';
+import { AsyncOperator, Operator } from './functional_types';
+import { getAsyncIterator, getIterator } from './utilities';
 
 /**
  * Provides a new sequence of elements from iterable plus the specified elements appended at the end.
  *
  * @example ```typescript
  * import { append } from '@fiorite/core/operators';
- * import { Readable } from 'stream';
  *
  * const operator = append(4, 5, 6);
  *
  * operator([1, 2, 3]); // [Iterable [1, 2, 3, 4, 5, 6]]
- * operator(Readable.from([1, 2, 3])); // [AsyncIterable [1, 2, 3, 4, 5, 6]]
  * ```
  *
  * @param elements
  */
-export function append<E>(...elements: E[]): CombinedOperator<E> {
-  return combine(() => appendSync(...elements), () => appendAsync(...elements));
-}
-
-/**
- * Provides a new sequence of elements from iterable plus the specified elements appended at the end.
- *
- * @example ```typescript
- * import { appendSync } from '@fiorite/core/operators';
- *
- * const operator = appendSync(4, 5, 6);
- *
- * operator([1, 2, 3]); // [Iterable [1, 2, 3, 4, 5, 6]]
- * ```
- *
- * @param elements
- */
-export function appendSync<E>(...elements: E[]): Operator<E> {
+export function append<E>(...elements: E[]): Operator<E> {
   return function*(iterable: Iterable<E>) {
     const iterator = getIterator(iterable);
 

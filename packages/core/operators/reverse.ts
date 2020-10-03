@@ -1,36 +1,17 @@
-import { combine } from './combine';
-import { getAsyncIterator, getIterator } from '../util';
+import { getAsyncIterator, getIterator } from './utilities';
 
 /**
  * Inverts the order of the elements in a sequence.
  *
  * @example```typescript
  * import { reverse } from '@fiorite/core/operators';
- * import { Readable } from 'stream';
  *
  * const operator = reverse<number>();
- *
  * operator([1, 2, 3]); // [Iterable [3, 2, 1]]
- * operator(Readable.from([1, 2, 3])); // [AsyncIterable [3, 2, 1]]
  *
  * ```
  */
 export function reverse<E>() {
-  return combine<E>(() => reverseSync(), () => reverseAsync());
-}
-
-/**
- * Inverts the order of the elements in a sequence.
- *
- * @example```typescript
- * import { reverseSync } from '@fiorite/core/operators';
- *
- * const operator = reverseSync<number>();
- * operator([1, 2, 3]); // [Iterable [3, 2, 1]]
- *
- * ```
- */
-export function reverseSync<E>() {
   return function *(iterable: Iterable<E>): Iterable<E> {
     const iterator = getIterator(iterable);
     const buffer: E[] = [];

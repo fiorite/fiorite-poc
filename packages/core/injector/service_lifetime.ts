@@ -1,4 +1,4 @@
-import { Equatable } from '../types';
+import { Equatable } from '../functional_types';
 
 /**
  * Custom class instead of enum in order to increase overloading possibilities.

@@ -1,70 +1,18 @@
-import { AnyPredicate, AsyncPredicate, Predicate } from '../types';
-import { AsyncOperator, Operator } from './operator';
-import { combine, CombinedOperator } from './combine';
-import { getAsyncIterator, getIterator } from '../util';
-
-/**
- * Returns a combined operator that determines whether any element of a sequence satisfies a condition.
- *
- * @example```typescript
- * import { some } from '@fiorite/core/operators';
- * import { Readable } from 'stream';
- *
- * const operator1 = some();
- *
- * operator1([]); // false
- * operator1(Readable.from([])); // [Promise false]
- *
- * operator1([1, 2, 3]); // true
- * operator1(Readable.from([1, 2, 3])); // [Promise true]
- *
- * const operator2 = some(x => x === 2);
- *
- * operator2([1, 3]); // false
- * operator2(Readable.from([1, 3])); // [Promise false]
- *
- * operator2([1, 2, 3]); // true
- * operator2(Readable.from([1, 2, 3])); // [Promise true]
- * ```
- *
- * @param predicate default = () => true.
- */
-export function some<E>(predicate?: Predicate<[E]>): CombinedOperator<E, boolean, Promise<boolean>>;
-
-/**
- * Returns a combined operator that determines whether any element of an async sequence satisfies a condition.
- *
- * @example```typescript
- * import { some } from '@fiorite/core/operators';
- * import { Readable } from 'stream';
- *
- * const operator = some(x => Promise.resolve(x === 2));
- * operator(Readable.from([1, 2, 3])); // [Promise true]
- * ```
- *
- * @param predicate
- */
-export function some<E>(predicate: AsyncPredicate<[E]>): AsyncOperator<E, Promise<boolean>>;
-
-/**
- * @inheritDoc
- */
-export function some<E>(...args: any[]) {
-  return combine(() => someSync<E>(...args), () => someAsync<E>(...args));
-}
+import { AnyPredicate, AsyncOperator, Operator, Predicate } from './functional_types';
+import { getAsyncIterator, getIterator } from './utilities';
 
 /**
  * Returns an operator that determines whether any element of a sequence satisfies a condition.
  *
  * @example```typescript
- * import { someSync } from '@fiorite/core/operators';
+ * import { some } from '@fiorite/core/operators';
  *
- * const operator1 = someSync();
+ * const operator1 = some();
  *
  * operator1([]); // false
  * operator1([1, 2, 3]); // true
  *
- * const operator2 = someSync(x => x === 2);
+ * const operator2 = some(x => x === 2);
  *
  * operator2([1, 3]); // false
  * operator2([1, 2, 3]); // true
@@ -72,7 +20,7 @@ export function some<E>(...args: any[]) {
  *
  * @param predicate default = () => true.
  */
-export function someSync<E>(predicate: Predicate<[E]> = () => true): Operator<E, boolean> {
+export function some<E>(predicate: Predicate<E> = () => true): Operator<E, boolean> {
   return function (iterable: Iterable<E>) {
     if (Array.isArray(iterable)) {
       return iterable.some(predicate);
@@ -118,7 +66,7 @@ export function someSync<E>(predicate: Predicate<[E]> = () => true): Operator<E,
  *
  * @param predicate default = () => true.
  */
-export function someAsync<E>(predicate: AnyPredicate<[E]> = () => true): AsyncOperator<E, Promise<boolean>> {
+export function someAsync<E>(predicate: AnyPredicate<E> = () => true): AsyncOperator<E, Promise<boolean>> {
   return async function (iterable: AsyncIterable<E>) {
     const iterator = getAsyncIterator(iterable);
 

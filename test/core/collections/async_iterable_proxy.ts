@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { Getter, InvalidOperationError, NotImplementedError } from '../../../packages/core/types';
+import { Getter, InvalidOperationError, NotImplementedError } from '../../../packages/core/functional_types';
 import { AsyncIterableProxy, proxyAsyncIterable } from '../../../packages/core/collections';
 
 describe('AsyncIterableProxy/proxyAsyncIterable()', () => {

@@ -1,52 +1,12 @@
-import { AnyPredicate, AsyncPredicate, Predicate } from '../types';
-import { combine, CombinedOperator } from './combine';
-import { getAsyncIterator, getIterator } from '../util';
-import { AsyncOperator, Operator } from './operator';
+import { AnyPredicate, AsyncOperator, Operator, Predicate } from './functional_types';
+import { getAsyncIterator, getIterator } from './utilities';
+
 
 /**
  * Counts the number of elements in a sequence.
  *
  * @example ```typescript
  * import { count } from '@fiorite/core/operators';
- * import { Readable } from 'stream';
- *
- * count()([1, 2, 3]); // 3
- * count(x => x === 2)([1, 2, 3]); // 1
- *
- * count()(Readable.from([1, 2, 3])); // [Promise 3]
- * count(x => x === 2)(Readable.from([1, 2, 3])); // [Promise 1]
- * ```
- *
- * @param predicate
- */
-export function count<E>(predicate?: Predicate<[E]>): CombinedOperator<E, number, Promise<number>>;
-
-/**
- * Counts the number of elements in a sequence.
- *
- * @example ```typescript
- * import { count } from '@fiorite/core/operators';
- * import { Readable } from 'stream';
- *
- * count(async x => x === 2)(Readable.from([1, 2, 3])); // [Promise 1]
- * ```
- *
- * @param predicate
- */
-export function count<E>(predicate: AsyncPredicate<[E]>): AsyncOperator<E, Promise<number>>;
-
-/**
- * @inheritDoc
- */
-export function count<E>(...args: any[]) {
-  return combine(() => countSync(...args), () => countAsync(...args));
-}
-
-/**
- * Counts the number of elements in a sequence.
- *
- * @example ```typescript
- * import { countSync } from '@fiorite/core/operators';
  *
  * const sequence = [1, 2, 3];
  *
@@ -56,7 +16,7 @@ export function count<E>(...args: any[]) {
  *
  * @param predicate
  */
-export function countSync<E>(predicate: Predicate<[E]> = () => true): Operator<E, number> {
+export function count<E>(predicate: Predicate<E> = () => true): Operator<E, number> {
   return function (iterable: Iterable<E>): number {
     const iterator = getIterator(iterable);
 
@@ -89,7 +49,7 @@ export function countSync<E>(predicate: Predicate<[E]> = () => true): Operator<E
  *
  * @param predicate
  */
-export function countAsync<E>(predicate: AnyPredicate<[E]> = () => true): AsyncOperator<E, Promise<number>> {
+export function countAsync<E>(predicate: AnyPredicate<E> = () => true): AsyncOperator<E, Promise<number>> {
   return async function (iterable: AsyncIterable<E>) {
     const iterator = getAsyncIterator(iterable);
 

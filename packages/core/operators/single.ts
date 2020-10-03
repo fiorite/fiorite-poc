@@ -1,15 +1,6 @@
-import { AnyPredicate, Predicate } from '../types';
-import { InvalidOperationError } from '../errors';
-import { combine } from './combine';
-
-/**
- * Returns a single, specific element of a sequence or only element that specifies a predicate.
- *
- * @param args
- */
-export function single<E>(...args: [] | [Predicate<[E]>]) {
-  return combine(() => singleSync(...args), () => singleAsync(...args) as any);
-}
+import { AnyPredicate, Predicate } from './functional_types';
+import { InvalidOperationError } from './errors';
+import { getAsyncIterator, getIterator } from './utilities';
 
 /**
  * Returns a single, specific element of a sequence or only element that specifies a predicate.
@@ -18,11 +9,11 @@ export function single<E>(...args: [] | [Predicate<[E]>]) {
  *
  * @throws InvalidOperationError
  */
-export function singleSync<E>(predicate: Predicate<[E]> = () => true) {
+export function single<E>(predicate: Predicate<E> = () => true) {
   let predicated = arguments.length > 0;
 
   return function (iterable: Iterable<E>): E {
-    const iterator = iterable[Symbol.iterator]();
+    const iterator = getIterator(iterable);
 
     let result = iterator.next();
     let element: E;
@@ -62,11 +53,11 @@ export function singleSync<E>(predicate: Predicate<[E]> = () => true) {
  *
  * @throws InvalidOperationError
  */
-export function singleAsync<E>(predicate: AnyPredicate<[E]> = () => true) {
+export function singleAsync<E>(predicate: AnyPredicate<E> = () => true) {
   const predicated = arguments.length > 0;
 
   return async function (iterable: AsyncIterable<E>): Promise<E> {
-    const iterator = iterable[Symbol.asyncIterator]();
+    const iterator = getAsyncIterator(iterable);
 
     let result = await iterator.next();
     let element: E;

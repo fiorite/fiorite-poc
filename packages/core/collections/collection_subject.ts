@@ -1,6 +1,6 @@
 import { AsyncCollection } from './async_collection';
 import { Closeable } from '../listening';
-import { forEachSync } from '../operators';
+import { forEach } from '../operators';
 import { proxyAsyncIterable } from '../util';
 import { CollectionIterator } from './collection_iterator';
 
@@ -40,7 +40,7 @@ export class CollectionSubject<E = unknown> extends AsyncCollection<E> implement
   }
 
   addAll(iterable: Iterable<E>): this {
-    forEachSync<E>(element => this.add(element))(iterable);
+    forEach<E>(element => this.add(element))(iterable);
 
     return this;
   }

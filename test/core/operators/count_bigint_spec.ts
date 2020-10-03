@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 
-import { countBigInt, countBigIntAsync, countBigIntSync, pipe, toAsync } from '@fiorite/core/operators';
+import { countBigInt, countBigIntAsync, createAsyncIterable, pipe, pipeAsync } from '@fiorite/core/operators';
 
-describe('countBigIntSync(), countBigIntAsync(), countBigInt()', () => {
-  describe('countBigIntSync()', () => {
+describe('countBigInt() / countBigIntAsync()', () => {
+  describe('countBigInt()', () => {
     it('should countBigInt without predicate', () => {
       expect(
         pipe(
-          countBigIntSync(),
+          countBigInt(),
         )([1, 2, 3]),
       ).equals(BigInt(3));
     });
@@ -15,7 +15,7 @@ describe('countBigIntSync(), countBigIntAsync(), countBigInt()', () => {
     it('should countBigInt with predicate', () => {
       expect(
         pipe(
-          countBigIntSync(x => x === 2),
+          countBigInt(x => x === 2),
         )([1, 2, 3]),
       ).equals(BigInt(1));
     });
@@ -24,69 +24,25 @@ describe('countBigIntSync(), countBigIntAsync(), countBigInt()', () => {
   describe('countBigIntAsync()', () => {
     it('should countBigInt without predicate', async () => {
       expect(
-        await pipe(
-          toAsync(),
+        await pipeAsync(
           countBigIntAsync(),
-        )([1, 2, 3]),
+        )(createAsyncIterable([1, 2, 3])),
       ).equals(BigInt(3));
     });
 ``
     it('should countBigInt with predicate', async () => {
       expect(
-        await pipe(
-          toAsync(),
+        await pipeAsync(
           countBigIntAsync(x => x === 2),
-        )([1, 2, 3]),
+        )(createAsyncIterable([1, 2, 3])),
       ).equals(BigInt(1));
     });
 
     it('should countBigInt with async predicate', async () => {
       expect(
-        await pipe(
-          toAsync(),
+        await pipeAsync(
           countBigIntAsync(async x => x === 2),
-        )([1, 2, 3]),
-      ).equals(BigInt(1));
-    });
-  });
-
-  describe('countBigInt()', () => {
-    it('should countBigInt without predicate', async () => {
-      expect(
-        pipe(
-          countBigInt(),
-        )([1, 2, 3]),
-      ).equals(BigInt(3));
-
-      expect(
-        await pipe(
-          toAsync(),
-          countBigInt(),
-        )([1, 2, 3]),
-      ).equals(BigInt(3));
-    });
-
-    it('should countBigInt with predicate', async () => {
-      expect(
-        pipe(
-          countBigInt(x => x === 2),
-        )([1, 2, 3]),
-      ).equals(BigInt(1));
-
-      expect(
-        await pipe(
-          toAsync(),
-          countBigInt(x => x === 2),
-        )([1, 2, 3]),
-      ).equals(BigInt(1));
-    });
-
-    it('should countBigInt with async predicate', async () => {
-      expect(
-        await pipe(
-          toAsync(),
-          countBigInt(async x => x === 2),
-        )([1, 2, 3]),
+        )(createAsyncIterable([1, 2, 3])),
       ).equals(BigInt(1));
     });
   });

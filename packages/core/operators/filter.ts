@@ -1,35 +1,12 @@
-import { AnyPredicate, AsyncPredicate, Predicate } from '../types';
-import { combine, CombinedOperator } from './combine';
-import { getAsyncIterator, getIterator } from '../util';
-import { AsyncOperator } from './operator';
+import { AnyPredicate, AsyncOperator, Operator, Predicate } from './functional_types';
+import { getAsyncIterator, getIterator } from './utilities';
 
 /**
  * Filters sequence based on predicate.
  *
  * @param predicate
  */
-export function filter<E>(predicate: Predicate<[E]>): CombinedOperator<E>;
-
-/**
- * Filters sequence based on predicate.
- *
- * @param predicate
- */
-export function filter<E>(predicate: AsyncPredicate<[E]>): AsyncOperator<E>;
-
-/**
- * @inheritDoc
- */
-export function filter<E>(predicate: any) {
-  return combine(() => filterSync(predicate), () => filterAsync(predicate));
-}
-
-/**
- * Filters sequence based on predicate.
- *
- * @param predicate
- */
-export function filterSync<E>(predicate: Predicate<[E]>) {
+export function filter<E>(predicate: Predicate<E>): Operator<E> {
   return function *(iterable: Iterable<E>): Iterable<E> {
     const iterator = getIterator(iterable);
 
@@ -50,7 +27,7 @@ export function filterSync<E>(predicate: Predicate<[E]>) {
  *
  * @param predicate
  */
-export function filterAsync<E>(predicate: AnyPredicate<[E]>): AsyncOperator<E> {
+export function filterAsync<E>(predicate: AnyPredicate<E>): AsyncOperator<E> {
   return async function *(iterable: AsyncIterable<E>) {
     const iterator = getAsyncIterator(iterable);
 

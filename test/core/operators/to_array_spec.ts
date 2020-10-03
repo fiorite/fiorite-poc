@@ -1,33 +1,29 @@
 import { expect } from 'chai';
-import { Readable } from 'stream';
 
-import { toArray, toArrayAsync } from '../../../packages/core/operators';
+import { createAsyncIterable, pipe, pipeAsync, toArray, toArrayAsync } from '@fiorite/core/operators';
 
-describe('toArray()', () => {
-  it('should convert Array to Array', () => {
-    const sequence = [1, 2, 3];
+describe('toArray() / toArrayAsync()', () => {
+  describe('toArray()', () => {
+    it('should convert iterable to array', () => {
+      const sequence = [1, 2 ,3];
 
-    const array = toArray()(sequence);
+      const buffer = pipe(
+        toArray(),
+      )(sequence);
 
-    expect(array).not.equals(sequence);
-    expect(array).members(sequence);
+      expect(buffer).members(sequence);
+    });
   });
 
-  it('should convert Set to Array', () => {
-    const sequence = [1, 2, 3];
-    const set = new Set(sequence);
+  describe('toArrayAsync()', () => {
+    it('should convert iterable to array', async () => {
+      const sequence = [1, 2 ,3];
 
-    const array = toArray()(set);
-    expect(array).members(sequence);
-  });
-});
+      const buffer = await pipeAsync(
+        toArrayAsync(),
+      )(createAsyncIterable(sequence));
 
-describe('toArrayAsync()', () => {
-  it('should convert Stream to Array', async () => {
-    const sequence = [1, 2, 3];
-    const steam = Readable.from(sequence);
-
-    const array = await toArrayAsync<number>()(steam);
-    expect(array).members(sequence);
+      expect(buffer).members(sequence);
+    });
   });
 });

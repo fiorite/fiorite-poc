@@ -1,4 +1,4 @@
-import { Callback } from '../types';
+import { Callback } from '../functional_types';
 
 export class PromiseQueue implements PromiseLike<void> {
   private _promises = new Set<Promise<unknown>>();

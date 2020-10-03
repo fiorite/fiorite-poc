@@ -1,5 +1,5 @@
 import { HashMap } from '../collections';
-import { Type } from '../types';
+import { Type } from '../functional_types';
 import { ServiceLifetime } from './service_lifetime';
 
 export const providerRegistry = new HashMap<Type, ServiceLifetime>();

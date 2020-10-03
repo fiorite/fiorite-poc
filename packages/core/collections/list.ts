@@ -1,5 +1,5 @@
 import { CollectionBuffer } from './collection_buffer';
-import { forEachSync } from '../operators';
+import { forEach } from '../operators';
 import { EqualityComparer, equals, Equatable } from '../equality';
 
 export class List<E> extends CollectionBuffer<E> implements Equatable {
@@ -15,7 +15,7 @@ export class List<E> extends CollectionBuffer<E> implements Equatable {
   }
 
   addAll(iterable: Iterable<E>): this {
-    forEachSync<E>(element => this.add(element))(iterable);
+    forEach<E>(element => this.add(element))(iterable);
 
     return this;
   }
@@ -27,7 +27,7 @@ export class List<E> extends CollectionBuffer<E> implements Equatable {
   }
 
   insertAll(index: number, iterable: Iterable<E>): this {
-    forEachSync<E>(element => this.insert(index++, element))(iterable);
+    forEach<E>(element => this.insert(index++, element))(iterable);
 
     return this;
   }
@@ -67,7 +67,7 @@ export class List<E> extends CollectionBuffer<E> implements Equatable {
   }
 
   deleteAll(iterable: Iterable<E>): this {
-    forEachSync<E>(element => this.delete(element))(iterable);
+    forEach<E>(element => this.delete(element))(iterable);
 
     return this;
   }

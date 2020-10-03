@@ -1,6 +1,6 @@
 import { EqualityComparer, equals } from '../equality';
 import { CollectionBuffer } from './collection_buffer';
-import { forEachSync, InvalidOperationError } from '../operators';
+import { forEach, InvalidOperationError } from '../operators';
 
 export class Stack<E> extends CollectionBuffer<E> {
   /**
@@ -38,7 +38,7 @@ export class Stack<E> extends CollectionBuffer<E> {
    * @param iterable
    */
   pushAll(iterable: Iterable<E>): this {
-    forEachSync<E>(element => this.push(element))(iterable);
+    forEach<E>(element => this.push(element))(iterable);
 
     return this;
   }

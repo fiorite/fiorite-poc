@@ -1,8 +1,7 @@
 import { Collection } from './collection';
-import { Selector } from '../types';
 import { InvalidOperationError } from '../errors';
-import { EqualityComparer } from '../equality';
-import { forEachSync } from '../operators';
+import { EqualityComparer, equals } from '../equality';
+import { Selector, forEach } from '../operators';
 import { CollectionBuffer } from './collection_buffer';
 
 export class HashMapError<K> extends InvalidOperationError {
@@ -59,7 +58,7 @@ export class HashMap<K, V> extends CollectionBuffer<[K, V]> {
   /**
    * @inheritDoc
    */
-  static from<E, K, V>(iterable: Iterable<E>, key: Selector<E, K>, value: Selector<E, V> = x => x as unknown as V, keyComparer: EqualityComparer<K> = EqualityComparer.DEFAULT): HashMap<K, V> {
+  static from<E, K, V>(iterable: Iterable<E>, key: Selector<E, K>, value: Selector<E, V> = x => x as unknown as V, keyComparer: EqualityComparer<K> = equals): HashMap<K, V> {
     const buffer: [K, V][] = Array.from(iterable).map(e => [key(e), value(e)]);
 
     return new HashMap<K, V>(buffer, keyComparer);
@@ -71,7 +70,7 @@ export class HashMap<K, V> extends CollectionBuffer<[K, V]> {
    * @param source
    * @param keyComparer
    */
-  static proxy<K, V>(source: [K, V][], keyComparer: EqualityComparer<K> = EqualityComparer.DEFAULT): HashMap<K, V> {
+  static proxy<K, V>(source: [K, V][], keyComparer: EqualityComparer<K> = equals): HashMap<K, V> {
     const instance = new HashMap<K, V>([], keyComparer);
 
     instance.buffer = source;
@@ -84,8 +83,8 @@ export class HashMap<K, V> extends CollectionBuffer<[K, V]> {
    *
    * @param iterable
    */
-  constructor(iterable: Iterable<[K, V]> = [], public keyComparer: EqualityComparer<K> = EqualityComparer.DEFAULT) {
-    super(EqualityComparer.select(x => x[0], keyComparer));
+  constructor(iterable: Iterable<[K, V]> = [], public keyComparer: EqualityComparer<K> = equals) {
+    super((x, y) => this.keyComparer(x[0], y[0]));
     this.addAll(iterable);
   }
 
@@ -131,7 +130,7 @@ export class HashMap<K, V> extends CollectionBuffer<[K, V]> {
    * @throws HashMapError An entry with the same key already exists.
    */
   addAll(iterable: Iterable<[K, V]>): this {
-    forEachSync<[K, V]>(([key, value]) => this.add(key, value))(iterable);
+    forEach<[K, V]>(([key, value]) => this.add(key, value))(iterable);
 
     return this;
   }
@@ -180,7 +179,7 @@ export class HashMap<K, V> extends CollectionBuffer<[K, V]> {
    * @param iterable
    */
   setAll(iterable: Iterable<[K, V]>): this {
-    forEachSync<[K, V]>(([key, value]) => this.set(key, value))(iterable);
+    forEach<[K, V]>(([key, value]) => this.set(key, value))(iterable);
 
     return this;
   }
@@ -257,7 +256,7 @@ export class HashMap<K, V> extends CollectionBuffer<[K, V]> {
   /**
    * Clones instance and internal buffer.
    */
-  [Symbol.clone](): HashMap<K, V> {
+  [Symbol.clone](): this {
     const clone = Object.create(this) as this;
 
     clone.buffer = this.buffer.slice();

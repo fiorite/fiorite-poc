@@ -1,13 +1,21 @@
 import { expect } from 'chai';
 
-import { pipe, sequenceEqual, take, takeAsync, takeSync, toAsync } from '@fiorite/core/operators';
+import {
+  createAsyncIterable,
+  pipe,
+  pipeAsync,
+  sequenceEqual,
+  sequenceEqualAsync,
+  take,
+  takeAsync
+} from '@fiorite/core/operators';
 
-describe('takeSync(), takeAsync(), take()', () => {
-  describe('takeSync()', () => {
+describe('take() / takeAsync()', () => {
+  describe('take()', () => {
     it('should take 2 elements', () => {
       expect(
         pipe(
-          takeSync<number>(2),
+          take<number>(2),
           sequenceEqual([1, 2]),
         )([1, 2, 3]),
       ).equals(true);
@@ -17,30 +25,10 @@ describe('takeSync(), takeAsync(), take()', () => {
   describe('takeAsync()', () => {
     it('should take 2 elements', async () => {
       expect(
-        await pipe(
-          toAsync<number>(),
+        await pipeAsync(
           takeAsync<number>(2),
-          sequenceEqual([1, 2]),
-        )([1, 2, 3]),
-      ).equals(true);
-    });
-  });
-
-  describe('take()', () => {
-    it('should take 2 elements', async () => {
-      expect(
-        pipe(
-          take<number>(2),
-          sequenceEqual([1, 2]),
-        )([1, 2, 3]),
-      ).equals(true);
-
-      expect(
-        await pipe(
-          toAsync<number>(),
-          take<number>(2),
-          sequenceEqual([1, 2]),
-        )([1, 2, 3]),
+          sequenceEqualAsync([1, 2]),
+        )(createAsyncIterable([1, 2, 3])),
       ).equals(true);
     });
   });

@@ -1,7 +1,10 @@
 import './global';
 
+export * from './utilities';
+
 export { Collection } from './collection';
 export { AsyncCollection } from './async_collection';
+export { AnyCollection } from './any_collection';
 
 export { collect } from './collect';
 
@@ -14,8 +17,8 @@ export { HashSet, hashSet } from './hash_set';
 export { Stack } from './stack';
 
 export { Queue } from './queue';
-
-export { AsyncIterableProxy, proxyAsyncIterable } from '../util/async_iterable_proxy';
-export { IterableProxy, proxyIterable } from '../util/iterable_proxy';
-
 export { List, list } from './list';
+
+export * from '../operators/utilities';
+export * from '../operators/errors';
+export * from '../operators/functional_types';

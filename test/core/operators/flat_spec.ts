@@ -1,35 +1,42 @@
 import { expect } from 'chai';
-import { Readable } from 'stream';
 
-import { flatSync, flatAsync, toArray, toArrayAsync } from '../../../packages/core/operators';
+import {
+  createAsyncIterable,
+  flat,
+  flatAsync,
+  pipe,
+  pipeAsync,
+  sequenceEqual,
+  sequenceEqualAsync
+} from '@fiorite/core/operators';
 
-describe('flat()', () => {
-  it('should return [1, 2, 3] on Array [[1], [2], 3]', () => {
-    const sequence = new Set([[1], [2], 3]);
-    const expected = [1, 2, 3];
+describe('flat() / flatAsync()', () => {
+  describe('flat()', () => {
+    it('should return [1, 2, 3] on Array [[1], [2], 3]', () => {
+      const sequence = [[1], [2], 3];
+      const expected = [1, 2, 3];
 
-    const result = toArray()(flatSync()(sequence));
-
-    expect(result).members(expected);
+      expect(
+        pipe(
+          flat<number>(),
+          sequenceEqual(expected),
+        )(sequence),
+      ).equals(true);
+    });
   });
 
-  it('should return [1, 2, 3] on Set [[1], [2], 3]', () => {
-    const sequence = new Set([[1], [2], 3]);
-    const expected = [1, 2, 3];
+  describe('flatAsync()', () => {
+    it('should return [1, 2, 3] on Stream [Stream [1], [2], 3]', async () => {
+      const sequence = [[1], [2], 3];
+      const expected = [1, 2, 3];
 
-    const result = toArray()(flatSync()(sequence));
-
-    expect(result).members(expected);
+      expect(
+        await pipeAsync(
+          flatAsync<number>(),
+          sequenceEqualAsync(expected),
+        )(createAsyncIterable(sequence)),
+      ).equals(true);
+    });
   });
-});
 
-describe('flatAsync()', () => {
-  it('should return [1, 2, 3] on Stream [Stream [1], [2], 3]', async () => {
-    const sequence = Readable.from([Readable.from([1]), [2], 3]);
-    const expected = [1, 2, 3];
-
-    const result = await toArrayAsync()(flatAsync()(sequence));
-
-    expect(result).members(expected);
-  });
 });

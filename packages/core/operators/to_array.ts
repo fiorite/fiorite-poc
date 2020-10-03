@@ -1,9 +1,5 @@
-import { combine, CombinedOperator } from './combine';
-import { AsyncOperator, Operator } from './operator';
-
-export function toArray<E>(): CombinedOperator<E, E[], Promise<E[]>> {
-  return combine(() => toArraySync(), () => toArrayAsync());
-}
+import { AsyncOperator, Operator } from './functional_types';
+import { getAsyncIterator, getIterator } from './utilities';
 
 /**
  * Returns an operator that creates an {@link Array} from a sequence.
@@ -11,9 +7,9 @@ export function toArray<E>(): CombinedOperator<E, E[], Promise<E[]>> {
  * @example ```
  * ```
  */
-export function toArraySync<E>(): Operator<E, E[]> {
+export function toArray<E>(): Operator<E, E[]> {
   return function (iterable: Iterable<E>) {
-    const iterator = iterable[Symbol.iterator]();
+    const iterator = getIterator(iterable);
 
     const buffer: E[] = [];
     let result = iterator.next();
@@ -32,7 +28,7 @@ export function toArraySync<E>(): Operator<E, E[]> {
  */
 export function toArrayAsync<E>(): AsyncOperator<E, Promise<E[]>> {
   return async function (iterable: AsyncIterable<E>) {
-    const iterator = iterable[Symbol.asyncIterator]();
+    const iterator = getAsyncIterator(iterable);
 
     const buffer: E[] = [];
     let result = await iterator.next();

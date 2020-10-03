@@ -1,23 +1,31 @@
-import { elementAt, elementAtAsync, elementAtSync, InvalidOperationError, pipe, toAsync } from '@fiorite/core/operators';
 import { expect } from 'chai';
 
-describe('elementAtSync() / elementAtAsync() / elementAt()', () => {
-  describe('elementAtSync()', () => {
+import {
+  createAsyncIterable,
+  elementAt,
+  elementAtAsync,
+  InvalidOperationError,
+  pipe,
+  pipeAsync
+} from '@fiorite/core/operators';
+
+describe('elementAt() / elementAtAsync()', () => {
+  describe('elementAt()', () => {
     it('should throw error when index < 0', () => {
-      expect(() => elementAtSync(-1)).throw(InvalidOperationError);
+      expect(() => elementAt(-1)).throw(InvalidOperationError);
     });
 
     it('should take element at 0 index', () => {
       expect(
         pipe(
-          elementAtSync(0),
+          elementAt(0),
         )([1])
       ).equals(1);
     });
 
     it('should throw error when element is out of range', () => {
       expect(() => {
-        elementAtSync(1)([1]);
+        elementAt(1)([1]);
       }).throw(InvalidOperationError);
     });
   });
@@ -29,53 +37,17 @@ describe('elementAtSync() / elementAtAsync() / elementAt()', () => {
 
     it('should take element at 0 index', async () => {
       expect(
-        await pipe(
-          toAsync(),
+        await pipeAsync(
           elementAtAsync(0)
-        )([1])
+        )(createAsyncIterable([1])),
       ).equals(1);
     });
 
     it('should throw error when element is out of range', async () => {
       try {
-        await pipe(
-          toAsync(),
+        await pipeAsync(
           elementAtAsync(1)
-        )([1]);
-
-        expect.fail();
-      } catch (e) {
-        expect(e).instanceOf(InvalidOperationError);
-      }
-    });
-  });
-
-  describe('elementAt()', () => {
-    it('should throw error when index < 0', () => {
-      expect(() => elementAt(-1)).throw(InvalidOperationError);
-    });
-
-    it('should take element at 0 index', async () => {
-      expect(elementAt(0)([1])).equals(1);
-
-      expect(
-        await pipe(
-          toAsync(),
-          elementAt(0)
-        )([1])
-      ).equals(1);
-    });
-
-    it('should throw error when element is out of range', async () => {
-      expect(() => {
-        elementAtSync(1)([1]);
-      }).throw(InvalidOperationError);
-
-      try {
-        await pipe(
-          toAsync(),
-          elementAt(1)
-        )([1])
+        )(createAsyncIterable([1]));
 
         expect.fail();
       } catch (e) {

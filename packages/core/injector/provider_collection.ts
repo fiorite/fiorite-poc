@@ -1,5 +1,5 @@
-import { Cloneable, Disposable, Instance, InvalidOperationError, tryDispose, Type } from '../types';
-import { forEachSync } from '../operators';
+import { Cloneable, Disposable, Instance, InvalidOperationError, tryDispose, Type } from '../functional_types';
+import { forEach } from '../operators';
 import { Collection, proxyIterable } from '../collections';
 import { ServiceKey } from './service_key';
 import { ServiceLifetime } from './service_lifetime';
@@ -92,7 +92,7 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
   }
 
   addAll(iterable: Iterable<Provider | ProviderTuple | Type | object>): this {
-    forEachSync(element => this.add(element as any))(iterable);
+    forEach(element => this.add(element as any))(iterable);
 
     return this;
   }
@@ -116,7 +116,7 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
   }
 
   addAllSingleton(iterable: Iterable<SingletonTuple | Type>): this {
-    forEachSync(element => this.addSingleton(element as any))(iterable);
+    forEach(element => this.addSingleton(element as any))(iterable);
 
     return this;
   }
@@ -138,7 +138,7 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
   }
 
   addAllScoped(iterable: Iterable<Type | ScopedTuple>): this {
-    forEachSync<Type | ScopedTuple>(element => this.addScoped(element as any))(iterable); // TODO: Make it compatible.
+    forEach<Type | ScopedTuple>(element => this.addScoped(element as any))(iterable); // TODO: Make it compatible.
 
     return this;
   }
@@ -160,7 +160,7 @@ export class ProviderCollection extends Collection<Provider> implements Cloneabl
   }
 
   addAllTransient(iterable: Iterable<Type | TransientTuple>): this {
-    forEachSync(element => this.addTransient(element as any))(iterable); // TODO: Make it compatible.
+    forEach(element => this.addTransient(element as any))(iterable); // TODO: Make it compatible.
 
     return this;
   }

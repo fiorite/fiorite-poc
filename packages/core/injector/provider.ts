@@ -14,7 +14,7 @@ import {
   NotImplementedError,
   tryDispose,
   Type
-} from '../types';
+} from '../functional_types';
 import { ServiceFactory } from './service_factory';
 
 /**

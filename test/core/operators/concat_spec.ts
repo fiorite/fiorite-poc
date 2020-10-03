@@ -1,13 +1,21 @@
 import { expect } from 'chai';
 
-import { concat, concatAsync, concatSync, pipe, sequenceEqual, toAsync } from '@fiorite/core/operators';
+import {
+  concat,
+  concatAsync,
+  createAsyncIterable,
+  pipe,
+  pipeAsync,
+  sequenceEqual,
+  sequenceEqualAsync
+} from '@fiorite/core/operators';
 
-describe('concatSync(), concatAsync(), concat()', () => {
-  describe('concatSync()', () => {
+describe('concat() / concatAsync()', () => {
+  describe('concat()', () => {
     it('should concatenate with 2 sequences', () => {
       expect(
         pipe(
-          concatSync([4, 5, 6], [7, 8, 9]),
+          concat([4, 5, 6], [7, 8, 9]),
           sequenceEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]),
         )([1, 2, 3]),
       ).equals(true);
@@ -17,30 +25,10 @@ describe('concatSync(), concatAsync(), concat()', () => {
   describe('concatAsync()', () => {
     it('should concatenate with 2 sequences', async () => {
       expect(
-        await pipe(
-          toAsync<number>(),
+        await pipeAsync(
           concatAsync([4, 5, 6], [7, 8, 9]),
-          sequenceEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]),
-        )([1, 2, 3]),
-      ).equals(true);
-    });
-  });
-
-  describe('concat()', () => {
-    it('should concatenate with 2 sequences', async () => {
-      expect(
-        pipe(
-          concat([4, 5, 6], [7, 8, 9]),
-          sequenceEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]),
-        )([1, 2, 3]),
-      ).equals(true);
-
-      expect(
-        await pipe(
-          toAsync<number>(),
-          concat([4, 5, 6], toAsync<number>()([7, 8, 9])),
-          sequenceEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]),
-        )([1, 2, 3]),
+          sequenceEqualAsync([1, 2, 3, 4, 5, 6, 7, 8, 9]),
+        )(createAsyncIterable([1, 2, 3])),
       ).equals(true);
     });
   });

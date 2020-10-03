@@ -1,5 +1,5 @@
-import { AsyncOperator } from './operator';
-import { getAsyncIterator } from '../util';
+import { AsyncOperator } from './functional_types';
+import { getAsyncIterator } from './utilities';
 
 /**
  * Converts async sequence to sync.

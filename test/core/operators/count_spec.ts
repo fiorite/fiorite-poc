@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 
-import { count, countAsync, countSync, pipe, toAsync } from '@fiorite/core/operators';
+import { count, countAsync, createAsyncIterable, pipe, pipeAsync } from '@fiorite/core/operators';
 
-describe('countSync(), countAsync(), count()', () => {
-  describe('countSync()', () => {
+describe('count() / countAsync()', () => {
+  describe('count()', () => {
     it('should count without predicate', () => {
       expect(
         pipe(
-          countSync(),
+          count(),
         )([1, 2, 3]),
       ).equals(3);
     });
@@ -15,7 +15,7 @@ describe('countSync(), countAsync(), count()', () => {
     it('should count with predicate', () => {
       expect(
         pipe(
-          countSync(x => x === 2),
+          count(x => x === 2),
         )([1, 2, 3]),
       ).equals(1);
     });
@@ -24,69 +24,25 @@ describe('countSync(), countAsync(), count()', () => {
   describe('countAsync()', () => {
     it('should count without predicate', async () => {
       expect(
-        await pipe(
-          toAsync(),
+        await pipeAsync(
           countAsync(),
-        )([1, 2, 3]),
+        )(createAsyncIterable([1, 2, 3])),
       ).equals(3);
     });
 
     it('should count with predicate', async () => {
       expect(
-        await pipe(
-          toAsync(),
+        await pipeAsync(
           countAsync(x => x === 2),
-        )([1, 2, 3]),
+        )(createAsyncIterable([1, 2, 3])),
       ).equals(1);
     });
 
     it('should count with async predicate', async () => {
       expect(
-        await pipe(
-          toAsync(),
+        await pipeAsync(
           countAsync(async x => x === 2),
-        )([1, 2, 3]),
-      ).equals(1);
-    });
-  });
-
-  describe('count()', () => {
-    it('should count without predicate', async () => {
-      expect(
-        pipe(
-          count(),
-        )([1, 2, 3]),
-      ).equals(3);
-
-      expect(
-        await pipe(
-          toAsync(),
-          count(),
-        )([1, 2, 3]),
-      ).equals(3);
-    });
-
-    it('should count with predicate', async () => {
-      expect(
-        pipe(
-          count(x => x === 2),
-        )([1, 2, 3]),
-      ).equals(1);
-
-      expect(
-        await pipe(
-          toAsync(),
-          count(x => x === 2),
-        )([1, 2, 3]),
-      ).equals(1);
-    });
-
-    it('should count with async predicate', async () => {
-      expect(
-        await pipe(
-          toAsync(),
-          count(async x => x === 2),
-        )([1, 2, 3]),
+        )(createAsyncIterable([1, 2, 3])),
       ).equals(1);
     });
   });

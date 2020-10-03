@@ -1,38 +1,12 @@
-import { AsyncOperator, Operator } from './operator';
+import { AsyncOperator, Operator } from './functional_types';
 import { InvalidOperationError } from './errors';
-import { getAsyncIterator, getIterator } from '../util';
-import { combine } from './combine';
+import { getAsyncIterator, getIterator } from './utilities';
 
 /**
  * Returns the element at a specified index in a sequence.
  *
  * @example ```typescript
  * import { elementAt } from '@fiorite/core/operators';
- * import { Readable } from 'stream';
- *
- * const operator = elementAt(0);
- *
- * operator([1]); // 1
- * operator(Readable.from([1])); // [Promise 1]
- * ```
- *
- * @param index
- *
- * @throws {@link OperationFailedError} Index < 0.
- */
-export function elementAt<E>(index: number) {
-  if (index < 0) {
-    throw new InvalidOperationError('Index ought to be >= 0.');
-  }
-
-  return combine(() => elementAtSync<E>(index), () => elementAtAsync<E>(index));
-}
-
-/**
- * Returns the element at a specified index in a sequence.
- *
- * @example ```typescript
- * import { elementAtSync } from '@fiorite/core/operators';
  *
  * elementAtSync(0)([1]); // 1
  * ```
@@ -41,7 +15,7 @@ export function elementAt<E>(index: number) {
  *
  * @throws {@link OperationFailedError} Index < 0.
  */
-export function elementAtSync<E>(index: number): Operator<E, E> {
+export function elementAt<E>(index: number): Operator<E, E> {
   if (index < 0) {
     throw new InvalidOperationError('Index ought to be >= 0.');
   }

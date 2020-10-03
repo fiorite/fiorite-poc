@@ -1,4 +1,4 @@
-import type { Type } from '../types';
+import type { Type } from '../functional_types';
 import type { ProviderCollection, ProviderTuple } from '../di';
 
 export interface Module {

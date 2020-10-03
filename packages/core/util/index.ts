@@ -1,11 +1,6 @@
-export { getAnyIterator } from './get_any_iterator';
-export { getAsyncIterator } from './get_async_iterator';
-export { getIterator } from './get_iterator';
-export { isAsyncIterable } from './is_async_iterable';
 export { isClass } from './is_class';
 export { isFunction } from './is_function';
 export { isInstance } from './is_instance';
-export { isIterable } from './is_iterable';
 export { isMethod } from './is_method';
 export { isNull } from './is_null';
 export { isNullOrUndefined } from './is_null_or_undefined';

@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import { Equatable, InvalidOperationError, Selector } from '../types';
+import { Equatable, InvalidOperationError, Selector } from '../functional_types';
 import { ServiceKey } from './service_key';
 import { Collection, HashMap } from '../collections';
 import { ServiceFactory } from './service_factory';

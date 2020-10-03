@@ -1,4 +1,4 @@
-import type { Module } from '../types';
+import type { Module } from '../functional_types';
 import type { Injector } from '../di';
 
 export interface Startup extends Module {

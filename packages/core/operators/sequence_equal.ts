@@ -1,19 +1,11 @@
-import { AsyncOperator, Operator } from './operator';
-import { isIterable } from '../util';
 import { EqualityComparer, equals } from '../equality';
-import { combine, CombinedOperator } from './combine';
+import { AsyncOperator, Operator } from './functional_types';
+import { getAnyIterator, getAsyncIterator, getIterator } from './utilities';
 
-export function sequenceEqual<E>(other: Iterable<E>, comparer?: EqualityComparer<E>): CombinedOperator<E, boolean, Promise<boolean>>;
-export function sequenceEqual<E>(other: AsyncIterable<E>, comparer?: EqualityComparer<E>): AsyncOperator<E, Promise<boolean>>;
-export function sequenceEqual<E>(...args: any[]): any {
-  // TODO: Make it compatible..
-  return combine(() => (sequenceEqualSync as any)(...args), () => (sequenceEqualAsync as any)(...args));
-}
-
-export function sequenceEqualSync<E>(other: Iterable<E>, comparer: EqualityComparer<E> = equals): Operator<E, boolean> {
+export function sequenceEqual<E>(other: Iterable<E>, comparer: EqualityComparer<E> = equals): Operator<E, boolean> {
   return function (iterable: Iterable<E>) {
-    const iterator1 = iterable[Symbol.iterator]();
-    const iterator2 = other[Symbol.iterator]();
+    const iterator1 = getIterator(iterable);
+    const iterator2 = getIterator(other);
 
     let result1 = iterator1.next();
     let result2 = iterator2.next();
@@ -38,10 +30,8 @@ export function sequenceEqualSync<E>(other: Iterable<E>, comparer: EqualityCompa
  */
 export function sequenceEqualAsync<E>(other: Iterable<E> | AsyncIterable<E>, comparer: EqualityComparer<E> = equals): AsyncOperator<E, Promise<boolean>> {
   return async function (iterable: AsyncIterable<E>) {
-    const iterator1 = iterable[Symbol.asyncIterator]();
-    const iterator2 = isIterable(other) ?
-      (other as Iterable<E>)[Symbol.iterator]() :
-      (other as AsyncIterable<E>)[Symbol.asyncIterator]();
+    const iterator1 = getAsyncIterator(iterable);
+    const iterator2 = getAnyIterator(other);
 
     let result1 = await iterator1.next();
     let result2 = await iterator2.next();

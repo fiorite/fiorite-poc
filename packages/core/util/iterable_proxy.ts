@@ -1,4 +1,4 @@
-import { Getter } from '../types';
+import { Getter } from '../functional_types';
 import { InvalidOperationError } from '../errors';
 
 export class IterableProxy<E> implements Iterable<E> {

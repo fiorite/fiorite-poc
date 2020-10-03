@@ -2,11 +2,11 @@ import { collect } from '@fiorite/core';
 import {
   append,
   appendAsync,
-  appendSync,
+  append,
   pipe,
   sequenceEqual,
   sequenceEqualAsync,
-  sequenceEqualSync,
+  sequenceEqual,
   toAsync
 } from '@fiorite/core/operators';
 
@@ -34,8 +34,8 @@ import {
   // #3.2. True sync pipeline
 
   pipe(
-    appendSync(4),
-    sequenceEqualSync([1, 2, 3, 4]),
+    append(4),
+    sequenceEqual([1, 2, 3, 4]),
   )([1, 2, 3]); // true
 
   // #4.1. Async pipeline
@@ -62,8 +62,8 @@ import {
 
   // #5.2. True sync operation
 
-  sequenceEqualSync([1, 2, 3, 4])(
-    appendSync(4)(([1, 2, 3])),
+  sequenceEqual([1, 2, 3, 4])(
+    append(4)(([1, 2, 3])),
   ); // true
 
   // #6.1. Async operation

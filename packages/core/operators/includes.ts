@@ -1,9 +1,6 @@
 import { EqualityComparer, equals } from '../equality';
-import { combine } from './combine';
-
-export function includes<E>(element: E, comparer: EqualityComparer<E> = equals) {
-  return combine(() => includesSync(element, comparer), () => includesAsync(element, comparer));
-}
+import { getAsyncIterator, getIterator } from './utilities';
+import { AsyncOperator, Operator } from './functional_types';
 
 /**
  * TODO: Describe.
@@ -11,9 +8,9 @@ export function includes<E>(element: E, comparer: EqualityComparer<E> = equals) 
  * @param element
  * @param comparer
  */
-export function includesSync<E>(element: E, comparer: EqualityComparer<E> = equals) {
-  return function (iterable: Iterable<E>): boolean {
-    const iterator = iterable[Symbol.iterator]();
+export function includes<E>(element: E, comparer: EqualityComparer<E> = equals): Operator<E, boolean> {
+  return function (iterable: Iterable<E>) {
+    const iterator = getIterator(iterable);
 
     let result = iterator.next();
 
@@ -35,9 +32,9 @@ export function includesSync<E>(element: E, comparer: EqualityComparer<E> = equa
  * @param element
  * @param comparer
  */
-export function includesAsync<E>(element: E, comparer: EqualityComparer<E> = equals) {
-  return async function (iterable: AsyncIterable<E>): Promise<boolean> {
-    const iterator = iterable[Symbol.asyncIterator]();
+export function includesAsync<E>(element: E, comparer: EqualityComparer<E> = equals): AsyncOperator<E, Promise<boolean>> {
+  return async function (iterable: AsyncIterable<E>) {
+    const iterator = getAsyncIterator(iterable);
 
     let result = await iterator.next();
 

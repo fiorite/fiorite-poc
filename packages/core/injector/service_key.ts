@@ -1,4 +1,4 @@
-import { AbstractType, isClass, Type } from '../types';
+import { AbstractType, isClass, Type } from '../functional_types';
 
 /**
  * Describes type of service key.

@@ -1,5 +1,5 @@
 import { AsyncCollection } from '@fiorite/core/collections/async_collection';
-import { AnyPredicate,  } from '@fiorite/core/types';
+import { AnyPredicate,  } from '@fiorite/core/functional_types';
 
 import { DbAdapter } from './db_adapter';
 import { DbQuery } from './db_query';

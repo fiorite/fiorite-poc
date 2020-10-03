@@ -1,4 +1,4 @@
-import { Type } from '@fiorite/core/types';
+import { Type } from '@fiorite/core/functional_types';
 
 import { DbCollection } from './db_collection';
 import { DbAdapter } from './db_adapter';

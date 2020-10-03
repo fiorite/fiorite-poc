@@ -1,18 +1,15 @@
-import { AnyCallback } from '../types';
+import { AnyCallback } from '../functional_types';
 import { Listener } from '../listening';
-import { combine, CombinedOperator } from './combine';
 
-export function listen<E>(callback: AnyCallback<[E]> = () => { }, sync = false): CombinedOperator<E, Listener, Listener> {
-  return combine(() => listenSync(callback, sync), () => listenAsync(callback, sync));
-}
-
-export function listenSync<E>(callback: AnyCallback<[E]> = () => { }, sync = false) {
+export function listen<E>(callback: AnyCallback<[E]> = () => { }, sync = false) {
   return function (iterable: Iterable<E>): Listener {
     const listener = new Listener();
 
     if (!sync) {
+      const scoped = callback;
+
       callback = (element: E) => {
-        callback(element);
+        scoped(element);
       };
     }
 
@@ -44,17 +41,15 @@ export function listenSync<E>(callback: AnyCallback<[E]> = () => { }, sync = fal
   };
 }
 
-/**
- * TODO: Add sync strategy.
- * @param callback
- */
 export function listenAsync<E>(callback: AnyCallback<[E]> = () => { }, sync = false) {
   return function (iterable: AsyncIterable<E>): Listener {
     const listener = new Listener();
 
     if (!sync) {
+      const scoped = callback;
+
       callback = (element: E) => {
-        callback(element);
+        scoped(element);
       };
     }
 

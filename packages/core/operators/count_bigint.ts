@@ -1,52 +1,11 @@
-import { AnyPredicate, AsyncPredicate, Predicate } from '../types';
-import { combine, CombinedOperator } from './combine';
-import { getAsyncIterator, getIterator } from '../util';
-import { AsyncOperator, Operator } from './operator';
+import { AnyPredicate, AsyncOperator, Operator, Predicate } from './functional_types';
+import { getAsyncIterator, getIterator } from './utilities';
 
 /**
  * Counts the big integer number of elements in a sequence.
  *
  * @example ```typescript
  * import { countBigInt } from '@fiorite/core/operators';
- * import { Readable } from 'stream';
- *
- * countBigInt()([1, 2, 3]); // 3
- * countBigInt(x => x === 2)([1, 2, 3]); // 1
- *
- * countBigInt()(Readable.from([1, 2, 3])); // [Promise [BigInt 3]]
- * countBigInt(x => x === 2)(Readable.from([1, 2, 3])); // [Promise [BigInt 1]]
- * ```
- *
- * @param predicate
- */
-export function countBigInt<E>(predicate?: Predicate<[E]>): CombinedOperator<E, bigint, Promise<bigint>>;
-
-/**
- * Counts the big integer number of elements in a sequence.
- *
- * @example ```typescript
- * import { countBigInt } from '@fiorite/core/operators';
- * import { Readable } from 'stream';
- *
- * countBigInt(async x => x === 2)(Readable.from([1, 2, 3])); // [Promise [BigInt 1]]
- * ```
- *
- * @param predicate
- */
-export function countBigInt<E>(predicate: AsyncPredicate<[E]>): AsyncOperator<E, Promise<bigint>>;
-
-/**
- * @inheritDoc
- */
-export function countBigInt<E>(...args: any[]) {
-  return combine(() => countBigIntSync(...args), () => countBigIntAsync(...args));
-}
-
-/**
- * Counts the big integer number of elements in a sequence.
- *
- * @example ```typescript
- * import { countBigIntSync } from '@fiorite/core/operators';
  *
  * const sequence = [1, 2, 3];
  *
@@ -56,7 +15,7 @@ export function countBigInt<E>(...args: any[]) {
  *
  * @param predicate
  */
-export function countBigIntSync<E>(predicate: Predicate<[E]> = () => true): Operator<E, bigint> {
+export function countBigInt<E>(predicate: Predicate<E> = () => true): Operator<E, bigint> {
   return function (iterable: Iterable<E>) {
     const iterator = getIterator(iterable);
 
@@ -89,7 +48,7 @@ export function countBigIntSync<E>(predicate: Predicate<[E]> = () => true): Oper
  *
  * @param predicate
  */
-export function countBigIntAsync<E>(predicate: AnyPredicate<[E]> = () => true): AsyncOperator<E, Promise<bigint>> {
+export function countBigIntAsync<E>(predicate: AnyPredicate<E> = () => true): AsyncOperator<E, Promise<bigint>> {
   return async function (iterable: AsyncIterable<E>) {
     const iterator = getAsyncIterator(iterable);
 

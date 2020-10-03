@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { isFunction } from '../../../packages/core/types';
+import { isFunction } from '../../../packages/core/functional_types';
 
 describe('isFunction()', () => {
   it('should test different values', () => {

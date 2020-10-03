@@ -1,17 +1,14 @@
-import { AnyPredicate, Predicate } from '../types';
+import { AnyPredicate, AsyncOperator, Operator, Predicate } from './functional_types';
 import { InvalidOperationError } from './errors';
-import { combine } from './combine';
+import { getAsyncIterator } from './utilities';
 
-export function first<E>(predicate: Predicate<[E]> = () => true) {
-  return combine(() => firstSync(predicate), () => firstAsync(predicate));
-}
-
-export function firstSync<E>(predicate: Predicate<[E]> = () => true) {
+/**
+ * @param predicate
+ *
+ * @throws InvalidOperationError
+ */
+export function first<E>(predicate: Predicate<E> = () => true): Operator<E, E> {
   return function(iterable: Iterable<E>): E {
-    if (Array.isArray(iterable)) {
-      return iterable.find(predicate);
-    }
-
     const iterator = iterable[Symbol.iterator]();
 
     let result = iterator.next();
@@ -36,9 +33,15 @@ export function firstSync<E>(predicate: Predicate<[E]> = () => true) {
   };
 }
 
-export function firstAsync<E>(predicate: AnyPredicate<[E]> = () => true) {
+/**
+ *
+ * @param predicate
+ *
+ * @throws InvalidOperationError
+ */
+export function firstAsync<E>(predicate: AnyPredicate<E> = () => true): AsyncOperator<E, Promise<E>> {
   return async function (iterable: AsyncIterable<E>): Promise<E> {
-    const iterator = iterable[Symbol.asyncIterator]();
+    const iterator = getAsyncIterator(iterable);
 
     let result = await iterator.next();
 

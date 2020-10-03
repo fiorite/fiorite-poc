@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 import { List } from '../../../packages/core/collections';
-import { InvalidOperationError } from '../../../packages/core/types';
+import { InvalidOperationError } from '../../../packages/core/functional_types';
 
 describe('List/list()', () => {
   describe('List', () => {

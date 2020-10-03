@@ -1,7 +1,7 @@
 import { InvalidOperationError } from '../errors';
 import { EqualityComparer, equals } from '../equality';
 import { CollectionBuffer } from './collection_buffer';
-import { forEachSync } from '../operators';
+import { forEach } from '../operators';
 
 export class Queue<E> extends CollectionBuffer<E> {
   /**
@@ -40,7 +40,7 @@ export class Queue<E> extends CollectionBuffer<E> {
    * @param iterable
    */
   enqueueAll(iterable: Iterable<E>): this {
-    forEachSync<E>(element => this.enqueue(element))(iterable);
+    forEach<E>(element => this.enqueue(element))(iterable);
 
     return this;
   }

@@ -1,40 +1,20 @@
-import { combine } from './combine';
-import { AsyncOperator, Operator } from './operator';
-import { getAsyncIterator, getIterator } from '../util';
+import { AsyncOperator, Operator } from './functional_types';
+import { getAsyncIterator, getIterator } from './utilities';
 
 /**
  * Bypasses a specified number of elements in a sequence and then returns the remaining elements.
  *
  * @example ```typescript
  * import { skip } from '@fiorite/core/operators';
- * import { Readable } from 'stream';
  *
  * const operator = skip<number>(2);
  *
  * operator([1, 2, 3]); // [Iterable [3]]
- * operator(Readable.from([1, 2, 3])); // [AsyncIterable [3]]
  * ```
  *
  * @param count
  */
-export function skip<E>(count: number) {
-  return combine(() => skipSync<E>(count), () => skipAsync<E>(count));
-}
-
-/**
- * Bypasses a specified number of elements in a sequence and then returns the remaining elements.
- *
- * @example ```typescript
- * import { skipSync } from '@fiorite/core/operators';
- *
- * const operator = skipSync<number>(2);
- *
- * operator([1, 2, 3]); // [Iterable [3]]
- * ```
- *
- * @param count
- */
-export function skipSync<E>(count: number): Operator<E> {
+export function skip<E>(count: number): Operator<E> {
   return function *(iterable: Iterable<E>) {
     const iterator = getIterator(iterable);
 

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { Listener } from '../../../packages/core/types';
+import { Listener } from '../../../packages/core/functional_types';
 
 describe('Listener', () => {
   let listener: Listener;

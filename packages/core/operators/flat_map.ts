@@ -1,63 +1,34 @@
-import { AsyncSelector, Selector } from '../types';
-import { isAsyncIterable, isIterable } from '../util';
-import { combine } from './combine';
-
-export function flatMap<E, R>(selector: Selector<E, R | Iterable<R>, [number]>) {
-  return combine(() => flatMapSync(selector), () => flatMapAsync<E, R>(selector));
-}
+import { AnyIterable, AnySelector, AsyncOperator, Operator, Selector } from './functional_types';
+import { getAnyIterator, getAsyncIterator, getIterator, isAsyncIterable, isIterable } from './utilities';
 
 /**
  * TODO: Describe.
  *
  * @param selector
  */
-export function flatMapSync<E, R>(selector: Selector<E, R | Iterable<R>, [number]>) {
+export function flatMap<E, R = E>(selector: Selector<E, R | Iterable<R>>): Operator<E, Iterable<R>> {
   return function *(iterable: Iterable<E>): Iterable<R> {
     const iterator = iterable[Symbol.iterator]();
 
     let result = iterator.next();
 
-    if (selector.length < 3) { // If client don't request index.
-      while (!result.done) {
-        const selected = (selector as Selector<E, R | Iterable<R>>)(result.value);
+    while (!result.done) {
+      const element = selector(result.value);
 
-        if (isIterable(selected)) {
-          const iterator2 = (selected as Iterable<R>)[Symbol.iterator]();
+      if (isIterable(element)) {
+        const iterator2 = getIterator(element as Iterable<R>);
 
-          let result2 = iterator2.next();
+        let result2 = iterator2.next();
 
-          while (!result2.done) {
-            yield result2.value;
-            result2 = iterator2.next();
-          }
-        } else {
-          yield selected as R;
+        while (!result2.done) {
+          yield result2.value;
+          result2 = iterator2.next();
         }
-
-        result = iterator.next();
+      } else {
+        yield element as R;
       }
-    } else {
-      let index = 0;
 
-      while (!result.done) {
-        const selected = selector(result.value, index);
-
-        if (isIterable(selected)) {
-          const iterator2 = (selected as Iterable<R>)[Symbol.iterator]();
-
-          let result2 = iterator2.next();
-
-          while (!result2.done) {
-            yield result2.value;
-            result2 = iterator2.next();
-          }
-        } else {
-          yield selected as R;
-        }
-
-        result = iterator.next();
-        index++;
-      }
+      result = iterator.next();
     }
   };
 }
@@ -67,71 +38,29 @@ export function flatMapSync<E, R>(selector: Selector<E, R | Iterable<R>, [number
  *
  * @param selector
  */
-export function flatMapAsync<E, R>(selector: Selector<E, R | Iterable<R> | AsyncIterable<R>, [number]> | AsyncSelector<E, R | Iterable<R> | AsyncIterable<R>, [number]>) {
-  return async function *(iterable: AsyncIterable<E>): AsyncIterable<R> {
-    const iterator = iterable[Symbol.asyncIterator]();
+export function flatMapAsync<E, R = E>(selector: AnySelector<E, R | AnyIterable<R>>): AsyncOperator<E, AsyncIterable<R>> {
+  return async function *(iterable: AsyncIterable<E>) {
+    const iterator = getAsyncIterator(iterable);
 
     let result = await iterator.next();
 
-    if (selector.length < 3) { // If client don't request index.
-      while (!result.done) {
-        const selected = await (selector as AsyncSelector<E, R | Iterable<R> | AsyncIterable<R>>)(result.value);
+    while (!result.done) {
+      const element = await selector(result.value);
 
-        if (isIterable(selected)) {
-          const iterator2 = (selected as Iterable<R>)[Symbol.iterator]();
+      if (isIterable(element) || isAsyncIterable(element)) {
+        const iterator2 = getAnyIterator(element as AnyIterable<R>);
 
-          let result2 = iterator2.next();
+        let result2 = await iterator2.next();
 
-          while (!result2.done) {
-            yield result2.value;
-            result2 = iterator2.next();
-          }
-        } else if (isAsyncIterable(selected)) {
-          const iterator2 = (selected as AsyncIterable<R>)[Symbol.asyncIterator]();
-
-          let result2 = await iterator2.next();
-
-          while (!result2.done) {
-            yield result2.value;
-            result2 = await iterator2.next();
-          }
-        } else {
-          yield selected as R;
+        while (!result2.done) {
+          yield result2.value;
+          result2 = await iterator2.next();
         }
-
-        result = await iterator.next();
+      } else {
+        yield element as R;
       }
-    } else {
-      let index = 0;
 
-      while (!result.done) {
-        const selected = await selector(result.value, index);
-
-        if (isIterable(selected)) {
-          const iterator2 = (selected as Iterable<R>)[Symbol.iterator]();
-
-          let result2 = iterator2.next();
-
-          while (!result2.done) {
-            yield result2.value;
-            result2 = iterator2.next();
-          }
-        } else if (isAsyncIterable(selected)) {
-          const iterator2 = (selected as AsyncIterable<R>)[Symbol.asyncIterator]();
-
-          let result2 = await iterator2.next();
-
-          while (!result2.done) {
-            yield result2.value;
-            result2 = await iterator2.next();
-          }
-        } else {
-          yield selected as R;
-        }
-
-        result = await iterator.next();
-        index++;
-      }
+      result = await iterator.next();
     }
   };
 }

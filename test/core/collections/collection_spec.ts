@@ -1,232 +1,342 @@
 import { expect } from "chai";
 
-import { collect } from '@fiorite/core/collections';
+import {
+  AsyncCollection,
+  Collection,
+  createAsyncIterable,
+  defaultIterable,
+  InvalidOperationError
+} from '@fiorite/core/collections';
+import { EqualityComparer, equals } from '@fiorite/core';
 
-describe('Collection<T>', () => {
+describe('Collection<E>', () => {
+  function createCollection<E>(iterable: Iterable<E>) {
+    return new Collection(iterable);
+  }
+
+  describe('static #[Symbol.species]', () => {
+    it('should be Collection', function () {
+      expect(Collection[Symbol.species]).equals(Collection);
+    });
+  });
+
+  describe('#[Symbol.toStringTag]', () => {
+    it('should be "Collection"', function () {
+      const collection = new Collection();
+      expect(collection[Symbol.toStringTag]).equals('Collection');
+    });
+  });
+
+  describe('#iterable', () => {
+    it('should be defaultIterable', function () {
+      const collection = new Collection();
+      expect(collection.iterable).equals(defaultIterable);
+    });
+
+    it('should be provided iterable', function () {
+      const iterable: Iterable<unknown> = [];
+      const collection = new Collection(iterable);
+      expect(collection.iterable).equals(iterable);
+    });
+  });
+
+  describe('#comparer', () => {
+    it('should be equals()', function () {
+      const collection = new Collection();
+      expect(collection.comparer).equals(equals);
+    });
+
+    it('should be provided comparer', function () {
+      const comparer: EqualityComparer = () => false;
+      const collection = new Collection([], comparer);
+      expect(collection.comparer).equals(comparer);
+    });
+  });
+
+  describe('#empty', () => {
+    it('should return true on empty sequence', function () {
+      const collection = new Collection([]);
+      expect(collection.empty).equals(true);
+    });
+
+    it('should return false on non-empty sequence', function () {
+      const collection = new Collection([1]);
+      expect(collection.empty).equals(false);
+    });
+  });
+
   describe('#append()', () => {
-    it('should append 0 elements', () => {
-      expect(
-        collect([1, 2, 3])
-          .append()
-          .sequenceEqual([1, 2, 3]),
-      ).equals(true);
+    it('should return the same sequence on zero elements', function () {
+      const collection = new Collection([]);
+      expect(collection.append()).equals(collection);
     });
 
-    it('should append 1 element', () => {
-      expect(
-        collect([1, 2, 3])
-          .append(4)
-          .sequenceEqual([1, 2, 3, 4]),
-      ).equals(true);
-    });
-
-    it('should append 3 elements', () => {
-      expect(
-        collect([1, 2, 3])
-          .append(4, 5, 6)
-          .sequenceEqual([1, 2, 3, 4, 5, 6]),
-      ).equals(true);
+    it('should return a new sequence', function () {
+      const collection = new Collection<number>([1]);
+      const appended = collection.append(2, 3);
+      expect(appended).not.equals(collection);
+      expect(appended.sequenceEqual([1, 2, 3]));
     });
   });
 
-  describe('AsyncCollection#append()', () => {
-    it('should append 0 elements', async () => {
-      expect(
-        await collect([1, 2, 3])
-          .toAsync()
-          .append()
-          .sequenceEqual([1, 2, 3]),
-      ).equals(true);
+  describe('#average()', () => {
+    it('should return 2 on sequence [1, 2, 3]', function () {
+      const collection = new Collection([1, 2, 3]);
+      expect(collection.average()).equals(2);
     });
 
-    it('should append 1 element', async () => {
-      expect(
-        await collect([1, 2, 3])
-          .toAsync()
-          .append(4)
-          .sequenceEqual([1, 2, 3, 4]),
-      ).equals(true);
-    });
-
-    it('should append 3 elements', async () => {
-      expect(
-        await collect([1, 2, 3])
-          .toAsync()
-          .append(4)
-          .sequenceEqual([1, 2, 3, 4]),
-      ).equals(true);
+    it('should return 2 on sequence [[1], [2], [3]] with selector', function () {
+      const collection = new Collection([[1], [2], [3]]);
+      expect(collection.average(x => x[0])).equals(2);
     });
   });
 
-  describe('Collection#cast()', () => {
-    it('should cast a sequence', () => {
-      expect(
-        collect<1 | 2 | 3>([1, 2, 3])
-          .cast<number>()
-          .sequenceEqual([1, 2, 3])
-      ).equals(true);
+  describe('#cast()', () => {
+    it('should return the same sequence', function () {
+      const collection = new Collection<number>([]);
+      expect(collection.cast<string>()).equals(collection);
     });
   });
 
-  describe('AsyncCollection#cast()', () => {
-    it('should cast a sequence', async () => {
-      expect(
-        await collect<1 | 2 | 3>([1, 2, 3])
-          .toAsync()
-          .cast<number>()
-          .sequenceEqual([1, 2, 3])
-      ).equals(true);
+  describe('#concat()', () => {
+    it('should return Collection on Iterable', function () {
+      const collection = new Collection<number>([1]);
+      const result = collection.concat([2, 3]);
+      expect(result).instanceOf(Collection);
+      expect(result.sequenceEqual([1, 2, 3])).equals(true);
+    });
+
+    it('should return AsyncCollection on AsyncIterable', async function () {
+      const collection = new Collection<number>([1]);
+      const result = collection.concat(createAsyncIterable([2, 3]));
+      expect(result).instanceOf(AsyncCollection);
+      expect(await result.sequenceEqual([1, 2, 3])).equals(true);
     });
   });
 
-  describe('Collection#concat()', () => {
-    it('should concatenate with 0 sequences', () => {
-      expect(
-        collect<number>([1, 2, 3])
-          .concat()
-          .sequenceEqual([1, 2, 3]),
-      ).equals(true);
+  describe('#count()', () => {
+    it('should count without predicate', function () {
+      const collection = new Collection<number>([1]);
+      const result = collection.count();
+      expect(result).equals(1);
     });
 
-    it('should concatenate with 1 sequence', () => {
-      expect(
-        collect<number>([1, 2, 3])
-          .concat([4, 5, 6])
-          .sequenceEqual([1, 2, 3, 4, 5, 6]),
-      ).equals(true);
-    });
-
-    it('should concatenate with 2 sequences', () => {
-      expect(
-        collect<number>([1, 2, 3])
-          .concat([4, 5, 6], [7, 8, 9])
-          .sequenceEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]),
-      ).equals(true);
+    it('should count with predicate', async function () {
+      const collection = new Collection([1, 2, 3]);
+      const result = collection.count(x => x % 2 === 0);
+      expect(result).equals(1);
     });
   });
 
-  describe('AsyncCollection#concat()', () => {
-    it('should concatenate with 0 sequences', async () => {
+  describe('#distinct()', () => {
+    it('should distinct with default comparer', function () {
+      const collection = new Collection<number>([1, 1]);
+      const result = collection.distinct();
       expect(
-        await collect<number>([1, 2, 3])
-          .toAsync()
-          .concat()
-          .sequenceEqual([1, 2, 3]),
+        result.sequenceEqual([1]),
       ).equals(true);
     });
 
-    it('should concatenate with 1 sequence', async () => {
-      expect(
-        await collect<number>([1, 2, 3])
-          .toAsync()
-          .concat([4, 5, 6])
-          .sequenceEqual([1, 2, 3, 4, 5, 6]),
-      ).equals(true);
-    });
-
-    it('should concatenate with 2 sequences', async () => {
-      expect(
-        await collect<number>([1, 2, 3])
-          .toAsync()
-          .concat([4, 5, 6], [7, 8, 9])
-          .sequenceEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]),
-      ).equals(true);
+    it('should count with custom comparer', async function () {
+      const collection = new Collection([1, 2, 3]);
+      const result = collection.distinct(() => true);
+      expect(result.sequenceEqual([1])).equals(true);
     });
   });
 
+  describe('#elementAt()', () => {
+    it('should throw an error when index is out of range', function () {
+      const collection = new Collection<number>([]);
+      expect(() => collection.elementAt(0)).throw(InvalidOperationError);
+    });
 
-  describe('Collection#skip()', () => {
-    it('should skip 2 elements', () => {
-      expect(
-        collect([1, 2, 3])
-          .skip(2)
-          .sequenceEqual([3]),
-      ).equals(true);
+    it('should count with predicate', async function () {
+      const collection = new Collection<number>([1]);
+      expect(collection.elementAt(0)).equals(1);
     });
   });
 
+  describe('#every()', () => {
+    it('should return true on right predicate', function () {
+      const collection = new Collection<number>([1, 2, 3]);
+      expect(collection.every(x => typeof x === 'number')).equals(true);
+    });
 
-  describe('AsyncCollection#skip()', () => {
-    it('should skip 2 elements', async () => {
-      expect(
-        await collect([1, 2, 3])
-          .toAsync()
-          .skip(2)
-          .sequenceEqual([3]),
-      ).equals(true);
+    it('should return false on wrong predicate', function () {
+      const collection = new Collection<number>([1, 2, 3]);
+      expect(collection.every(x => x === 2)).equals(false);
     });
   });
 
+  describe('#except()', () => {
+    it('should return a new collection that ignore some elements', function () {
+      const collection = new Collection<number>([1, 2, 3]);
+      const result = collection.except([1, 2]);
+      expect(result).instanceOf(Collection);
+      expect(result.sequenceEqual([3])).equals(true);
+    });
 
-  describe('Collection#take()', () => {
-    it('should take 2 elements', () => {
-      expect(
-        collect([1, 2, 3])
-          .take(2)
-          .sequenceEqual([1, 2]),
-      ).equals(true);
+    it('should return a new collection with custom comparer', function () {
+      const collection = new Collection<number>([1, 2, 3]);
+      const result = collection.except([1, 2], () => true);
+      expect(result).instanceOf(Collection);
+      expect(result.empty).equals(true);
+    });
+
+    it('should return a new async collection that ignore some async elements', async function () {
+      const collection = new Collection<number>([1, 2, 3]);
+      const result = collection.except(createAsyncIterable([1, 2]));
+      expect(result).instanceOf(AsyncCollection);
+      expect(await result.sequenceEqual([3])).equals(true);
+    });
+
+    it('should return a new async collection that ignore some async elements', async function () {
+      const collection = new Collection<number>([1, 2, 3]);
+      const result = collection.except(createAsyncIterable([1, 2]), () => true);
+      const arr = await result.toArray();
+      expect(result).instanceOf(AsyncCollection);
+      expect(await result.empty).equals(true);
     });
   });
 
-
-  describe('AsyncCollection#take()', () => {
-    it('should take 2 elements', async () => {
-      expect(
-        await collect([1, 2, 3])
-          .toAsync()
-          .take(2)
-          .sequenceEqual([1, 2]),
-      ).equals(true);
+  describe('#filter()', () => {
+    it('should filter elements', function () {
+      const collection = new Collection<number>([1, 2, 3]);
+      const result = collection.filter(x => x === 2);
+      expect(result.sequenceEqual([2])).equals(true);
     });
   });
 
-  describe('Collection#every()', () => {
-    it('should return true on 0 elements', () => {
-      expect(
-        collect([])
-          .every(() => false),
-      ).equals(true);
+  describe('#first()', () => {
+    it('should throw error without predicate', function () {
+      const collection = new Collection([]);
+      expect(() => {
+        collection.first();
+      }).throws(InvalidOperationError);
     });
 
-    it('should true when predicate is positive', () => {
-      expect(
-        collect<unknown>([1, 2, 3])
-          .every(x => typeof x === 'number'),
-      ).equals(true);
+    it('should return first element', function () {
+      const collection = new Collection([1]);
+      expect(collection.first()).equals(1);
     });
 
-    it('should false when predicate is negative', () => {
-      expect(
-        collect<unknown>([1, 2, 3])
-          .every(x => x === 2),
-      ).equals(false);
-    });
-  });
-
-  describe('AsyncCollection#every()', () => {
-    it('should return true on 0 elements', async () => {
-      expect(
-        await collect([])
-          .toAsync()
-          .every(async () => false),
-      ).equals(true);
+    it('should throw error with predicate', function () {
+      const collection = new Collection([1]);
+      expect(() => {
+        collection.first(x => x === 2);
+      }).throws(InvalidOperationError);
     });
 
-    it('should true when predicate is positive', async () => {
-      expect(
-        await collect<unknown>([1, 2, 3])
-          .toAsync()
-          .every(async x => typeof x === 'number'),
-      ).equals(true);
-    });
-
-    it('should false when predicate is negative', async () => {
-      expect(
-        await collect<unknown>([1, 2, 3])
-          .toAsync()
-          .every(async x => x === 2),
-      ).equals(false);
+    it('should return first element', function () {
+      const collection = new Collection([1, 2]);
+      expect(collection.first(x => x === 2)).equals(2);
     });
   });
 
+  describe('#flat()', () => {
+    it('should return the same sequence', function () {
+      const collection = new Collection([1, 2, 3]);
+      const result = collection.flat();
+
+      expect(result.sequenceEqual([1, 2, 3])).equals(true);
+    });
+
+    it('should return the flatten sequence', function () {
+      const collection = new Collection([[1, 2], [3]]);
+      const result = collection.flat();
+
+      expect(result.sequenceEqual([1, 2, 3])).equals(true);
+    });
+  });
+
+  describe('#flatMap()', () => {
+    it('should return the same sequence', function () {
+      const collection = new Collection([1, 2, 3]);
+      const result = collection.flatMap(x => x);
+
+      expect(result.sequenceEqual([1, 2, 3])).equals(true);
+    });
+
+    it('should return the flatten sequence', function () {
+      const collection = new Collection([[1, 2], [3]]);
+      const result = collection.flatMap(x => x);
+
+      expect(result.sequenceEqual([1, 2, 3])).equals(true);
+    });
+  });
+
+  describe('#forEach()', () => {
+    it('should aggregate sequence', function () {
+      const collection = new Collection([1, 2, 3]);
+      const buffer: number[] = [];
+
+      collection.forEach(x => buffer.push(x));
+
+      expect(collection.sequenceEqual(buffer)).equals(true);
+    });
+  });
+
+  describe('#includes()', () => {
+    it('should return false with default comparer', function () {
+      const collection = new Collection([1]);
+      expect(collection.includes(2)).equals(false);
+    });
+
+    it('should return true with default comparer', function () {
+      const collection = new Collection([1]);
+      expect(collection.includes(1)).equals(true);
+    });
+
+    it('should return true with custom comparer', function () {
+      const collection = new Collection([1]);
+      expect(collection.includes(2, () => true)).equals(true);
+    });
+  });
+
+  describe('#indexOf()', () => {
+    it('should return -1 when element is missed', function () {
+      const collection = new Collection([1]);
+      expect(collection.indexOf(2)).equals(-1);
+    });
+
+    it('should return 0 when element exists', function () {
+      const collection = new Collection([1]);
+      expect(collection.indexOf(1)).equals(0);
+    });
+
+    it('should return 0 when element missed and comparer returns true', function () {
+      const collection = new Collection([1]);
+      expect(collection.indexOf(2, () => true)).equals(0);
+    });
+  });
+
+  describe('#intersect()', () => {
+    it('should return similar elements with default comparer', function () {
+      const collection = new Collection([1, 2, 3]);
+      const result = collection.intersect([1, 2]);
+      expect(result).instanceOf(Collection);
+      expect(result.sequenceEqual([1, 2])).equals(true);
+    });
+
+    it('should return similar elements with custom comparer', function () {
+      const collection = new Collection([1, 2, 3]);
+      const result = collection.intersect([1, 2], () => true);
+      expect(result).instanceOf(Collection);
+      expect(result.sequenceEqual([1, 2, 3])).equals(true);
+    });
+
+    it('should return similar elements with default comparer', async function () {
+      const collection = new Collection([1, 2, 3]);
+      const result = collection.intersect(createAsyncIterable([1, 2]));
+      expect(result).instanceOf(AsyncCollection);
+      expect(await result.sequenceEqual([1, 2])).equals(true);
+    });
+
+    it('should return similar elements with custom comparer', async function () {
+      const collection = new Collection([1, 2, 3]);
+      const result = collection.intersect(createAsyncIterable([1, 2]), () => true);
+      expect(result).instanceOf(AsyncCollection);
+      expect(await result.sequenceEqual([1, 2, 3])).equals(true);
+    });
+  });
 });
