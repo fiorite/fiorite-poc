@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import { IncomingMessage } from 'http';
 
 import { HttpContext, RequestCallback, RequestHeader } from '@fiorite/http';
-import { Injector, InvalidOperationError } from '@fiorite/core';
+import { Injector, OldInvalidOperationError } from '@fiorite/core';
 
 import { Middleware } from '../middleware';
 import { WebSocketContext } from '../web_socket_ref';
@@ -39,7 +39,7 @@ export class WebSocketsMiddleware extends Middleware {
         });
       } else {
         // TODO: Throw not supported.
-        throw new InvalidOperationError('Unable to locate Incoming message');
+        throw new OldInvalidOperationError('Unable to locate Incoming message');
       }
     } else {
       await handle(context);

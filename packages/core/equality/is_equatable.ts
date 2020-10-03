@@ -1,4 +1,4 @@
-import { isMethod } from '../util';
+import { isMethod } from '../utilities';
 
 /**
  * Checks whether specified object implements {@link Equatable} interface.

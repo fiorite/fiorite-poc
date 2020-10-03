@@ -10,6 +10,7 @@
     "test": "mocha -r ts-node/register -r tsconfig-paths/register test/**/*_spec.ts",
     "cli": "node -r ts-node/register -r tsconfig-paths/register packages/cli/bin/cli.ts",
     "example:http": "npm run ts -- example/http/index.ts",
+    "example": "npm run ts -- example/main.ts",
     "typedoc": "typedoc packages --json docs/output.json"
   },
   "bugs": {

@@ -2,7 +2,7 @@ import { inspectServiceKey, ServiceKey } from './service_key';
 import { Collection, HashMap, HashMapError, Stack } from '../collections';
 import { Provider } from './provider';
 import { Callable } from '../callable';
-import { InvalidOperationError } from '../errors';
+import { OldInvalidOperationError } from '../errors';
 import { Disposable, tryDispose } from '../disposition';
 
 export interface Inject {
@@ -34,7 +34,7 @@ export class Injector extends Callable<Inject> {
     if (this._callStack.includes(provider)) {
       // TODO: Add key to string.
       const path = [...this._callStack.append(provider).map(x => inspectServiceKey(x.key))].join(' > ');
-      throw new InvalidOperationError('Circular dependency detected: ' + path);
+      throw new OldInvalidOperationError('Circular dependency detected: ' + path);
     }
 
     if (!this._callStack.empty) {
@@ -43,7 +43,7 @@ export class Injector extends Callable<Inject> {
       // TODO: Add #compare method.
       if (previous.lifetime.value < provider.lifetime.value) {
         // TODO: Add better error.
-        throw new InvalidOperationError('Lifetime, dude');
+        throw new OldInvalidOperationError('Lifetime, dude');
       }
     }
 
@@ -53,7 +53,7 @@ export class Injector extends Callable<Inject> {
       return provider.provide(providerInjector) as T;
     } catch (error) {
       if (error instanceof HashMapError) {
-        error = new InvalidOperationError(
+        error = new OldInvalidOperationError(
           'Provider with key "' + ((error.key as any).name || error.key) + '" is not bound. Try add it.'
         );
       }
@@ -69,7 +69,7 @@ export class Injector extends Callable<Inject> {
    *
    * @param key
    *
-   * @throws InvalidOperationError service with a type is not bound or there is more than one service with the same key.
+   * @throws OldInvalidOperationError service with a type is not bound or there is more than one service with the same key.
    */
   get<T>(key: ServiceKey<T>): T {
     return this.resolve(
@@ -93,7 +93,7 @@ export class Injector extends Callable<Inject> {
    *
    * @param key
    *
-   * @throws InvalidOperationError service with a type is not bound or there is more than one service with the same key.
+   * @throws OldInvalidOperationError service with a type is not bound or there is more than one service with the same key.
    */
   tryGet<T>(key: ServiceKey<T>): T | null {
     return this.resolve(

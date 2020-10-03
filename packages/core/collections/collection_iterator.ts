@@ -1,6 +1,6 @@
 import { Queue } from './queue';
 import { Callback } from '../functional_types';
-import { InvalidOperationError } from '../errors';
+import { OldInvalidOperationError } from '../errors';
 import { tryDispose } from '../disposition'
 import { map } from '../operators';
 import { Listener } from '../listening';
@@ -18,7 +18,7 @@ export class CollectionIterator<E> extends Listener implements AsyncIterator<E> 
    */
   add(element: E): Promise<void> {
     if (this.closed) {
-      throw new InvalidOperationError('Unable to #add() on closed iterator.');
+      throw new OldInvalidOperationError('Unable to #add() on closed iterator.');
     }
 
     if (this._listeners.empty) {
@@ -39,7 +39,7 @@ export class CollectionIterator<E> extends Listener implements AsyncIterator<E> 
 
   next(): Promise<IteratorResult<E>> {
     if (this.closed) {
-      throw new InvalidOperationError('Unable to get #next() on closed iterator.');
+      throw new OldInvalidOperationError('Unable to get #next() on closed iterator.');
     }
 
     return new Promise<IteratorResult<E>>((resolve, reject) => {

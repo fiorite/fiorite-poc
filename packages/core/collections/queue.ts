@@ -1,4 +1,4 @@
-import { InvalidOperationError } from '../errors';
+import { OldInvalidOperationError } from '../errors';
 import { EqualityComparer, equals } from '../equality';
 import { CollectionBuffer } from './collection_buffer';
 import { forEach } from '../operators';
@@ -50,7 +50,7 @@ export class Queue<E> extends CollectionBuffer<E> {
    */
   peek(): E {
     if (this.buffer.length < 1) {
-      throw new InvalidOperationError('The queue is empty.');
+      throw new OldInvalidOperationError('The queue is empty.');
     }
 
     return this.buffer[0];
@@ -61,7 +61,7 @@ export class Queue<E> extends CollectionBuffer<E> {
    */
   dequeue(): E {
     if (this.buffer.length < 1) {
-      throw new InvalidOperationError('The queue is empty.');
+      throw new OldInvalidOperationError('The queue is empty.');
     }
 
     return this.buffer.shift()!;

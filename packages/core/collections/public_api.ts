@@ -18,6 +18,8 @@ export { Stack } from './stack';
 
 export { Queue } from './queue';
 export { List, list } from './list';
+export { CollectionSubject } from './collection_subject';
+export { CollectionIterator } from './collection_iterator';
 
 export * from '../operators/utilities';
 export * from '../operators/errors';

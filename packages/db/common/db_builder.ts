@@ -1,4 +1,4 @@
-import { isFunction } from '@fiorite/core/util';
+import { isFunction } from '@fiorite/core/utilities';
 
 import { DbSchema } from './db_schema';
 import { DbModel } from './db_model';

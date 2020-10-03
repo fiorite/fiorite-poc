@@ -1,6 +1,4 @@
-import { DbBuilder } from '@fiorite/db';
-import { collect, createAsyncIterable } from '../packages/core/collections';
-import { cached } from 'sqlite3';
+import { collect } from '@fiorite/core';
 
 interface Person {
   id: string;
@@ -13,18 +11,14 @@ interface Person {
 
   const abc = collect([1, 2, 3]);
 
-  abc.;
+  abc.listen();
 
-
-  abc.repeatUntil(
-    abc.take(1).listen(),
-  ).listen();
-
-  const db = new DbBuilder();
-
-  db.add<Person>('name', model => {
-    return model.add(field => {
-
-    });
-  });
+  //
+  // const db = new DbBuilder();
+  //
+  // db.add<Person>('name', model => {
+  //   return model.add(field => {
+  //
+  //   });
+  // });
 });

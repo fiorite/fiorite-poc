@@ -1,7 +1,7 @@
 import {
   Disposable,
   Injector,
-  InvalidOperationError,
+  OldInvalidOperationError,
   Module,
   ProviderCollection,
   Provider,
@@ -44,7 +44,7 @@ export class WebApp {
           context.response.body = result;
         } else if (result instanceof Response) {
           if (!result.readable) {
-            throw new InvalidOperationError();
+            throw new OldInvalidOperationError();
           }
 
           context.response.statusCode = result.statusCode;

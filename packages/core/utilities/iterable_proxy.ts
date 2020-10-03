@@ -1,6 +1,9 @@
 import { Getter } from '../functional_types';
-import { InvalidOperationError } from '../errors';
+import { OldInvalidOperationError } from '../errors';
 
+/**
+ * @deprecated use collection namespace
+ */
 export class IterableProxy<E> implements Iterable<E> {
   constructor(readonly getter: Getter<Iterable<E>>) { }
 
@@ -8,13 +11,16 @@ export class IterableProxy<E> implements Iterable<E> {
     const iterable = this.getter();
 
     if (this === iterable) {
-      throw new InvalidOperationError('Circular dependency detected.');
+      throw new OldInvalidOperationError('Circular dependency detected.');
     }
 
     return this.getter()[Symbol.iterator]();
   }
 }
 
+/**
+ * @deprecated use collection namespace
+ */
 export function proxyIterable<E>(getter: Getter<Iterable<E>>): IterableProxy<E> {
   return new IterableProxy<E>(getter);
 }

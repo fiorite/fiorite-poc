@@ -1,4 +1,5 @@
-import { Getter, InvalidOperationError } from '@fiorite/core';
+import { InvalidOperationError } from '../../operators';
+import { Getter } from '../../functional_types';
 
 export class AsyncIterableProxy<E> implements AsyncIterable<E> {
   constructor(readonly getter: Getter<AsyncIterable<E>>) { }

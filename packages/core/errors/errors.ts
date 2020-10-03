@@ -8,7 +8,7 @@ export class ArgumentError extends Error {
   }
 }
 
-export class InvalidOperationError extends Error {
+export class OldInvalidOperationError extends Error {
   name = 'InvalidOperationError';
 
   constructor(message: string = 'An operation is failed.') {
@@ -17,9 +17,9 @@ export class InvalidOperationError extends Error {
 }
 
 /**
- * Alias for {@link InvalidOperationError}.
+ * Alias for {@link OldInvalidOperationError}.
  */
-export const InvalidOperation = InvalidOperationError;
+export const InvalidOperation = OldInvalidOperationError;
 
 export class NotImplementedError extends Error {
   name = 'NotImplementedError';

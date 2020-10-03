@@ -1,5 +1,5 @@
 import { Type } from '../functional_types';
-import { isClass, isFunction, PromiseOr } from '../util';
+import { isClass, isFunction, PromiseOr } from '../utilities';
 import { Injector, ProviderCollection, ProviderTuple } from '../injector';
 import { Startup } from './startup';
 import { bootManager } from './boot_manager';

@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 import { Stack } from '../../../packages/core/collections';
-import { InvalidOperationError } from '../../../packages/core';
+import { OldInvalidOperationError } from '../../../packages/core';
 
 describe('Stack', () => {
   let stack: Stack<number>;
@@ -45,7 +45,7 @@ describe('Stack', () => {
     });
 
     it('should throw error when stack is empty', () => {
-      expect(() => stack.peek()).throw(InvalidOperationError);
+      expect(() => stack.peek()).throw(OldInvalidOperationError);
     });
   });
 
@@ -58,7 +58,7 @@ describe('Stack', () => {
     });
 
     it('should throw error when stack is empty', () => {
-      expect(() => stack.pop()).throw(InvalidOperationError);
+      expect(() => stack.pop()).throw(OldInvalidOperationError);
     });
   });
 

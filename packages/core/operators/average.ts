@@ -1,6 +1,10 @@
 import { getAsyncIterator, getIterator } from './utilities';
 import { AnySelector, AsyncOperator, Operator, Selector } from './functional_types';
 
+/**
+ *
+ * @param args
+ */
 export function average<E>(...args: E extends number ? [] : [Selector<E, number>]): Operator<E, number> {
   return (iterable: Iterable<E>) => {
     const selector = args[0] || ((x: unknown) => x as number);
@@ -16,7 +20,7 @@ export function average<E>(...args: E extends number ? [] : [Selector<E, number>
       result = iterator.next();
     }
 
-    return sum / count;
+    return 0 === count ? 0 : sum / count;
   };
 }
 
@@ -35,6 +39,6 @@ export function averageAsync<E>(...args: E extends number ? [] : [AnySelector<E,
       result = await iterator.next();
     }
 
-    return sum / count;
+    return 0 === count ? 0 : sum / count;
   };
 }

@@ -14,6 +14,8 @@ import { getAsyncIterator, getIterator } from './utilities';
  * ```
  *
  * @param predicate
+ *
+ * @deprecated postpone for the future
  */
 export function countBigInt<E>(predicate: Predicate<E> = () => true): Operator<E, bigint> {
   return function (iterable: Iterable<E>) {
@@ -47,6 +49,8 @@ export function countBigInt<E>(predicate: Predicate<E> = () => true): Operator<E
  * ```
  *
  * @param predicate
+ *
+ * @deprecated postpone for the future
  */
 export function countBigIntAsync<E>(predicate: AnyPredicate<E> = () => true): AsyncOperator<E, Promise<bigint>> {
   return async function (iterable: AsyncIterable<E>) {

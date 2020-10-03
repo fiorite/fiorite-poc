@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 import { Queue } from '../../../packages/core/collections';
-import { InvalidOperationError } from '../../../packages/core';
+import { OldInvalidOperationError } from '../../../packages/core';
 
 describe('Queue', () => {
   let queue: Queue<number>;
@@ -45,7 +45,7 @@ describe('Queue', () => {
     });
 
     it('should throw error when queue is empty', () => {
-      expect(() => queue.peek()).throw(InvalidOperationError);
+      expect(() => queue.peek()).throw(OldInvalidOperationError);
     });
   });
 
@@ -58,7 +58,7 @@ describe('Queue', () => {
     });
 
     it('should throw error when queue is empty', () => {
-      expect(() => queue.dequeue()).throw(InvalidOperationError);
+      expect(() => queue.dequeue()).throw(OldInvalidOperationError);
     });
   });
 

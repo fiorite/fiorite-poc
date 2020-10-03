@@ -1,7 +1,7 @@
 import { AsyncCollection } from './async_collection';
 import { Closeable } from '../listening';
 import { forEach } from '../operators';
-import { proxyAsyncIterable } from '../util';
+import { proxyAsyncIterable } from './utilities';
 import { CollectionIterator } from './collection_iterator';
 
 export class CollectionSubject<E = unknown> extends AsyncCollection<E> implements Closeable {

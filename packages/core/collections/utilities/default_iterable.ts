@@ -1,5 +1,4 @@
-import { NotImplementedError } from '@fiorite/core';
-
+import { NotImplementedError } from '../../errors';
 import { proxyIterable } from './iterable_proxy';
 
 export const defaultIterable: Iterable<never> = proxyIterable<never>(() => {

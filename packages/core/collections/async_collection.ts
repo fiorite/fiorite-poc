@@ -6,11 +6,13 @@ import {
   AsyncOperator,
   AsyncReducer,
   AsyncSelector,
+  averageAsync,
   catchErrorAsync,
   concatAsync,
   countAsync,
   debounceAsync,
   distinctAsync,
+  elementAtAsync,
   everyAsync,
   exceptAsync,
   filterAsync,
@@ -21,10 +23,13 @@ import {
   getAsyncIterator,
   immediateAsync,
   includesAsync,
+  indexOfAsync,
   intersectAsync,
   lastAsync,
+  lastIndexOfAsync,
   listenAsync,
   mapAsync,
+  maxAsync,
   onDoneAsync,
   Predicate,
   prependAsync,
@@ -40,6 +45,7 @@ import {
   skipUntilAsync,
   skipWhileAsync,
   someAsync,
+  sumAsync,
   takeAsync,
   takeUntilAsync,
   takeWhileAsync,
@@ -49,30 +55,27 @@ import {
   toArrayAsync,
 } from '../operators';
 import { AbstractType, AnyCallback, Type, } from '../functional_types';
-import { proxyAsyncIterable } from '../util';
 import { EqualityComparer, equals } from '../equality';
-import { NotImplementedError } from '../errors';
 import { Listener } from '../listening';
-
-const defaultIterable = proxyAsyncIterable<never>(() => {
-  throw new NotImplementedError();
-});
+import { defaultAsyncIterable, proxyAsyncIterable } from './utilities';
 
 /**
  * Describes abstract type of {@link AsyncCollection}.
  */
-export interface AsyncCollectionType<E = unknown> extends AbstractType<AsyncCollection<E>> {
+export interface AsyncCollectionType extends AbstractType<AsyncCollection<unknown>> {
   /**
    * Returns function that is used to create a new {@link AsyncCollection}.
    */
-  readonly [Symbol.species]: new <R>(iterable: AsyncIterable<R>, comparer?: EqualityComparer<R>) => AsyncCollection<R>;
+  readonly [Symbol.species]: AsyncCollectionType;
+
+  new <E>(iterable: AsyncIterable<E>, comparer?: EqualityComparer<E>): AsyncCollection<E>;
 }
 
 export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
   /**
    * Returns function that is used to create a new {@link AsyncCollection}.
    */
-  static get [Symbol.species](): new <E>(iterable: AsyncIterable<E>) => AsyncCollection<E> {
+  static get [Symbol.species](): AsyncCollectionType {
     return AsyncCollection;
   }
 
@@ -97,7 +100,7 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
     return this.some().then(x => !x);
   }
 
-  constructor(iterable: AsyncIterable<E> = defaultIterable, comparer: EqualityComparer<E> = equals) {
+  constructor(iterable: AsyncIterable<E> = defaultAsyncIterable, comparer: EqualityComparer<E> = equals) {
     if (this === iterable) {
       throw new Error('Circular dependency detected.');
     }
@@ -137,12 +140,21 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
     return this.pipe(appendAsync(...elements));
   }
 
-  debounce(milliseconds: number): AsyncCollection<E> {
-    return this.pipe(debounceAsync(milliseconds));
+  average(...args: E extends number ? [] : [AnySelector<E, number>]): Promise<number> {
+    return averageAsync<E>(...args)(this);
   }
 
-  distinct(comparer = this.comparer): AsyncCollection<E> {
-    return this.pipe(distinctAsync(comparer));
+  /**
+   * Casts a new sequence type.
+   */
+  cast<R>(): AsyncCollection<R> {
+    return this as unknown as AsyncCollection<R>;
+  }
+
+  catch<TError = Error>(selector?: AnySelector<TError, AnyIterable<E>>): AsyncCollection<E>;
+  catch<TError = Error>(type: Type<TError>, selector?: AnySelector<TError, AnyIterable<E>>): AsyncCollection<E>;
+  catch(...args: any[]): AsyncCollection<E> {
+    return this.pipe(catchErrorAsync(...args));
   }
 
   /**
@@ -164,19 +176,6 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
   }
 
   /**
-   * Casts a new sequence type.
-   */
-  cast<R>(): AsyncCollection<R> {
-    return this as unknown as AsyncCollection<R>;
-  }
-
-  catch<TError = Error>(selector?: AnySelector<TError, E | AnyIterable<E>>): AsyncCollection<E>;
-  catch<TError = Error>(type: Type<TError>, selector?: AnySelector<TError, E | AnyIterable<E>>): AsyncCollection<E>;
-  catch(...args: any[]): AsyncCollection<E> {
-    return this.pipe((catchErrorAsync as any)(...args));
-  }
-
-  /**
    * Counts the number of elements in a sequence or elements that satisfy the predicate.
    */
   count(predicate?: AnyPredicate<E>): Promise<number>;
@@ -186,6 +185,23 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    */
   count(...args: any[]): Promise<number> {
     return countAsync(...args)(this);
+  }
+
+  debounce(milliseconds: number): AsyncCollection<E> {
+    return this.pipe(debounceAsync(milliseconds));
+  }
+
+  distinct(comparer = this.comparer): AsyncCollection<E> {
+    return this.pipe(distinctAsync(comparer));
+  }
+
+  /**
+   * @param index
+   *
+   * @throws InvalidOperationError `index` is out of range.
+   */
+  elementAt(index: number): Promise<E> {
+    return elementAtAsync<E>(index)(this);
   }
 
   /**
@@ -206,6 +222,10 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    */
   filter(predicate: AnyPredicate<E>): AsyncCollection<E> {
     return this.pipe(filterAsync(predicate));
+  }
+
+  finally(callback: AnyCallback): AsyncCollection<E> {
+    return this.pipe(onDoneAsync(callback));
   }
 
   /**
@@ -239,37 +259,6 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
   }
 
   /**
-   * TODO: Describe.
-   *
-   * @param selector
-   */
-  map<R>(selector: Selector<E, R> | AsyncSelector<E, R>): AsyncCollection<R> {
-    return this.pipe(mapAsync(selector));
-  }
-
-  finally(callback: AnyCallback): AsyncCollection<E> {
-    return this.pipe(onDoneAsync(callback));
-  }
-
-  /**
-   * Provides a new collection of elements from current collection plus the specified elements prepended at the beginning.
-   *
-   * @example ```typescript
-   * import { collect } from '@fiorite/core';
-   * import { Readable } from 'stream';
-   *
-   * const collection = collect(Readable.from([1, 2, 3]));
-   *
-   * collection.prepend(4, 5, 6); // [AsyncCollection [4, 5, 6, 1, 2, 3]]
-   * ```
-   *
-   * @param elements
-   */
-  prepend(...elements: E[]): AsyncCollection<E> {
-    return this.pipe(prependAsync(...elements));
-  }
-
-  /**
    * Performs the specified {@param callback} for each element in an sequence.
    *
    * @param callback
@@ -292,10 +281,6 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
     return this.pipe(immediateAsync());
   }
 
-  intersect(other: AnyIterable<E>, comparer = this.comparer): AsyncCollection<E> {
-    return this.pipe(intersectAsync(other, comparer));
-  }
-
   /**
    * TODO: Describe; think about includes/contains.
    *
@@ -306,9 +291,26 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
     return includesAsync(element, comparer)(this);
   }
 
+  /**
+   * @param element
+   *
+   * @throws InvalidOperationError `index` is out of range.
+   */
+  indexOf(element: E): Promise<number> {
+    return indexOfAsync<E>(element)(this);
+  }
+
+  intersect(other: AnyIterable<E>, comparer = this.comparer): AsyncCollection<E> {
+    return this.pipe(intersectAsync(other, comparer));
+  }
+
   last(predicate?: AnyPredicate<E>): Promise<E>;
   last(...args: any[]) {
     return lastAsync<E>(...args)(this);
+  }
+
+  lastIndexOf(element: E): Promise<number> {
+    return lastIndexOfAsync(element)(this);
   }
 
   /**
@@ -320,6 +322,41 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
 
   listenSync(callback: AnyCallback<[E]> = () => { }): Listener {
     return this.listen(callback);
+  }
+
+  /**
+   * TODO: Describe.
+   *
+   * @param selector
+   */
+  map<R>(selector: Selector<E, R> | AsyncSelector<E, R>): AsyncCollection<R> {
+    return this.pipe(mapAsync(selector));
+  }
+
+  max(...args: E extends number ? [] : [AnySelector<E, number>]): Promise<number> {
+    return maxAsync<E>(...args)(this);
+  }
+
+  min(...args: E extends number ? [] : [AnySelector<E, number>]): Promise<number> {
+    return maxAsync<E>(...args)(this);
+  }
+
+  /**
+   * Provides a new collection of elements from current collection plus the specified elements prepended at the beginning.
+   *
+   * @example ```typescript
+   * import { collect } from '@fiorite/core';
+   * import { Readable } from 'stream';
+   *
+   * const collection = collect(Readable.from([1, 2, 3]));
+   *
+   * collection.prepend(4, 5, 6); // [AsyncCollection [4, 5, 6, 1, 2, 3]]
+   * ```
+   *
+   * @param elements
+   */
+  prepend(...elements: E[]): AsyncCollection<E> {
+    return this.pipe(prependAsync(...elements));
   }
 
   /**
@@ -336,12 +373,12 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
     return this.pipe(repeatAsync(count));
   }
 
-  repeatWhile(predicate: Predicate<void>): AsyncCollection<E> {
-    return this.pipe(repeatWhileAsync(predicate));
-  }
-
   repeatUntil(listener: Listener): AsyncCollection<E> {
     return this.pipe(repeatUntilAsync(listener));
+  }
+
+  repeatWhile(predicate: Predicate<void>): AsyncCollection<E> {
+    return this.pipe(repeatWhileAsync(predicate));
   }
 
   /**
@@ -430,6 +467,10 @@ export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
    */
   some(...args: any[]) {
     return someAsync(...args)(this);
+  }
+
+  sum(...args: E extends number ? [] : [AnySelector<E, number>]): Promise<number> {
+    return sumAsync<E>(...args)(this);
   }
 
   /**

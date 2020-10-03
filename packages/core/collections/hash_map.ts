@@ -1,10 +1,10 @@
 import { Collection } from './collection';
-import { InvalidOperationError } from '../errors';
+import { OldInvalidOperationError } from '../errors';
 import { EqualityComparer, equals } from '../equality';
 import { Selector, forEach } from '../operators';
 import { CollectionBuffer } from './collection_buffer';
 
-export class HashMapError<K> extends InvalidOperationError {
+export class HashMapError<K> extends OldInvalidOperationError {
   constructor(message: string, readonly key: K) {
     super(message);
   }

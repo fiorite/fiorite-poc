@@ -1,7 +1,7 @@
 import { Collection } from './collection';
 import { Cloneable } from '../cloning';
 import { EqualityComparer, equals, Equatable } from '../equality';
-import { proxyIterable } from '../util';
+import { proxyIterable } from '../utilities';
 
 export class CollectionBuffer<E> extends Collection<E> implements Equatable, Cloneable {
   protected buffer: E[] = [];

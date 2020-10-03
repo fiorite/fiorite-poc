@@ -1,5 +1,5 @@
 import { Readable, Writable } from 'stream';
-import { Disposable, InvalidOperationError } from '@fiorite/core';
+import { Disposable, OldInvalidOperationError } from '@fiorite/core';
 
 class DefaultWriter extends Writable {
   writable = false;
@@ -7,7 +7,7 @@ class DefaultWriter extends Writable {
   constructor() {
     super({
       write() {
-        throw new InvalidOperationError();
+        throw new OldInvalidOperationError();
       }
     });
   }
@@ -19,7 +19,7 @@ class DefaultStream extends Readable {
   constructor() {
     super({
       read() {
-        throw new InvalidOperationError();
+        throw new OldInvalidOperationError();
       }
     });
   }

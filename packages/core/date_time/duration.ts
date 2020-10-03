@@ -1,4 +1,4 @@
-import { isObject } from '../util';
+import { isObject } from '../utilities';
 import { Equatable } from '../equality';
 
 export interface DurationParts {

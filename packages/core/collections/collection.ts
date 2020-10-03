@@ -30,7 +30,10 @@ import {
   Predicate,
   prepend,
   Reducer,
-  reduceSync, repeat,
+  reduceSync,
+  repeat,
+  repeatUntil,
+  repeatWhile,
   reverse,
   Selector,
   sequenceEqual,
@@ -47,23 +50,23 @@ import {
   toArray,
   toAsync,
   toSync,
-  repeatWhile, repeatUntil,
 } from '../operators';
 import { AbstractType, AnyCallback, Callback, Type, } from '../functional_types';
 import { AsyncCollection, AsyncCollectionType } from './async_collection';
-import { proxyAsyncIterable, proxyIterable } from '../util';
+import { defaultIterable, proxyAsyncIterable, proxyIterable } from './utilities';
 import { EqualityComparer, equals } from '../equality';
 import { Listener } from '../listening';
-import { defaultIterable } from './utilities';
 
 /**
  * Describes abstract type of {@link Collection}.
  */
-export interface CollectionType<E = unknown> extends AbstractType<Collection<E>> {
+export interface CollectionType extends AbstractType<Collection<unknown>> {
   /**
    * Returns function that is used to create a new {@link Collection}.
    */
-  readonly [Symbol.species]: new <R>(iterable: Iterable<R>, comparer?: EqualityComparer<R>) => Collection<R>;
+  readonly [Symbol.species]: CollectionType;
+
+  new <E>(iterable: Iterable<E>, comparer?: EqualityComparer<E>): Collection<E>;
 }
 
 export class Collection<E> implements Iterable<E> {
@@ -72,7 +75,7 @@ export class Collection<E> implements Iterable<E> {
    *
    * @default {@link Collection}.
    */
-  static get [Symbol.species](): new <E>(iterable: Iterable<E>) => Collection<E> {
+  static get [Symbol.species](): CollectionType {
     return Collection;
   }
 
@@ -172,10 +175,10 @@ export class Collection<E> implements Iterable<E> {
     return this.toAsync(AsyncCollection, this.comparer).concat(...others);
   }
 
-  catch<TError = Error>(selector?: Selector<TError, E | Iterable<E>>): Collection<E>;
-  catch<TError = Error>(errorType: Type<TError>, selector?: Selector<TError, E | Iterable<E>>): Collection<E>;
+  catch<TError = Error>(selector?: Selector<TError, Iterable<E>>): Collection<E>;
+  catch<TError = Error>(errorType: Type<TError>, selector?: Selector<TError, Iterable<E>>): Collection<E>;
   catch(...args: any[]): Collection<E> {
-    return this.pipe((catchError as any)(...args));
+    return this.pipe(catchError(...args));
   }
 
   /**
@@ -550,6 +553,8 @@ declare module './async_collection' {
   interface AsyncCollection<E> {
     /**
      * Converts a sequence to {@link Collection}.
+     *
+     * todo: add comparer
      */
     toSync(): Promise<Collection<E>>;
 
@@ -557,14 +562,16 @@ declare module './async_collection' {
      * Converts a sequence to {@link Collection} using specified collection type.
      *
      * @param type
+     *
+     * todo: add comparer
      */
-    toSync(type: CollectionType<E>): Promise<Collection<E>>;
+    toSync(type: CollectionType): Promise<Collection<E>>;
   }
 }
 
 /**
  * @inheritDoc
  */
-AsyncCollection.prototype.toSync = async function <E>(this: AsyncCollection<E>, type: CollectionType<E> = Collection): Promise<Collection<E>> {
+AsyncCollection.prototype.toSync = async function <E>(this: AsyncCollection<E>, type: CollectionType = Collection): Promise<Collection<E>> {
   return new type[Symbol.species](await toSync<E>()(this));
 }
