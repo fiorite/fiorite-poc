@@ -1,4 +1,5 @@
 import { DbQuery } from './db_query';
+import { DbSchema } from './db_schema';
 
 export interface DbAdapter {
   /**
@@ -20,19 +21,24 @@ export interface DbAdapter {
    *
    * @param object
    */
-  insert<E>(target: string, object: E): Promise<void>;
+  insert?<E>(target: string, object: E): Promise<void>;
 
   /**
    * Updates object in the database.
    *
    * @param object
    */
-  update<E>(target: string, object: E): Promise<void>;
+  update?<E>(target: string, object: E): Promise<void>;
 
   /**
    * Deletes object from the database.
    *
    * @param object
    */
-  delete<E>(target: string, object: E): Promise<void>;
+  delete?<E>(target: string, object: E): Promise<void>;
+
+  /**
+   * Get schema.
+   */
+  schema?(): Promise<DbSchema>;
 }

@@ -29,17 +29,17 @@ export class DbCollection<E> extends AsyncCollection<E> {
     super(() => this.adapter.query(this.query));
   }
 
-  insert(object: E) {
-    return this.adapter.insert(this.name, object);
-  }
-
-  update(object: E) {
-    return this.adapter.update(this.name, object);
-  }
-
-  delete(object: E) {
-    return this.adapter.delete(this.name, object);
-  }
+  // insert(object: E) {
+  //   return this.adapter.insert?(this.name, object);
+  // }
+  //
+  // update(object: E) {
+  //   return this.adapter.update?(this.name, object);
+  // }
+  //
+  // delete(object: E) {
+  //   return this.adapter.delete?(this.name, object);
+  // }
 
   /**
    * Returns the first element of a database.
