@@ -64,26 +64,10 @@ import { AsyncIteratorGetter, defaultAsyncIterable, proxyAsyncIterator } from '.
  * Describes abstract type of {@link AsyncCollection}.
  */
 export interface AsyncCollectionType extends AbstractType<AsyncCollection> {
-  /**
-   * Returns function that is used to create a new {@link AsyncCollection}.
-   *
-   * @deprecated #pipe() prototypes instance without additional info.
-   */
-  readonly [Symbol.species]: AsyncCollectionType;
-
   new <E>(iterable: AsyncIterable<E> | AsyncIteratorGetter<E>, comparer?: EqualityComparer<E>): AsyncCollection<E>;
 }
 
 export class AsyncCollection<E = unknown> implements AsyncIterable<E> {
-  /**
-   * Returns function that is used to create a new {@link AsyncCollection}.
-   *
-   * @deprecated #pipe() prototypes instance without additional info.
-   */
-  static get [Symbol.species](): AsyncCollectionType {
-    return AsyncCollection;
-  }
-
   readonly source: AsyncIterable<E>;
 
   /**

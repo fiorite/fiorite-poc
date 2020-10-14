@@ -8,7 +8,7 @@ import { Disposable } from '../disposition';
  * const listener = new Listener();
  *
  * // You can perform custom logic how to react on listener closing.
- * listener.closes.then(() => console.log('Listener has been closed.'));
+ * listener.onClose.then(() => console.log('Listener has been closed.'));
  *
  * if (!listener.closed) {
  *   listener.close(); // Close listener.
@@ -58,7 +58,7 @@ export class Listener implements Disposable, Closeable {
   }
 
   /**
-   * Alias for {@link [Symbol.close]()}.
+   * Alias for {@link Listener[Symbol.close]}.
    */
   close() {
     return this[Symbol.close]();

@@ -14,11 +14,9 @@
  *
  * class ContentComparer extends Callable<EqualityComparer<string>> {
  *   constructor() {
- *     super();
- *   }
- *
- *   [Symbol.invoke](x: string, y: string): boolean {
- *     return x.toLowerCase() === y.toLowerCase();
+ *     super((x: string, y: string) => {
+ *       return x.toLowerCase() === y.toLowerCase();
+ *     });
  *   }
  * }
  * ```

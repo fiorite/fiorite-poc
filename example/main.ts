@@ -1,3 +1,8 @@
+import { collect } from '@fiorite/core';
+
+// working file
+
 (async () => {
-  // working file
+  collect([1, 2, 3])
+    .listen(console.log);
 })();

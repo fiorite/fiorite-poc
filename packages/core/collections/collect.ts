@@ -5,14 +5,14 @@ import { Collection } from './collection';
 import { AnyCollection } from './any_collection';
 
 /**
- * Creates a new {@link Collection} using {@link Collection[Symbol.species]} constructor.
+ * Creates a new {@link Collection} using {@link Collection} constructor.
  *
  * @param iterable
  */
 export function collect<E>(iterable: Iterable<E>): Collection<E>;
 
 /**
- * Creates a new {@link AsyncCollection} using {@link AsyncCollection[Symbol.species]} constructor.
+ * Creates a new {@link AsyncCollection} using {@link AsyncCollection} constructor.
  *
  * @param iterable
  */
@@ -23,9 +23,9 @@ export function collect<E>(iterable: AsyncIterable<E>): AsyncCollection<E>;
  */
 export function collect<E>(iterable: AnyIterable<E>): AnyCollection<E> {
   if (isIterable(iterable)) {
-    return new Collection[Symbol.species](iterable as Iterable<E>);
+    return new Collection(iterable as Iterable<E>);
   } else if (isAsyncIterable(iterable)) {
-    return new AsyncCollection[Symbol.species](iterable as AsyncIterable<E>);
+    return new AsyncCollection(iterable as AsyncIterable<E>);
   }
 
   throw new ArgumentError(); // TODO: Add better message.
