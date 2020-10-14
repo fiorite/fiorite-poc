@@ -1,19 +1,20 @@
-import { DbModel } from './db_model';
 import { DbField } from './db_field';
+import { DbModel } from './db_model';
 
 export class DbModelBuilder<T = unknown> {
-  private _fields: DbField[] = [];
+  private _fields: DbField<T extends object ? keyof T : string>[] = [];
 
-  constructor(private _name: string) {
-  }
+  constructor(private _name: string) { }
 
-  add(name: string) {
-    this._fields.push({ name, type: 'string', });
+  field(name: T extends object ? keyof T : string, type: string = 'string') {
+    this._fields.push({ name, type });
     return this;
   }
 
-  build() {
-    const fields = this._fields.slice();
-    return new DbModel(this._name, fields);
+  build(): DbModel<T> {
+    return {
+      name: this._name,
+      fields: this._fields.slice(),
+    };
   }
 }

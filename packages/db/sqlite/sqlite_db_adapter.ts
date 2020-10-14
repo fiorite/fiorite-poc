@@ -2,10 +2,14 @@ import { Database } from 'sqlite3';
 
 import { SqliteDbIterator } from './sqlite_db_iterator';
 import { Logger } from '@fiorite/core/logger';
-import { DbAdapter, DbBuilder, DbModel, DbQuery, DbSchema } from '../common';
+import { DbAdapter, DbMigrator, DbQuery } from '../common';
 
 export class SqliteDbAdapter implements DbAdapter {
-  constructor(readonly database: Database, readonly logger?: Logger) { }
+  constructor(
+    readonly database: Database,
+    readonly migrator: DbMigrator,
+    readonly logger?: Logger,
+  ) { }
 
   count<E>(query: DbQuery): Promise<number> {
     return Promise.resolve(0);
@@ -63,22 +67,4 @@ export class SqliteDbAdapter implements DbAdapter {
   //
   //   throw new NotImplementedError();
   // }
-
-  async schema(): Promise<DbSchema> {
-    return new Promise((resolve, reject) => {
-      this.database.all('SELECT name FROM sqlite_master WHERE type = "table"', (err: Error | null, rows: { name: string }[]) => {
-        if (err) {
-          reject(err);
-        } else {
-          const builder = new DbBuilder();
-
-          for (const { name } of rows) {
-            builder.add(name, x => x);
-          }
-
-          resolve(builder.build());
-        }
-      });
-    });
-  }
 }

@@ -7,3 +7,7 @@ export class DbSchema {
     this.models = models;
   }
 }
+
+export interface DbSchema {
+  readonly models: readonly DbModel[];
+}

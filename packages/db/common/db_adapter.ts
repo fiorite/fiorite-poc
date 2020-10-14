@@ -1,7 +1,10 @@
 import { DbQuery } from './db_query';
-import { DbSchema } from './db_schema';
+import { DbMigrator } from './db_comparer';
+import { DbModel } from '@fiorite/db/common/db_model';
 
 export interface DbAdapter {
+  readonly migrator?: DbMigrator;
+
   /**
    * Counts elements using query.
    *
@@ -19,26 +22,24 @@ export interface DbAdapter {
   /**
    * Inserts object to the database.
    *
+   * @param model
    * @param object
    */
-  insert?<E>(target: string, object: E): Promise<void>;
+  insert?<E>(model: DbModel, object: E): Promise<void>;
 
   /**
    * Updates object in the database.
    *
+   * @param model
    * @param object
    */
-  update?<E>(target: string, object: E): Promise<void>;
+  update?<E>(model: DbModel, object: E): Promise<void>;
 
   /**
    * Deletes object from the database.
    *
+   * @param model
    * @param object
    */
-  delete?<E>(target: string, object: E): Promise<void>;
-
-  /**
-   * Get schema.
-   */
-  schema?(): Promise<DbSchema>;
+  delete?<E>(model: DbModel, object: E): Promise<void>;
 }

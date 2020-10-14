@@ -1,13 +1,14 @@
 import { DbSchema } from './db_schema';
 import { DbModel } from './db_model';
 import { DbModelBuilder } from './db_model_builder';
+import { Callback } from '@fiorite/core';
 
 export class DbBuilder {
   private models: DbModel[] = [];
 
-  add<T>(name: string, build: (builder: DbModelBuilder<T>) => void): this {
+  model<T>(name: string, configure: (builder: DbModelBuilder<T>) => void): this {
     const builder = new DbModelBuilder(name);
-    build(builder);
+    configure(builder);
 
     const model = builder.build();
     this.models.push(model);
@@ -27,8 +28,12 @@ export class DbBuilder {
   // }
 
   build() {
-    const models = this.models.slice();
-    return new DbSchema(models);
+    return { models: this.models.slice() };
   }
 }
 
+export function buildDb(configure: Callback<[DbBuilder]>): DbSchema {
+  const builder = new DbBuilder();
+  configure(builder);
+  return builder.build();
+}
