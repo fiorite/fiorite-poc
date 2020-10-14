@@ -1,7 +1,0 @@
-{
-  "name": "@fiorite/cli",
-  "bin" : {
-    "io" : "../../dist/bin/fiorite.js",
-    "fiorite" : "../../dist/bin/fiorite.js"
-  }
-}

@@ -1,6 +1,6 @@
 import { AsyncCollection } from './async_collection';
 import { AnyIterable, isAsyncIterable, isIterable } from '../operators';
-import { ArgumentError, NotImplementedError } from '../errors';
+import { ArgumentError } from '../errors';
 import { Collection } from './collection';
 import { AnyCollection } from './any_collection';
 
@@ -30,13 +30,3 @@ export function collect<E>(iterable: AnyIterable<E>): AnyCollection<E> {
 
   throw new ArgumentError(); // TODO: Add better message.
 }
-
-// export namespace collect {
-//   export function interval(): AsyncCollection<void> {
-//     throw new NotImplementedError();
-//   }
-//
-//   export function range(): Collection<void> {
-//     throw new NotImplementedError();
-//   }
-// }

@@ -62,28 +62,10 @@ import { Listener } from '../listening';
  * Describes abstract type of {@link Collection}.
  */
 export interface CollectionType extends AbstractType<Collection<unknown>> {
-  /**
-   * Returns function that is used to create a new {@link Collection}.
-   *
-   * @deprecated #pipe() prototypes instance without additional info.
-   */
-  readonly [Symbol.species]: CollectionType;
-
   new <E>(iterable: Iterable<E>, comparer?: EqualityComparer<E>): Collection<E>;
 }
 
 export class Collection<E> implements Iterable<E> {
-  /**
-   * Returns function that is used to create a new {@link Collection}.
-   *
-   * @default {@link Collection}.
-   *
-   * @deprecated #pipe() prototypes instance without additional info.
-   */
-  static get [Symbol.species](): CollectionType {
-    return Collection;
-  }
-
   /**
    * Gets string tag.
    */

@@ -7,6 +7,6 @@ declare global {
   }
 }
 
-(Symbol as any).invoke = Symbol.for('invoke');
+(Symbol as any).invoke = Symbol.for('Symbol.invoke');
 
 export { };
