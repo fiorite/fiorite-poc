@@ -6,3 +6,5 @@ export * from './listening';
 export * from './functional_types';
 export * from './errors';
 export * from './collections';
+export * from './primitive';
+export * from './logging';

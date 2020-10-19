@@ -1,9 +1,9 @@
 import { Collection } from './collection';
-import { Cloneable } from '../cloning';
+import { Cloneable, cloneObject } from '../cloning';
 import { EqualityComparer, equals, Equatable } from '../equality';
 import { getIterator } from '../operators';
 
-export class CollectionBuffer<E> extends Collection<E> implements Equatable, Cloneable {
+export class CollectionBuffer<E> extends Collection<E> implements Equatable, Cloneable<CollectionBuffer<E>> {
   protected buffer: E[] = [];
 
   get size() {
@@ -27,11 +27,8 @@ export class CollectionBuffer<E> extends Collection<E> implements Equatable, Clo
     return this;
   }
 
-  [Symbol.clone](): this {
-    return Object.assign(
-      Object.create(this),
-      { ...this, buffer: this.buffer.slice() },
-    );
+  [Symbol.clone]() {
+    return cloneObject<CollectionBuffer<E>>(this, { buffer: this.buffer.slice() });
   }
 
   /**
