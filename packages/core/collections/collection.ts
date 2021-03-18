@@ -420,14 +420,14 @@ export class Collection<E> implements Iterable<E> {
     return this.pipe(reverse<E>());
   }
 
-  sequenceEqual(other: Iterable<E>): boolean;
-  sequenceEqual(other: AsyncIterable<E>): Promise<boolean>;
-  sequenceEqual(other: AnyIterable<E>) {
+  sequenceEqual(other: Iterable<E>, comparer?: EqualityComparer<E>): boolean;
+  sequenceEqual(other: AsyncIterable<E>, comparer?: EqualityComparer<E>): Promise<boolean>;
+  sequenceEqual(other: AnyIterable<E>, comparer = this.comparer) {
     if (isIterable(other)) {
-      return sequenceEqual(other as Iterable<E>)(this);
+      return sequenceEqual(other as Iterable<E>, comparer)(this);
     }
 
-    return sequenceEqualAsync(this)(other as AsyncIterable<E>);
+    return sequenceEqualAsync(this, comparer)(other as AsyncIterable<E>);
   }
 
   /**

@@ -1,13 +1,18 @@
 import { Callable } from '@fiorite/core';
 
 import { RequestHandler } from '../request_handler';
-import { RouteConstraint } from './route_constraint';
+import { RoutePath } from './route_path';
+import { RouteMatch } from './route_match';
 
 export class Route extends Callable<RequestHandler> {
   constructor(
-    readonly constraint: RouteConstraint,
+    readonly path: RoutePath,
     readonly handler: RequestHandler,
   ) {
     super(handler);
+  }
+
+  match(path: string): RouteMatch {
+    return this.path.match(path);
   }
 }

@@ -8,3 +8,4 @@ export * from './errors';
 export * from './collections';
 export * from './primitive';
 export * from './logging';
+export { defaultObject } from './utilities';

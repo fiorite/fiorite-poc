@@ -11,3 +11,4 @@ export { AsyncIterableProxy, proxyAsyncIterable } from './async_iterable_proxy';
 export { IterableProxy, proxyIterable } from './iterable_proxy';
 export { PromiseOr } from './promise_or';
 export { PromiseQueue } from './promise_queue';
+export { defaultObject } from './default_object';
