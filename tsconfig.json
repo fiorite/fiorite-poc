@@ -5,25 +5,20 @@
     "target": "es2019",
     "strict": true,
     "lib": ["es2015", "esnext"],
+    "declaration": true,
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "baseUrl": "./packages",
-    "resolveJsonModule": true,
-    "paths": {
-      "@fiorite/cli": ["cli/lib"],
-      "@fiorite/core": ["core"],
-      "@fiorite/core/*": ["core/*"],
-      "@fiorite/db": ["db"],
-      "@fiorite/db/*": ["db/*"],
-      "@fiorite/http": ["http/lib"],
-      "@fiorite/http/*": ["http/lib/*"]
-    }
+    "baseUrl": "./src",
+    "resolveJsonModule": true
   },
-  "include": [
-    "packages/**/*"
+  "files": [
+    "src/index.ts",
+    "src/iteration/index.ts",
+    "src/operators/index.ts",
+    "src/collections/index.ts"
   ],
   "exclude": [
     "node_modules",
